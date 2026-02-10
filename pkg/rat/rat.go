@@ -44,7 +44,7 @@ func FromProto(r *rational.Rat) *Rat {
 
 // Proto returns the protocol buffer representation.
 func (r *Rat) Proto() *rational.Rat {
-	if r == nil {
+	if r == nil || r.rational == nil {
 		return nil
 	}
 	return &rational.Rat{
@@ -56,7 +56,7 @@ func (r *Rat) Proto() *rational.Rat {
 
 // MarshalJSON implements json.Marshaler.
 func (r *Rat) MarshalJSON() ([]byte, error) {
-	if r == nil {
+	if r == nil || r.rational == nil {
 		return []byte("null"), nil
 	}
 	f, _ := r.rational.Float64()
@@ -193,7 +193,7 @@ func wrap(b *big.Rat) *Rat {
 
 // Int64 returns the integer part as int64 (truncates toward zero).
 func (r *Rat) Int64() int64 {
-	if r == nil {
+	if r == nil || r.rational == nil {
 		return 0
 	}
 	return r.rational.Num().Int64() / r.rational.Denom().Int64()
@@ -201,7 +201,7 @@ func (r *Rat) Int64() int64 {
 
 // Int returns the integer part as int (truncates toward zero).
 func (r *Rat) Int() int {
-	if r == nil {
+	if r == nil || r.rational == nil {
 		return 0
 	}
 	return int(r.Int64())
@@ -209,7 +209,7 @@ func (r *Rat) Int() int {
 
 // Float64 returns the value as float64 (may lose precision).
 func (r *Rat) Float64() float64 {
-	if r == nil {
+	if r == nil || r.rational == nil {
 		return 0
 	}
 	f, _ := r.rational.Float64()
@@ -234,7 +234,7 @@ func (r *Rat) Min(b *Rat) *Rat {
 
 // Mul returns r * b.
 func (r *Rat) Mul(b *Rat) *Rat {
-	if r == nil || b == nil {
+	if r == nil || b == nil || r.rational == nil || b.rational == nil {
 		return nil
 	}
 	return wrap(new(big.Rat).Mul(r.rational, b.rational))
@@ -242,7 +242,7 @@ func (r *Rat) Mul(b *Rat) *Rat {
 
 // Div returns r / b.
 func (r *Rat) Div(b *Rat) *Rat {
-	if r == nil || b == nil {
+	if r == nil || b == nil || r.rational == nil || b.rational == nil {
 		return nil
 	}
 	return wrap(new(big.Rat).Quo(r.rational, b.rational))
@@ -250,10 +250,10 @@ func (r *Rat) Div(b *Rat) *Rat {
 
 // Add returns r + b.
 func (r *Rat) Add(b *Rat) *Rat {
-	if r == nil {
+	if r == nil || r.rational == nil {
 		return b
 	}
-	if b == nil {
+	if b == nil || b.rational == nil {
 		return r
 	}
 	return wrap(new(big.Rat).Add(r.rational, b.rational))
@@ -261,10 +261,10 @@ func (r *Rat) Add(b *Rat) *Rat {
 
 // Sub returns r - b.
 func (r *Rat) Sub(b *Rat) *Rat {
-	if r == nil {
+	if r == nil || r.rational == nil {
 		return b.Neg()
 	}
-	if b == nil {
+	if b == nil || b.rational == nil {
 		return r
 	}
 	return wrap(new(big.Rat).Sub(r.rational, b.rational))
@@ -272,7 +272,7 @@ func (r *Rat) Sub(b *Rat) *Rat {
 
 // String returns the decimal string representation.
 func (r *Rat) String() string {
-	if r == nil {
+	if r == nil || r.rational == nil {
 		return ""
 	}
 	f, _ := r.rational.Float64()
@@ -281,7 +281,7 @@ func (r *Rat) String() string {
 
 // StringFixed returns the decimal string with exactly the given number of decimal places.
 func (r *Rat) StringFixed(precision int) string {
-	if r == nil {
+	if r == nil || r.rational == nil {
 		return ""
 	}
 	return r.rational.FloatString(precision)
@@ -289,10 +289,10 @@ func (r *Rat) StringFixed(precision int) string {
 
 // GreaterThan returns true if r > b.
 func (r *Rat) GreaterThan(b *Rat) bool {
-	if r == nil {
+	if r == nil || r.rational == nil {
 		return Zero.GreaterThan(b)
 	}
-	if b == nil {
+	if b == nil || b.rational == nil {
 		return r.GreaterThan(Zero)
 	}
 	return r.rational.Cmp(b.rational) > 0
@@ -303,7 +303,7 @@ var Zero = New(0)
 
 // GreaterThanZero returns true if r > 0.
 func (r *Rat) GreaterThanZero() bool {
-	if r == nil {
+	if r == nil || r.rational == nil {
 		return false
 	}
 	return r.rational.Cmp(Zero.rational) > 0
@@ -311,10 +311,10 @@ func (r *Rat) GreaterThanZero() bool {
 
 // LessThan returns true if r < b.
 func (r *Rat) LessThan(b *Rat) bool {
-	if r == nil {
+	if r == nil || r.rational == nil {
 		return Zero.LessThan(b)
 	}
-	if b == nil {
+	if b == nil || b.rational == nil {
 		return r.LessThan(Zero)
 	}
 	return r.rational.Cmp(b.rational) < 0
@@ -322,10 +322,10 @@ func (r *Rat) LessThan(b *Rat) bool {
 
 // LessThanOrEqual returns true if r <= b.
 func (r *Rat) LessThanOrEqual(b *Rat) bool {
-	if r == nil {
+	if r == nil || r.rational == nil {
 		return Zero.LessThanOrEqual(b)
 	}
-	if b == nil {
+	if b == nil || b.rational == nil {
 		return r.LessThanOrEqual(Zero)
 	}
 	return r.rational.Cmp(b.rational) <= 0
@@ -333,10 +333,10 @@ func (r *Rat) LessThanOrEqual(b *Rat) bool {
 
 // GreaterThanOrEqual returns true if r >= b.
 func (r *Rat) GreaterThanOrEqual(b *Rat) bool {
-	if r == nil {
+	if r == nil || r.rational == nil {
 		return Zero.GreaterThanOrEqual(b)
 	}
-	if b == nil {
+	if b == nil || b.rational == nil {
 		return r.GreaterThanOrEqual(Zero)
 	}
 	return r.rational.Cmp(b.rational) >= 0
@@ -344,15 +344,15 @@ func (r *Rat) GreaterThanOrEqual(b *Rat) bool {
 
 // IsZero returns true if r equals zero or is nil.
 func (r *Rat) IsZero() bool {
-	return r == nil || r.Equals(Zero)
+	return r == nil || r.rational == nil || r.Equals(Zero)
 }
 
 // Equals returns true if r == b.
 func (r *Rat) Equals(b *Rat) bool {
-	if r == nil {
+	if r == nil || r.rational == nil {
 		return b == nil || b.IsZero()
 	}
-	if b == nil {
+	if b == nil || b.rational == nil {
 		return r.IsZero()
 	}
 	return r.rational.Cmp(b.rational) == 0
@@ -360,7 +360,7 @@ func (r *Rat) Equals(b *Rat) bool {
 
 // IntPart returns the integer part of r as a Rat.
 func (r *Rat) IntPart() *Rat {
-	if r == nil {
+	if r == nil || r.rational == nil {
 		return nil
 	}
 	return wrap(new(big.Rat).SetInt(new(big.Int).Div(r.rational.Num(), r.rational.Denom())))
@@ -368,7 +368,7 @@ func (r *Rat) IntPart() *Rat {
 
 // Ceil returns the smallest integer >= r.
 func (r *Rat) Ceil() *Rat {
-	if r == nil {
+	if r == nil || r.rational == nil {
 		return nil
 	}
 	if r.rational.IsInt() {
@@ -382,7 +382,7 @@ func (r *Rat) Ceil() *Rat {
 
 // Floor returns the largest integer <= r.
 func (r *Rat) Floor() *Rat {
-	if r == nil {
+	if r == nil || r.rational == nil {
 		return nil
 	}
 	if r.rational.IsInt() {
@@ -394,7 +394,7 @@ func (r *Rat) Floor() *Rat {
 
 // Round returns r rounded to the given number of decimal places.
 func (r *Rat) Round(places int) *Rat {
-	if r == nil {
+	if r == nil || r.rational == nil {
 		return nil
 	}
 	if places < 0 {
@@ -435,7 +435,7 @@ func (r *Rat) Round(places int) *Rat {
 
 // Abs returns the absolute value of r.
 func (r *Rat) Abs() *Rat {
-	if r == nil {
+	if r == nil || r.rational == nil {
 		return nil
 	}
 	return wrap(new(big.Rat).Abs(r.rational))
@@ -444,7 +444,7 @@ func (r *Rat) Abs() *Rat {
 // ToScaledInt converts a Rat to a scaled integer with the given decimal places.
 // For example, with decimalPlaces=2: 12.34 becomes 1234
 func (r *Rat) ScaledInt(decimalPlaces int) int64 {
-	if r == nil {
+	if r == nil || r.rational == nil {
 		return 0
 	}
 	scale := new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(decimalPlaces)), nil)
@@ -456,7 +456,7 @@ func (r *Rat) ScaledInt(decimalPlaces int) int64 {
 
 // Neg returns -r.
 func (r *Rat) Neg() *Rat {
-	if r == nil {
+	if r == nil || r.rational == nil {
 		return nil
 	}
 	return wrap(new(big.Rat).Neg(r.rational))

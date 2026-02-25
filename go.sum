@@ -24,6 +24,9 @@ github.com/hashicorp/hcl/v2 v2.24.0 h1:2QJdZ454DSsYGoaE6QheQZjtKZSUs9Nh2izTWiwQx
 github.com/hashicorp/hcl/v2 v2.24.0/go.mod h1:oGoO1FIQYfn/AgyOhlg9qLC6/nOJPX3qGbkZpYAcqfM=
 github.com/infracost/proto v1.17.0 h1:9OBYvA+/gfVDOzi0go4gTY2pOnTgqvov1OnwRBMDopA=
 github.com/infracost/proto v1.17.0/go.mod h1:BO6ew0skDYqM8lxl3rKKMA7WRM7VG1dIUKErbTdfGPk=
+github.com/infracost/proto v1.17.1-0.20260225103127-e390beafddfe/go.mod h1:BO6ew0skDYqM8lxl3rKKMA7WRM7VG1dIUKErbTdfGPk=
+github.com/infracost/proto v1.19.0 h1:vLeQnM53e5A/+4zpU3d+ZXf55mPJLKzJUqLFMT9W5D8=
+github.com/infracost/proto v1.19.0/go.mod h1:BO6ew0skDYqM8lxl3rKKMA7WRM7VG1dIUKErbTdfGPk=
 github.com/mitchellh/go-wordwrap v1.0.1 h1:TLuKupo69TCn6TQSyGxwI1EblZZEsQ0vMlAFQflz0v0=
 github.com/mitchellh/go-wordwrap v1.0.1/go.mod h1:R62XHJLzvMFRBbcrT7m7WgmE1eOyTSsCt+hzestvNj0=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=

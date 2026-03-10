@@ -32,6 +32,7 @@ const (
 	CloudFormationYAML                   // defined in cloudformation yaml source code
 	CloudFormationJSON                   // defined in cloudformation json source code
 	JSONEncoded                          // this variable is in JSON format (e.g. passed by terragrunt)
+	TerraformPlanJSON                    // defined in terraform plan JSON output
 	// <-- new values here please!
 
 	flagMax // for testing - MUST remain at end of enum!
@@ -57,6 +58,7 @@ var names = map[Flags]string{
 	CloudFormationYAML: "cloudformation_yaml",
 	CloudFormationJSON: "cloudformation_json",
 	JSONEncoded:        "json_encoded",
+	TerraformPlanJSON:  "terraform_plan_json",
 }
 
 // DescribeFlags returns a human-readable string describing the set flags.

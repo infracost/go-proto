@@ -176,6 +176,14 @@ func New(parts ...any) *Address {
 	return Empty.Append(parts...)
 }
 
+func ParseOrLiteral(raw string) *Address {
+	a, err := Parse(raw)
+	if err == nil {
+		return a
+	}
+	return New(raw)
+}
+
 // Parse parses a string representation of an address (e.g., "module.vpc.aws_subnet.public[0]").
 func Parse(raw string) (*Address, error) {
 	var inQuote bool

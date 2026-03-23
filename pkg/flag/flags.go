@@ -33,6 +33,7 @@ const (
 	CloudFormationJSON                   // defined in cloudformation json source code
 	JSONEncoded                          // this variable is in JSON format (e.g. passed by terragrunt)
 	TerraformPlanJSON                    // defined in terraform plan JSON output
+	Defaulted                            // defaulted based on e.g. cloud api specs, terraform provider specs
 	// <-- new values here please!
 
 	flagMax // for testing - MUST remain at end of enum!
@@ -59,6 +60,7 @@ var names = map[Flags]string{
 	CloudFormationJSON: "cloudformation_json",
 	JSONEncoded:        "json_encoded",
 	TerraformPlanJSON:  "terraform_plan_json",
+	Defaulted:          "defaulted",
 }
 
 // DescribeFlags returns a human-readable string describing the set flags.
@@ -157,6 +159,11 @@ func (f Flags) IsCloudFormationJSON() bool {
 // IsJSONEncoded returns true if the JSONEncoded flag is set.
 func (f Flags) IsJSONEncoded() bool {
 	return f&JSONEncoded != 0
+}
+
+// IsDefault returns true if the Defaulted flag is set
+func (f Flags) IsDefault() bool {
+	return f&Defaulted != 0
 }
 
 // ToProto returns the flags as a uint64 for protocol buffer serialization.

@@ -441,7 +441,7 @@ func (r *Rat) Abs() *Rat {
 	return wrap(new(big.Rat).Abs(r.rational))
 }
 
-// ToScaledInt converts a Rat to a scaled integer with the given decimal places.
+// ScaledInt converts a Rat to a scaled integer with the given decimal places.
 // For example, with decimalPlaces=2: 12.34 becomes 1234
 func (r *Rat) ScaledInt(decimalPlaces int) int64 {
 	if r == nil || r.rational == nil {

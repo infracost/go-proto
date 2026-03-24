@@ -1,9 +1,9 @@
 package ec2
 
 type EC2 struct {
-	Instances       []Instance             `tree:"instance"`
-	InstanceStates  []InstanceStateMapping `tree:"instance_state"`
-	LaunchTemplates []LaunchTemplate       `tree:"launch_template"`
+	Instances       []Instance             `tree:"instances"`
+	InstanceStates  []InstanceStateMapping `tree:"instance_states"`
+	LaunchTemplates []LaunchTemplate       `tree:"launch_templates"`
 }
 
 func (ec2 *EC2) PostProcess() {

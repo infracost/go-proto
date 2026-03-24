@@ -11,6 +11,7 @@ import (
 // not it triggered.
 type GuardrailResult struct {
 	GuardrailID            string   `json:"guardrailId"`
+	GuardrailName          string   `json:"guardrailName"`
 	Triggered              bool     `json:"triggered"`
 	PRComment              bool     `json:"prComment"`
 	BlockPR                bool     `json:"blockPr"`
@@ -43,6 +44,7 @@ func (gs Guardrails) Evaluate(
 	for _, g := range gs {
 		result := GuardrailResult{
 			GuardrailID:            g.GetId(),
+			GuardrailName:          g.GetName(),
 			PRComment:              g.GetPrComment(),
 			BlockPR:                g.GetBlockPr(),
 			TriggeringProjectNames: []string{},

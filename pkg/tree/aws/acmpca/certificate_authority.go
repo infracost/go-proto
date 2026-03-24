@@ -8,6 +8,6 @@ import (
 type CertificateAuthority struct {
 	resource.Resource `tree:"-"`
 
-	UsageMode       value.String
-	MonthlyRequests value.Int
+	UsageMode       value.String `tree:"usage_mode"`
+	MonthlyRequests value.Int    `tree:"monthly_requests"`
 }

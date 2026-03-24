@@ -25,6 +25,6 @@ type LaunchTemplate struct {
 }
 
 type NetworkInterface struct {
-	AssociatePublicIPAddress value.Bool
-	DeviceIndex              value.Int
+	AssociatePublicIPAddress value.Bool `tree:"associate_public_ip_address"`
+	DeviceIndex              value.Int  `tree:"device_index"`
 }

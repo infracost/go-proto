@@ -41,7 +41,7 @@ func TestFromProtoAttributes(t *testing.T) {
 					"ec2": {
 						Resources: []*prototree.Resource{
 							{
-								Type: "instance",
+								Type: "instances",
 								Attributes: &prototree.ValueObject{
 									Entries: map[string]*prototree.Value{
 										"instance_type": {Value: &prototree.Value_StringValue{StringValue: string("t3.micro")}},

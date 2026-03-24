@@ -1,6 +1,8 @@
 package tree
 
 import (
+	"fmt"
+	"reflect"
 	"testing"
 
 	"github.com/infracost/go-proto/pkg/tree/aws"
@@ -104,4 +106,76 @@ func TestToResourcesMixed(t *testing.T) {
 
 	assert.Equal(t, "i-111", resources[0].GetBase().ID)
 	assert.Equal(t, "unsupported-1", resources[1].GetBase().ID)
+}
+
+func TestAllFieldsHaveTreeTag(t *testing.T) {
+	var problems []string
+	seen := make(map[reflect.Type]bool)
+	checkTreeTags(reflect.TypeOf(Tree{}), "Tree", &problems, seen)
+	for _, p := range problems {
+		t.Error(p)
+	}
+}
+
+const treePkgPrefix = "github.com/infracost/go-proto/pkg/tree"
+
+var valuePkgPath = reflect.TypeOf(value.Value[string]{}).PkgPath()
+
+func isTreePackage(pkgPath string) bool {
+	return pkgPath == treePkgPrefix || len(pkgPath) > len(treePkgPrefix) && pkgPath[len(treePkgPrefix)] == '/'
+}
+
+func deref(typ reflect.Type) reflect.Type {
+	for typ.Kind() == reflect.Pointer {
+		typ = typ.Elem()
+	}
+	return typ
+}
+
+func checkTreeTags(typ reflect.Type, path string, problems *[]string, seen map[reflect.Type]bool) {
+	typ = deref(typ)
+	if typ.Kind() != reflect.Struct || seen[typ] {
+		return
+	}
+	seen[typ] = true
+
+	tagValues := make(map[string]string) // tag value -> field name
+	for i := range typ.NumField() {
+		field := typ.Field(i)
+		if !field.IsExported() {
+			continue
+		}
+		fieldPath := fmt.Sprintf("%s.%s", path, field.Name)
+
+		tag, hasTag := field.Tag.Lookup("tree")
+		if !hasTag {
+			*problems = append(*problems, fmt.Sprintf("missing tree tag: %s", fieldPath))
+			continue
+		}
+		if tag == "-" {
+			continue
+		}
+
+		// check for duplicate tag values within the same struct
+		if prev, exists := tagValues[tag]; exists {
+			*problems = append(*problems, fmt.Sprintf("duplicate tree tag %q: %s.%s and %s.%s", tag, path, prev, path, field.Name))
+		} else {
+			tagValues[tag] = field.Name
+		}
+
+		// resolve element type for slices/pointers
+		ft := deref(field.Type)
+		if ft.Kind() == reflect.Slice {
+			ft = deref(ft.Elem())
+		}
+
+		// stop at value package types
+		if ft.PkgPath() == valuePkgPath {
+			continue
+		}
+		// only recurse into structs within the tree package
+		if ft.Kind() == reflect.Struct && isTreePackage(ft.PkgPath()) {
+			checkTreeTags(ft, fieldPath, problems, seen)
+		}
+	}
 }

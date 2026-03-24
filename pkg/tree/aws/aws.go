@@ -12,8 +12,8 @@ type AWS struct {
 	EC2                     ec2.EC2                        `tree:"ec2"`
 	CertificateManager      acm.CertificateManager         `tree:"acm"`
 	PCACertificateAuthority acmpca.PCACertificateAuthority `tree:"acmpca"`
-	APIGateway              apigateway.API                 `tree:"apigateway"`
-	APIGatewayV2            apigatewayv2.API               `tree:"apigatewayv2"`
+	APIGateway              apigateway.APIGateway          `tree:"apigateway"`
+	APIGatewayV2            apigatewayv2.APIGatewayV2      `tree:"apigatewayv2"`
 }
 
 func (aws *AWS) PostProcess() {

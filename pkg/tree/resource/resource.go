@@ -66,6 +66,16 @@ func (t Tags) Get(name string) (value.String, bool) {
 	return value.EmptyString, false
 }
 
+func (t Tags) GetDefaults() Tags {
+	var output Tags
+	for _, tag := range t {
+		if tag.IsDefault {
+			output = append(output, tag)
+		}
+	}
+	return output
+}
+
 func (t Tags) DefaultChecksum() string {
 	sort.Slice(t, func(i, j int) bool {
 		is := t[i].Key.Value()

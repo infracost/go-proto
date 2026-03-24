@@ -35,6 +35,31 @@ func TestTags_Get(t *testing.T) {
 	assert.False(t, ok)
 }
 
+func TestTags_GetDefaults(t *testing.T) {
+	tags := Tags{
+		{Key: val("env"), Value: val("prod"), IsDefault: true},
+		{Key: val("team"), Value: val("platform"), IsDefault: false},
+		{Key: val("cost-center"), Value: val("123"), IsDefault: true},
+	}
+
+	defaults := tags.GetDefaults()
+	require.Len(t, defaults, 2)
+	assert.Equal(t, "env", defaults[0].Key.Value())
+	assert.Equal(t, "cost-center", defaults[1].Key.Value())
+}
+
+func TestTags_GetDefaults_None(t *testing.T) {
+	tags := Tags{
+		{Key: val("env"), Value: val("prod"), IsDefault: false},
+	}
+	assert.Empty(t, tags.GetDefaults())
+}
+
+func TestTags_GetDefaults_Empty(t *testing.T) {
+	var tags Tags
+	assert.Empty(t, tags.GetDefaults())
+}
+
 func TestTags_Set_NewTag(t *testing.T) {
 	var tags Tags
 	tags.Set(val("env"), val("prod"), false)

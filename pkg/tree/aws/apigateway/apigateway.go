@@ -1,6 +1,6 @@
 package apigateway
 
 type APIGateway struct {
-	RestAPIs []RestAPI
-	Stages   []Stage
+	RestAPIs []RestAPI `tree:"rest_apis"`
+	Stages   []Stage   `tree:"stages"`
 }

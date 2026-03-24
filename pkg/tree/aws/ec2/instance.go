@@ -6,20 +6,19 @@ import (
 )
 
 type Instance struct {
-	resource.Resource               `tree:"-"`
-	Type                            value.String                                 `tree:"instance_type"`
-	PurchaseOption                  value.Value[PurchaseOption]                  `tree:"purchase_option"`
-	Tenancy                         value.Value[Tenancy]                         `tree:"tenancy"`
-	EBSOptimized                    value.Bool                                   `tree:"ebs_optimized"`
-	MonitoringEnabled               value.Bool                                   `tree:"monitoring_enabled"`
-	CPUCredits                      value.Value[CPUCreditOption]                 `tree:"cpu_credits"`
-	HostID                          value.String                                 `tree:"host_id"`
-	LaunchTemplateID                value.String                                 `tree:"launch_template_id"`
-	LaunchTemplateName              value.String                                 `tree:"launch_template_name"`
-	ElasticInferenceAcceleratorType value.Value[ElasticInferenceAcceleratorType] `tree:"elastic_inference_accelerator_type"`
-	AssociatePublicIPAddress        value.Bool                                   `tree:"associate_public_ip_address"`
-	MetadataOptions                 InstanceMetadataOptions                      `tree:"metadata_options"`
-	RootBlockDevice                 BlockDeviceMapping                           `tree:"root_block_device"`
+	resource.Resource        `tree:"-"`
+	Type                     value.String                 `tree:"instance_type"`
+	PurchaseOption           value.Value[PurchaseOption]  `tree:"purchase_option"`
+	Tenancy                  value.Value[Tenancy]         `tree:"tenancy"`
+	EBSOptimized             value.Bool                   `tree:"ebs_optimized"`
+	MonitoringEnabled        value.Bool                   `tree:"monitoring_enabled"`
+	CPUCredits               value.Value[CPUCreditOption] `tree:"cpu_credits"`
+	HostID                   value.String                 `tree:"host_id"`
+	LaunchTemplateID         value.String                 `tree:"launch_template_id"`
+	LaunchTemplateName       value.String                 `tree:"launch_template_name"`
+	AssociatePublicIPAddress value.Bool                   `tree:"associate_public_ip_address"`
+	MetadataOptions          InstanceMetadataOptions      `tree:"metadata_options"`
+	RootBlockDevice          BlockDeviceMapping           `tree:"root_block_device"`
 	// NOTE: Launch templates - which may be linked later (provider-time) - can alter attributes of existing block devices if they share a name
 	BlockDeviceMappings []BlockDeviceMapping `tree:"block_device_mappings"`
 
@@ -65,15 +64,3 @@ type BlockDeviceMapping struct {
 	EBSVolume  EBSVolume    `tree:"ebs_volume"`
 	DeviceName value.String `tree:"device_name"`
 }
-
-type ElasticInferenceAcceleratorType uint32
-
-const (
-	ElasticInferenceAcceleratorTypeUnknown    ElasticInferenceAcceleratorType = iota
-	ElasticInferenceAcceleratorTypeEIA1Medium ElasticInferenceAcceleratorType = 1
-	ElasticInferenceAcceleratorTypeEIA1Large  ElasticInferenceAcceleratorType = 2
-	ElasticInferenceAcceleratorTypeEIA1Xlarge ElasticInferenceAcceleratorType = 3
-	ElasticInferenceAcceleratorTypeEIA2Medium ElasticInferenceAcceleratorType = 4
-	ElasticInferenceAcceleratorTypeEIA2Large  ElasticInferenceAcceleratorType = 5
-	ElasticInferenceAcceleratorTypeEIA2Xlarge ElasticInferenceAcceleratorType = 6
-)

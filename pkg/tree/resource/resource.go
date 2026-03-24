@@ -52,9 +52,9 @@ type Definition struct {
 type Tags []Tag
 
 type Tag struct {
-	Key       value.String
-	Value     value.String
-	IsDefault bool
+	Key       value.String `tree:"key"`
+	Value     value.String `tree:"value"`
+	IsDefault bool         `tree:"-"` // not needed for our purposes
 }
 
 func (t Tags) Get(name string) (value.String, bool) {

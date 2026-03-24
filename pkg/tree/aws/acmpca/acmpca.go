@@ -1,5 +1,5 @@
 package acmpca
 
 type PCACertificateAuthority struct {
-	CertificateAuthorities []CertificateAuthority `tree:"certificate_authority"`
+	CertificateAuthorities []CertificateAuthority `tree:"certificate_authorities"`
 }

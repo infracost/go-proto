@@ -7,7 +7,7 @@ import (
 )
 
 type CertificateManager struct {
-	Certificates []Certificate `tree:"certificate"`
+	Certificates []Certificate `tree:"certificates"`
 }
 
 func (cm *CertificateManager) AddCertificateAuthorities(cas *acmpca.PCACertificateAuthority) {

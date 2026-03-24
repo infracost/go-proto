@@ -87,11 +87,12 @@ func (t Tags) DefaultChecksum() string {
 	return hash(b.String())
 }
 
-func (t *Tags) Set(k, v value.String, overwrite bool) {
+func (t *Tags) Set(k, v value.String, isDefault bool) {
 	for i, existing := range *t {
 		if existing.Key.String() == k.String() {
-			if overwrite {
+			if existing.IsDefault || !isDefault {
 				(*t)[i].Value = v
+				(*t)[i].IsDefault = isDefault
 			}
 			return
 		}
@@ -99,7 +100,7 @@ func (t *Tags) Set(k, v value.String, overwrite bool) {
 	*t = append(*t, Tag{
 		Key:       k,
 		Value:     v,
-		IsDefault: false,
+		IsDefault: isDefault,
 	})
 }
 

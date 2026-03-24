@@ -17,6 +17,7 @@ func TestGuardrails_NoThresholds(t *testing.T) {
 	results := gs.Evaluate(rat.New(1000), rat.New(500), nil)
 	require.Len(t, results, 1)
 	assert.Equal(t, "g1", results[0].GuardrailID)
+	assert.Equal(t, "no thresholds", results[0].GuardrailName)
 	assert.False(t, results[0].Triggered)
 	assert.True(t, results[0].PRComment)
 }
@@ -66,6 +67,7 @@ func TestGuardrails_RepoScope_IncreaseThreshold(t *testing.T) {
 		results := gs.Evaluate(rat.New(1500), rat.New(1200), nil)
 		require.Len(t, results, 1)
 		assert.Equal(t, "g1", results[0].GuardrailID)
+		assert.Equal(t, "increase check", results[0].GuardrailName)
 		assert.True(t, results[0].Triggered)
 		assert.True(t, results[0].BlockPR)
 		assert.Empty(t, results[0].TriggeringProjectNames)

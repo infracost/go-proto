@@ -1,8 +1,9 @@
-package convert
+package tree
 
 import (
 	"reflect"
 
+	"github.com/infracost/go-proto/pkg/tree/resource"
 	"github.com/infracost/go-proto/pkg/tree/value"
 	prototree "github.com/infracost/proto/gen/go/infracost/tree"
 )
@@ -49,6 +50,13 @@ func structToValueObject(v reflect.Value) *prototree.ValueObject {
 		if pv := fieldToProtoValue(field); pv != nil {
 			obj.Entries[name] = pv
 		}
+	}
+
+	// if the struct has an embedded resource.Resource, serialize it
+	f := v.FieldByName("Resource")
+	if f.IsValid() && f.Type() == resourceType {
+		base := f.Interface().(resource.Resource)
+		obj.Resource = convertResourceToProto(&base, "", nil, nil)
 	}
 
 	return obj
@@ -101,6 +109,14 @@ func valueObjectToStruct(obj *prototree.ValueObject, v reflect.Value) {
 
 		field := v.Field(i)
 		setFieldFromProtoValue(field, entry)
+	}
+
+	// restore embedded resource if present
+	if obj.Resource != nil {
+		f := v.FieldByName("Resource")
+		if f.IsValid() && f.Type() == resourceType {
+			f.Set(reflect.ValueOf(convertResourceFromProto(obj.Resource, nil)).Elem())
+		}
 	}
 }
 

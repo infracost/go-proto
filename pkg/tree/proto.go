@@ -5,7 +5,6 @@ import (
 	"reflect"
 
 	"github.com/infracost/go-proto/pkg/address"
-	"github.com/infracost/go-proto/pkg/tree/convert"
 	"github.com/infracost/go-proto/pkg/tree/resource"
 	prototree "github.com/infracost/proto/gen/go/infracost/tree"
 )
@@ -52,7 +51,7 @@ func (t *Tree) ToProto() (*prototree.Tree, error) {
 				sliceVal := serviceVal.Field(k)
 				for l := range sliceVal.Len() {
 					item := sliceVal.Index(l)
-					attrs := convert.StructToValueObject(item.Interface())
+					attrs := StructToValueObject(item.Interface())
 					base := baseResource(item)
 
 					var providerConfig *prototree.ProviderConfiguration
@@ -143,7 +142,7 @@ func FromProto(p *prototree.Tree) (*Tree, error) {
 					item := reflect.New(elemType).Elem()
 					setBaseResource(item, res)
 					if res.Attributes != nil {
-						convert.ValueObjectToStruct(res.Attributes, item.Addr().Interface())
+						ValueObjectToStruct(res.Attributes, item.Addr().Interface())
 					}
 					sliceField.Set(reflect.Append(sliceField, item))
 				}

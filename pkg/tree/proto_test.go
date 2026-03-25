@@ -201,6 +201,79 @@ func TestMixedResourcesRoundTrip(t *testing.T) {
 	assert.Equal(t, "us-west-2", result.UnsupportedResources[0].Region)
 }
 
+func TestNestedSubResourceRoundTrip(t *testing.T) {
+	original := &Tree{
+		AWS: aws.AWS{
+			EC2: ec2.EC2{
+				Instances: []ec2.Instance{
+					{
+						Resource: resource.Resource{
+							ID:     "i-1234",
+							Region: "us-east-1",
+						},
+						Type: value.New("t3.micro", 0, "", nil),
+						RootBlockDevice: ec2.BlockDeviceMapping{
+							DeviceName: value.New("/dev/sda1", 0, "", nil),
+							EBSVolume: ec2.EBSVolume{
+								Resource: resource.Resource{
+									ID:     "vol-root",
+									Region: "us-east-1",
+								},
+								Type: value.New(ec2.EBSVolumeTypeGP3, 0, "", nil),
+								Size: value.New[int64](50, 0, "", nil),
+							},
+						},
+						BlockDeviceMappings: []ec2.BlockDeviceMapping{
+							{
+								DeviceName: value.New("/dev/sdb", 0, "", nil),
+								EBSVolume: ec2.EBSVolume{
+									Resource: resource.Resource{
+										ID:     "vol-extra",
+										Region: "eu-west-1",
+									},
+									Type: value.New(ec2.EBSVolumeTypeIO1, 0, "", nil),
+									Size: value.New[int64](100, 0, "", nil),
+									IOPS: value.New[int64](3000, 0, "", nil),
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	proto, err := original.ToProto()
+	require.NoError(t, err)
+
+	result, err := FromProto(proto)
+	require.NoError(t, err)
+
+	require.Len(t, result.AWS.EC2.Instances, 1)
+	inst := result.AWS.EC2.Instances[0]
+
+	// top-level resource
+	assert.Equal(t, "i-1234", inst.ID)
+	assert.Equal(t, "us-east-1", inst.Region)
+
+	// root block device sub-resource keeps its region
+	assert.Equal(t, "vol-root", inst.RootBlockDevice.EBSVolume.ID)
+	assert.Equal(t, "us-east-1", inst.RootBlockDevice.EBSVolume.Region)
+	assert.Equal(t, "/dev/sda1", inst.RootBlockDevice.DeviceName.Value())
+	assert.Equal(t, ec2.EBSVolumeTypeGP3, inst.RootBlockDevice.EBSVolume.Type.Value())
+	assert.Equal(t, int64(50), inst.RootBlockDevice.EBSVolume.Size.Value())
+
+	// additional block device sub-resource keeps its own region
+	require.Len(t, inst.BlockDeviceMappings, 1)
+	extra := inst.BlockDeviceMappings[0]
+	assert.Equal(t, "vol-extra", extra.EBSVolume.ID)
+	assert.Equal(t, "eu-west-1", extra.EBSVolume.Region)
+	assert.Equal(t, "/dev/sdb", extra.DeviceName.Value())
+	assert.Equal(t, ec2.EBSVolumeTypeIO1, extra.EBSVolume.Type.Value())
+	assert.Equal(t, int64(100), extra.EBSVolume.Size.Value())
+	assert.Equal(t, int64(3000), extra.EBSVolume.IOPS.Value())
+}
+
 func TestEmptyTree(t *testing.T) {
 	tree := &Tree{}
 

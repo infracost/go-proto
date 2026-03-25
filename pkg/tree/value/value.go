@@ -139,6 +139,11 @@ func (v Value[T]) IsEmpty() bool {
 	return empty == v.Value()
 }
 
+func (v Value[T]) Pointer() *T {
+	x := v.Value()
+	return &x
+}
+
 func (v Value[T]) Value() T {
 	var zero T
 	if v.proto == nil {

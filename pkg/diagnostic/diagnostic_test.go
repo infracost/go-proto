@@ -125,6 +125,31 @@ func TestDiagnostic_String(t *testing.T) {
 	})
 }
 
+func TestMessagePrefix(t *testing.T) {
+	t.Run("known type", func(t *testing.T) {
+		assert.Equal(t, "HCL parse error", MessagePrefix(parserpb.DiagnosticType_DIAGNOSTIC_TYPE_HCL_PARSE_ERROR))
+	})
+
+	t.Run("unknown type falls back to enum name", func(t *testing.T) {
+		prefix := MessagePrefix(parserpb.DiagnosticType(9999))
+		assert.NotEmpty(t, prefix)
+	})
+}
+
+func TestDiagnostic_FormatMessage(t *testing.T) {
+	t.Run("known type", func(t *testing.T) {
+		d := New(parserpb.DiagnosticType_DIAGNOSTIC_TYPE_HCL_PARSE_ERROR, "failed to parse test.tf")
+		assert.Equal(t, "HCL parse error: failed to parse test.tf", d.FormatMessage())
+	})
+
+	t.Run("unknown type uses enum name", func(t *testing.T) {
+		d := New(parserpb.DiagnosticType_DIAGNOSTIC_TYPE_DEFECT, "something broke")
+		msg := d.FormatMessage()
+		assert.Contains(t, msg, "something broke")
+		assert.Contains(t, msg, "DIAGNOSTIC_TYPE_DEFECT")
+	})
+}
+
 func TestIsCritical(t *testing.T) {
 	criticalTypes := []parserpb.DiagnosticType{
 		parserpb.DiagnosticType_DIAGNOSTIC_TYPE_DEFECT,

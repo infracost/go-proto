@@ -8,6 +8,13 @@ import (
 type CertificateAuthority struct {
 	resource.Resource `tree:"-"`
 
-	UsageMode       value.String `tree:"usage_mode"`
-	MonthlyRequests value.Int    `tree:"monthly_requests"`
+	UsageMode       value.Value[UsageMode] `tree:"usage_mode"`
+	MonthlyRequests value.Int              `tree:"monthly_requests"`
 }
+
+type UsageMode uint32
+
+const (
+	UsageModeGeneralPurpose UsageMode = iota
+	UsageModeShoredLivedCertificate
+)

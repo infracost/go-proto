@@ -2,6 +2,8 @@ package value
 
 import (
 	"reflect"
+	"slices"
+	"strings"
 
 	"github.com/infracost/go-proto/pkg/flag"
 	"github.com/infracost/proto/gen/go/infracost/parser"
@@ -130,8 +132,115 @@ func (v Value[string]) String() string {
 	return v.Value()
 }
 
-func (v Value[T]) Equals(value T) bool {
+func (v Value[T]) Contains(subject string) bool {
+	s, ok := any(v.Value()).(string)
+	if !ok {
+		return false
+	}
+	return strings.Contains(s, subject)
+}
+
+func (v Value[T]) HasPrefix(prefix string) bool {
+	s, ok := any(v.Value()).(string)
+	if !ok {
+		return false
+	}
+
+	return strings.HasPrefix(s, prefix)
+}
+
+func (v Value[T]) HasSuffix(suffix string) bool {
+	s, ok := any(v.Value()).(string)
+	if !ok {
+		return false
+	}
+
+	return strings.HasSuffix(s, suffix)
+}
+
+func (v Value[T]) EqualFold(subject string) bool {
+	s, ok := any(v.Value()).(string)
+	if !ok {
+		return false
+	}
+
+	return strings.EqualFold(s, subject)
+}
+
+func (v Value[T]) IsOneOf(options ...T) bool {
+	return slices.Contains(options, v.Value())
+}
+
+func (v Value[T]) Equal(value T) bool {
 	return v.Value() == value
+}
+
+func (v Value[T]) ValueOr(fallback T) T {
+	if v.IsEmpty() {
+		return fallback
+	}
+	return v.Value()
+}
+
+func (v Value[T]) IsGreaterThan(other T) bool {
+	return compare(v.Value(), other) > 0
+}
+
+func (v Value[T]) IsLessThan(other T) bool {
+	return compare(v.Value(), other) < 0
+}
+
+func (v Value[T]) IsGreaterThanOrEqual(other T) bool {
+	return compare(v.Value(), other) >= 0
+}
+
+func (v Value[T]) IsLessThanOrEqual(other T) bool {
+	return compare(v.Value(), other) <= 0
+}
+
+// compare returns -1, 0, or 1 for ordering. Returns 0 for non-orderable types (bool).
+func compare[T Primitive](a, b T) int {
+	ra := reflect.ValueOf(a)
+	rb := reflect.ValueOf(b)
+	switch ra.Kind() {
+	case reflect.String:
+		as, bs := ra.String(), rb.String()
+		if as < bs {
+			return -1
+		}
+		if as > bs {
+			return 1
+		}
+		return 0
+	case reflect.Int64:
+		ai, bi := ra.Int(), rb.Int()
+		if ai < bi {
+			return -1
+		}
+		if ai > bi {
+			return 1
+		}
+		return 0
+	case reflect.Float64:
+		af, bf := ra.Float(), rb.Float()
+		if af < bf {
+			return -1
+		}
+		if af > bf {
+			return 1
+		}
+		return 0
+	case reflect.Uint32:
+		au, bu := ra.Uint(), rb.Uint()
+		if au < bu {
+			return -1
+		}
+		if au > bu {
+			return 1
+		}
+		return 0
+	}
+	return 0
 }
 
 func (v Value[T]) IsEmpty() bool {

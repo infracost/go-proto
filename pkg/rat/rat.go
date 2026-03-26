@@ -196,7 +196,9 @@ func (r *Rat) Int64() int64 {
 	if r == nil || r.rational == nil {
 		return 0
 	}
-	return r.rational.Num().Int64() / r.rational.Denom().Int64()
+	// Use big.Int.Div to avoid int64 overflow of the denominator causing divide by zero.
+	result := new(big.Int).Div(r.rational.Num(), r.rational.Denom())
+	return result.Int64()
 }
 
 // Int returns the integer part as int (truncates toward zero).
@@ -240,9 +242,12 @@ func (r *Rat) Mul(b *Rat) *Rat {
 	return wrap(new(big.Rat).Mul(r.rational, b.rational))
 }
 
-// Div returns r / b.
+// Div returns r / b. Returns nil if b is zero or nil.
 func (r *Rat) Div(b *Rat) *Rat {
 	if r == nil || b == nil || r.rational == nil || b.rational == nil {
+		return nil
+	}
+	if b.rational.Sign() == 0 {
 		return nil
 	}
 	return wrap(new(big.Rat).Quo(r.rational, b.rational))

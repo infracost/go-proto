@@ -16,5 +16,5 @@ type UsageMode uint32
 
 const (
 	UsageModeGeneralPurpose UsageMode = iota
-	UsageModeShoredLivedCertificate
+	UsageModeShortLivedCertificate
 )

@@ -1,6 +1,7 @@
 package ec2
 
 type EC2 struct {
+	Hosts           []Host                 `tree:"hosts"`
 	Instances       []Instance             `tree:"instances"`
 	InstanceStates  []InstanceStateMapping `tree:"instance_states"`
 	LaunchTemplates []LaunchTemplate       `tree:"launch_templates"`

@@ -724,6 +724,50 @@ func TestStringFixed(t *testing.T) {
 	}
 }
 
+func TestInt64_LargeDenominator(t *testing.T) {
+	// A rational with a denominator larger than int64 max would overflow
+	// Denom().Int64() to 0, causing divide by zero in Int64().
+	// Use big.Rat directly to construct such a value.
+	largeDenom := new(big.Int).SetUint64(^uint64(0)) // 2^64 - 1, overflows int64
+	r := &big.Rat{}
+	r.SetFrac(big.NewInt(1), largeDenom)
+
+	wrapped := rat.New(0)
+	*wrapped.BigRat() = *r
+
+	// Should not panic
+	got := wrapped.Int64()
+	if got != 0 {
+		t.Errorf("Int64() with large denom = %d, want 0", got)
+	}
+}
+
+func TestInt_LargeDenominator(t *testing.T) {
+	largeDenom := new(big.Int).SetUint64(^uint64(0))
+	r := &big.Rat{}
+	r.SetFrac(big.NewInt(1), largeDenom)
+
+	wrapped := rat.New(0)
+	*wrapped.BigRat() = *r
+
+	// Should not panic
+	got := wrapped.Int()
+	if got != 0 {
+		t.Errorf("Int() with large denom = %d, want 0", got)
+	}
+}
+
+func TestDivByZero(t *testing.T) {
+	a := rat.New(10)
+	b := rat.New(0)
+
+	// Should not panic
+	result := a.Div(b)
+	if result != nil {
+		t.Error("Div by zero should return nil")
+	}
+}
+
 func TestJSONUnmarshalNull(t *testing.T) {
 	var r rat.Rat
 	err := r.UnmarshalJSON([]byte(`"null"`))

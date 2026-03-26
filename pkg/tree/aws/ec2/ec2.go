@@ -16,7 +16,7 @@ func (ec2 *EC2) PostProcess() {
 	// link instance states to instances
 	for i, instanceState := range ec2.InstanceStates {
 		for j := range ec2.Instances {
-			if instanceState.InstanceID.Equals(ec2.Instances[j].ID) {
+			if instanceState.InstanceID.Equal(ec2.Instances[j].ID) {
 				ec2.Instances[j].Relationships.InstanceState = &ec2.InstanceStates[i]
 				break
 			}
@@ -27,7 +27,7 @@ func (ec2 *EC2) PostProcess() {
 	for i, instance := range ec2.Instances {
 		for j := range ec2.LaunchTemplates {
 			lt := &ec2.LaunchTemplates[j]
-			if (instance.LaunchTemplateID.IsEmpty() || instance.LaunchTemplateID.Value() != lt.ID) &&
+			if (instance.LaunchTemplateID.IsEmpty() || !instance.LaunchTemplateID.Equal(lt.ID)) &&
 				(instance.LaunchTemplateName.IsEmpty() || instance.LaunchTemplateName.Value() != lt.Name.Value()) &&
 				(instance.LaunchTemplateID.IsEmpty() || instance.LaunchTemplateID.Value() != lt.Name.Value()) {
 				continue

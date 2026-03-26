@@ -59,7 +59,7 @@ type Tag struct {
 
 func (t Tags) Get(name string) (value.String, bool) {
 	for _, tag := range t {
-		if tag.Key.Equals(name) {
+		if tag.Key.Equal(name) {
 			return tag.Value, true
 		}
 	}

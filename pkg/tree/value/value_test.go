@@ -108,14 +108,14 @@ func TestIsDefaultOrEmpty(t *testing.T) {
 
 func TestEquals(t *testing.T) {
 	v := New("hello", 0, "", nil)
-	assert.True(t, v.Equals("hello"))
-	assert.False(t, v.Equals("world"))
+	assert.True(t, v.Equal("hello"))
+	assert.False(t, v.Equal("world"))
 }
 
 func TestEquals_Int(t *testing.T) {
 	v := New(int64(42), 0, "", nil)
-	assert.True(t, v.Equals(42))
-	assert.False(t, v.Equals(99))
+	assert.True(t, v.Equal(42))
+	assert.False(t, v.Equal(99))
 }
 
 func TestString(t *testing.T) {
@@ -215,4 +215,136 @@ func TestNewList(t *testing.T) {
 func TestNewList_Empty(t *testing.T) {
 	l := NewList([]Value[int64]{}, 0, "", nil)
 	assert.Empty(t, l.Items())
+}
+
+func TestContains(t *testing.T) {
+	v := New("hello world", 0, "", nil)
+	assert.True(t, v.Contains("world"))
+	assert.True(t, v.Contains("hello"))
+	assert.False(t, v.Contains("missing"))
+}
+
+func TestContains_NonString(t *testing.T) {
+	v := New(int64(42), 0, "", nil)
+	assert.False(t, v.Contains("42"))
+}
+
+func TestHasPrefix(t *testing.T) {
+	v := New("hello world", 0, "", nil)
+	assert.True(t, v.HasPrefix("hello"))
+	assert.False(t, v.HasPrefix("world"))
+}
+
+func TestHasSuffix(t *testing.T) {
+	v := New("hello world", 0, "", nil)
+	assert.True(t, v.HasSuffix("world"))
+	assert.False(t, v.HasSuffix("hello"))
+}
+
+func TestIsEqualFold(t *testing.T) {
+	v := New("Hello", 0, "", nil)
+	assert.True(t, v.EqualFold("hello"))
+	assert.True(t, v.EqualFold("HELLO"))
+	assert.False(t, v.EqualFold("world"))
+}
+
+func TestIsOneOf(t *testing.T) {
+	v := New("b", 0, "", nil)
+	assert.True(t, v.IsOneOf("a", "b", "c"))
+	assert.False(t, v.IsOneOf("x", "y", "z"))
+}
+
+func TestIsOneOf_Int(t *testing.T) {
+	v := New(int64(2), 0, "", nil)
+	assert.True(t, v.IsOneOf(1, 2, 3))
+	assert.False(t, v.IsOneOf(4, 5, 6))
+}
+
+func TestValueOr(t *testing.T) {
+	v := New("hello", 0, "", nil)
+	assert.Equal(t, "hello", v.ValueOr("fallback"))
+
+	empty := New("", 0, "", nil)
+	assert.Equal(t, "fallback", empty.ValueOr("fallback"))
+}
+
+func TestValueOr_ZeroValue(t *testing.T) {
+	var v Value[string]
+	assert.Equal(t, "default", v.ValueOr("default"))
+}
+
+func TestValueOr_Int(t *testing.T) {
+	v := New(int64(0), 0, "", nil)
+	assert.Equal(t, int64(99), v.ValueOr(99))
+
+	v2 := New(int64(42), 0, "", nil)
+	assert.Equal(t, int64(42), v2.ValueOr(99))
+}
+
+func TestIsGreaterThan_Int(t *testing.T) {
+	v := New(int64(10), 0, "", nil)
+	assert.True(t, v.IsGreaterThan(5))
+	assert.False(t, v.IsGreaterThan(10))
+	assert.False(t, v.IsGreaterThan(15))
+}
+
+func TestIsLessThan_Int(t *testing.T) {
+	v := New(int64(10), 0, "", nil)
+	assert.True(t, v.IsLessThan(15))
+	assert.False(t, v.IsLessThan(10))
+	assert.False(t, v.IsLessThan(5))
+}
+
+func TestIsGreaterThanOrEqual_Int(t *testing.T) {
+	v := New(int64(10), 0, "", nil)
+	assert.True(t, v.IsGreaterThanOrEqual(5))
+	assert.True(t, v.IsGreaterThanOrEqual(10))
+	assert.False(t, v.IsGreaterThanOrEqual(15))
+}
+
+func TestIsLessThanOrEqual_Int(t *testing.T) {
+	v := New(int64(10), 0, "", nil)
+	assert.True(t, v.IsLessThanOrEqual(15))
+	assert.True(t, v.IsLessThanOrEqual(10))
+	assert.False(t, v.IsLessThanOrEqual(5))
+}
+
+func TestIsGreaterThan_Float(t *testing.T) {
+	v := New(3.14, 0, "", nil)
+	assert.True(t, v.IsGreaterThan(2.0))
+	assert.False(t, v.IsGreaterThan(3.14))
+	assert.False(t, v.IsGreaterThan(4.0))
+}
+
+func TestIsGreaterThan_String(t *testing.T) {
+	v := New("banana", 0, "", nil)
+	assert.True(t, v.IsGreaterThan("apple"))
+	assert.False(t, v.IsGreaterThan("banana"))
+	assert.False(t, v.IsGreaterThan("cherry"))
+}
+
+func TestIsLessThan_String(t *testing.T) {
+	v := New("banana", 0, "", nil)
+	assert.True(t, v.IsLessThan("cherry"))
+	assert.False(t, v.IsLessThan("banana"))
+	assert.False(t, v.IsLessThan("apple"))
+}
+
+func TestComparison_Bool(t *testing.T) {
+	// bool comparisons always return 0 (equal)
+	v := New(true, 0, "", nil)
+	assert.False(t, v.IsGreaterThan(false))
+	assert.False(t, v.IsLessThan(false))
+}
+
+func TestPointer(t *testing.T) {
+	v := New("hello", 0, "", nil)
+	p := v.Pointer()
+	assert.Equal(t, "hello", *p)
+}
+
+func TestPointer_Int(t *testing.T) {
+	v := New(int64(42), 0, "", nil)
+	p := v.Pointer()
+	assert.Equal(t, int64(42), *p)
 }

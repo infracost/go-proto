@@ -722,8 +722,74 @@ func TestEvaluateAgainstResources_PropagationProblems(t *testing.T) {
 
 	results := policies.EvaluateAgainstResources(resources, project)
 	require.Len(t, results, 1)
-	// The resource passes the tag value check but has propagation problems
-	assert.Len(t, results[0].PassingResources, 1)
+	// The resource passes the tag value check but has propagation problems,
+	// so it should be reported as failing (not passing)
+	assert.Len(t, results[0].PassingResources, 0)
+	require.Len(t, results[0].FailingResources, 1)
+	require.Len(t, results[0].FailingResources[0].PropagationProblems, 1)
+	assert.Equal(t, "propagate_at_launch", results[0].FailingResources[0].PropagationProblems[0].Attribute)
+	assert.Equal(t, "false", results[0].FailingResources[0].PropagationProblems[0].From)
+	assert.Equal(t, "EC2 instances", results[0].FailingResources[0].PropagationProblems[0].To)
+}
+
+func TestEvaluateAgainstResources_ECSServicePropagationProblems(t *testing.T) {
+	// Regression test for PIP-456: ECS service with all required tags present
+	// but propagate_tags not configured should still report a propagation problem.
+	policy := &eventpb.TagPolicy{
+		Id:   "tagging-policy",
+		Name: "AWS Tagging Policy",
+		Requirements: []*eventpb.TagPolicyRequirement{
+			{Key: "ei:application-name", Type: eventpb.TagPolicyRequirement_ANY, Mandatory: true},
+			{Key: "ei:environment", Type: eventpb.TagPolicyRequirement_ANY, Mandatory: true},
+			{Key: "ei:team", Type: eventpb.TagPolicyRequirement_ANY, Mandatory: true},
+		},
+	}
+	policies := TagPolicies{policy}
+	project := defaultProjectInfo()
+
+	resources := []*provider.Resource{
+		{
+			Name: "module.service[\"ecsdemo-frontend\"].aws_ecs_service.this[0]",
+			Type: "aws_ecs_service",
+			Tagging: &provider.Tagging{
+				SupportsTags: true,
+				Tags: []*provider.Tag{
+					mkTag("ei:application-name", "finops-tagging-test"),
+					mkTag("ei:environment", "sbx"),
+					mkTag("ei:team", "finops"),
+				},
+				PropagationProblems: []*provider.TagPropagationProblem{
+					{
+						Attribute:    "propagate_tags",
+						ActualValue:  "",
+						TagRecipient: "task",
+						ValidValues:  []string{"TASK_DEFINITION", "SERVICE"},
+						AffectedTags: []string{"ei:application-name", "ei:environment", "ei:team"},
+					},
+				},
+			},
+		},
+	}
+
+	results := policies.EvaluateAgainstResources(resources, project)
+	require.Len(t, results, 1)
+
+	// All mandatory tags are present, but propagation is misconfigured.
+	// The resource should be failing, not passing.
+	assert.Len(t, results[0].PassingResources, 0)
+	require.Len(t, results[0].FailingResources, 1)
+
+	failure := results[0].FailingResources[0]
+	assert.Equal(t, "module.service[\"ecsdemo-frontend\"].aws_ecs_service.this[0]", failure.Address)
+	assert.Empty(t, failure.MissingMandatoryTags)
+	assert.Empty(t, failure.InvalidTags)
+
+	require.Len(t, failure.PropagationProblems, 1)
+	assert.Equal(t, "propagate_tags", failure.PropagationProblems[0].Attribute)
+	assert.Equal(t, "", failure.PropagationProblems[0].From)
+	assert.Equal(t, "task", failure.PropagationProblems[0].To)
+	assert.Equal(t, []string{"TASK_DEFINITION", "SERVICE"}, failure.PropagationProblems[0].ValidSources)
+	assert.Equal(t, []string{"ei:application-name", "ei:environment", "ei:team"}, failure.PropagationProblems[0].AffectedTags)
 }
 
 func TestEvaluateAgainstResources_TagFilter(t *testing.T) {

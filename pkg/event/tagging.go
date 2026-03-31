@@ -173,7 +173,7 @@ func evaluateResourceAgainstPolicy(result *TaggingPolicyResult, resource *provid
 		result.TotalTaggableResources++
 
 		resourceResult := evaluateTagPolicyOnResource(candidate, policy.GetRequirements())
-		if len(resourceResult.invalidTags) == 0 && len(resourceResult.missingMandatoryTags) == 0 {
+		if len(resourceResult.invalidTags) == 0 && len(resourceResult.missingMandatoryTags) == 0 && len(resourceResult.propagationProblems) == 0 {
 			result.PassingResources = append(result.PassingResources, TagPolicyResultPassingResource{
 				Address:      candidate.address,
 				ProjectNames: []string{projectName},

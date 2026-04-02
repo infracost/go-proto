@@ -281,6 +281,72 @@ func TestGuardrails_MultipleGuardrails(t *testing.T) {
 	assert.False(t, results[1].PRComment)
 }
 
+func TestGuardrails_ResultIncludesConfig(t *testing.T) {
+	t.Run("all thresholds and message", func(t *testing.T) {
+		gs := Guardrails{
+			{
+				Id:                       "g1",
+				Name:                     "cost guard",
+				Scope:                    event.Guardrail_REPO,
+				IncreaseThreshold:        rat.New(100).Proto(),
+				IncreasePercentThreshold: rat.New(20).Proto(),
+				TotalThreshold:           rat.New(5000).Proto(),
+				Message:                  "Please review cost increase",
+				PrComment:                true,
+				BlockPr:                  true,
+			},
+		}
+
+		results := gs.Evaluate(rat.New(2000), rat.New(1000), nil)
+		require.Len(t, results, 1)
+
+		r := results[0]
+		assert.Equal(t, event.Guardrail_REPO, r.Scope)
+		assert.True(t, r.IncreaseThreshold.Equals(rat.New(100)))
+		assert.True(t, r.IncreasePercentThreshold.Equals(rat.New(20)))
+		assert.True(t, r.TotalThreshold.Equals(rat.New(5000)))
+		assert.Equal(t, "Please review cost increase", r.Message)
+	})
+
+	t.Run("only increase threshold", func(t *testing.T) {
+		gs := Guardrails{
+			{
+				Id:                "g1",
+				Scope:             event.Guardrail_PROJECT,
+				IncreaseThreshold: rat.New(50).Proto(),
+			},
+		}
+
+		results := gs.Evaluate(rat.New(500), rat.New(400), nil)
+		require.Len(t, results, 1)
+
+		r := results[0]
+		assert.Equal(t, event.Guardrail_PROJECT, r.Scope)
+		assert.True(t, r.IncreaseThreshold.Equals(rat.New(50)))
+		assert.Nil(t, r.IncreasePercentThreshold)
+		assert.Nil(t, r.TotalThreshold)
+		assert.Empty(t, r.Message)
+	})
+
+	t.Run("no thresholds", func(t *testing.T) {
+		gs := Guardrails{
+			{
+				Id:    "g1",
+				Scope: event.Guardrail_REPO,
+			},
+		}
+
+		results := gs.Evaluate(rat.New(500), rat.New(400), nil)
+		require.Len(t, results, 1)
+
+		r := results[0]
+		assert.Equal(t, event.Guardrail_REPO, r.Scope)
+		assert.Nil(t, r.IncreaseThreshold)
+		assert.Nil(t, r.IncreasePercentThreshold)
+		assert.Nil(t, r.TotalThreshold)
+	})
+}
+
 func TestGuardrails_PercentIncrease_FromZero(t *testing.T) {
 	gs := Guardrails{
 		{

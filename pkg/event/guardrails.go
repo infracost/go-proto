@@ -3,6 +3,7 @@ package event
 import (
 	"github.com/infracost/go-proto/pkg/rat"
 	"github.com/infracost/proto/gen/go/infracost/parser/event"
+	"github.com/infracost/proto/gen/go/infracost/rational"
 )
 
 // GuardrailResult is the result of evaluating a single applicable guardrail.
@@ -19,6 +20,20 @@ type GuardrailResult struct {
 	Increase               *rat.Rat `json:"increase"`
 	PercentIncrease        *rat.Rat `json:"percentIncrease"`
 	TotalMonthlyCost       *rat.Rat `json:"totalMonthlyCost"`
+
+	// Scope indicates whether the guardrail is evaluated at the repo or
+	// project level. Needed by the comment renderer to explain the trigger.
+	Scope event.Guardrail_Scope `json:"scope"`
+
+	// Threshold fields carry the guardrail's configured thresholds so the
+	// comment renderer can produce messages like "threshold was $5 and 10%".
+	IncreaseThreshold        *rat.Rat `json:"increaseThreshold"`
+	IncreasePercentThreshold *rat.Rat `json:"increasePercentThreshold"`
+	TotalThreshold           *rat.Rat `json:"totalThreshold"`
+
+	// Message is the user-configured guardrail message, shown in the comment
+	// when the guardrail is triggered.
+	Message string `json:"message"`
 }
 
 // ProjectCostInfo holds the cost data for a single project, used as input
@@ -43,11 +58,16 @@ func (gs Guardrails) Evaluate(
 
 	for _, g := range gs {
 		result := GuardrailResult{
-			GuardrailID:            g.GetId(),
-			GuardrailName:          g.GetName(),
-			PRComment:              g.GetPrComment(),
-			BlockPR:                g.GetBlockPr(),
-			TriggeringProjectNames: []string{},
+			GuardrailID:              g.GetId(),
+			GuardrailName:            g.GetName(),
+			PRComment:                g.GetPrComment(),
+			BlockPR:                  g.GetBlockPr(),
+			TriggeringProjectNames:   []string{},
+			Scope:                    g.GetScope(),
+			IncreaseThreshold:        ratFromProtoNilSafe(g.IncreaseThreshold),
+			IncreasePercentThreshold: ratFromProtoNilSafe(g.IncreasePercentThreshold),
+			TotalThreshold:           ratFromProtoNilSafe(g.TotalThreshold),
+			Message:                  g.GetMessage(),
 		}
 
 		if !hasThresholds(g) {
@@ -159,4 +179,14 @@ func calcIncrease(totalMonthlyCost, pastTotalMonthlyCost *rat.Rat) costIncrease 
 		increase:        increase,
 		percentIncrease: percentIncrease,
 	}
+}
+
+// ratFromProtoNilSafe converts a proto rational to a Rat, preserving nil
+// (unlike rat.FromProto which returns Zero for nil). This is important for
+// threshold fields where nil means "not configured" vs zero.
+func ratFromProtoNilSafe(r *rational.Rat) *rat.Rat {
+	if r == nil {
+		return nil
+	}
+	return rat.FromProto(r)
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/infracost/go-proto/pkg/tree/aws/apigatewayv2"
 	"github.com/infracost/go-proto/pkg/tree/aws/appautoscaling"
 	"github.com/infracost/go-proto/pkg/tree/aws/ec2"
+	"github.com/infracost/go-proto/pkg/tree/aws/elasticache"
 )
 
 type AWS struct {
@@ -16,10 +17,15 @@ type AWS struct {
 	APIGateway              apigateway.APIGateway          `tree:"apigateway"`
 	APIGatewayV2            apigatewayv2.APIGatewayV2      `tree:"apigatewayv2"`
 	AppAutoScaling          appautoscaling.AppAutoScaling  `tree:"appautoscaling"`
+	ElastiCache             elasticache.ElastiCache         `tree:"elasticache"`
 }
 
 func (aws *AWS) PostProcess() {
 	// acm
 	// add the cert authorities to the certificate manager so that they can be linked to certificates
 	aws.CertificateManager.AddCertificateAuthorities(&aws.PCACertificateAuthority)
+
+	// elasticache
+	// link parameter groups and replication groups to clusters
+	aws.ElastiCache.PostProcess()
 }

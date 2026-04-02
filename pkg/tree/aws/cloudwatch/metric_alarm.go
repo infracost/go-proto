@@ -7,9 +7,9 @@ import (
 
 type MetricAlarm struct {
 	resource.Resource  `tree:"-"`
-	ComparisonOperator value.String `tree:"comparison_operator"`
-	MetricCount        value.Int    `tree:"metric_count"`
-	Period             value.Int    `tree:"period"`
+	ComparisonOperator value.Value[ComparisonOperator] `tree:"comparison_operator"`
+	MetricCount        value.Int   					   `tree:"metric_count"`
+	Period             value.Int    				   `tree:"period"`
 }
 
 type ComparisonOperator uint32

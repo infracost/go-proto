@@ -4,7 +4,7 @@ go 1.25.2
 
 require (
 	github.com/hashicorp/hcl/v2 v2.24.0
-	github.com/infracost/proto v1.29.0
+	github.com/infracost/proto v1.29.1-0.20260415193526-63cb3df7afe9
 	github.com/stretchr/testify v1.11.1
 	github.com/zclconf/go-cty v1.17.0
 )
@@ -27,6 +27,6 @@ require (
 	golang.org/x/sync v0.19.0 // indirect
 	golang.org/x/text v0.32.0 // indirect
 	golang.org/x/tools v0.39.0 // indirect
-	google.golang.org/protobuf v1.36.11 // indirect
+	google.golang.org/protobuf v1.36.11
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

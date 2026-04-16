@@ -6,6 +6,7 @@ import (
 	"github.com/infracost/go-proto/pkg/tree/aws/apigateway"
 	"github.com/infracost/go-proto/pkg/tree/aws/apigatewayv2"
 	"github.com/infracost/go-proto/pkg/tree/aws/appautoscaling"
+	"github.com/infracost/go-proto/pkg/tree/aws/cloudformation"
 	"github.com/infracost/go-proto/pkg/tree/aws/backup"
 	"github.com/infracost/go-proto/pkg/tree/aws/ec2"
 	"github.com/infracost/go-proto/pkg/tree/aws/elasticsearch"
@@ -20,6 +21,7 @@ type AWS struct {
 	APIGatewayV2            apigatewayv2.APIGatewayV2      `tree:"apigatewayv2"`
 	AppAutoScaling          appautoscaling.AppAutoScaling  `tree:"appautoscaling"`
 	Backup                  backup.Backup                  `tree:"backup"`
+	CloudFormation          cloudformation.CloudFormation  `tree:"cloudformation"`
 	Elasticsearch           elasticsearch.Elasticsearch    `tree:"elasticsearch"`
 	FSx                     fsx.FSx                        `tree:"fsx"`
 }

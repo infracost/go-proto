@@ -8,6 +8,7 @@ import (
 	"github.com/infracost/go-proto/pkg/tree/aws/appautoscaling"
 	"github.com/infracost/go-proto/pkg/tree/aws/ec2"
 	"github.com/infracost/go-proto/pkg/tree/aws/elasticsearch"
+	"github.com/infracost/go-proto/pkg/tree/aws/fsx"
 )
 
 type AWS struct {
@@ -18,6 +19,7 @@ type AWS struct {
 	APIGatewayV2            apigatewayv2.APIGatewayV2      `tree:"apigatewayv2"`
 	AppAutoScaling          appautoscaling.AppAutoScaling  `tree:"appautoscaling"`
 	Elasticsearch           elasticsearch.Elasticsearch    `tree:"elasticsearch"`
+	FSx                     fsx.FSx                        `tree:"fsx"`
 }
 
 func (aws *AWS) PostProcess() {

@@ -18,6 +18,7 @@ import (
   "github.com/infracost/go-proto/pkg/tree/aws/directconnect"
   "github.com/infracost/go-proto/pkg/tree/aws/directoryservice
  	"github.com/infracost/go-proto/pkg/tree/aws/dms"
+  "github.com/infracost/go-proto/pkg/tree/aws/docdb"
 	"github.com/infracost/go-proto/pkg/tree/aws/ec2"
 	"github.com/infracost/go-proto/pkg/tree/aws/elasticbeanstalk"
  	"github.com/infracost/go-proto/pkg/tree/aws/elasticsearch"
@@ -43,6 +44,7 @@ type AWS struct {
   DirectConnect           directconnect.DirectConnect    `tree:"directconnect"`
   DirectoryService        directoryservice.DirectoryService `tree:"directoryservice"`
  	DMS                     dms.DMS                        `tree:"dms"`
+ 	DocDB                   docdb.DocDB                    `tree:"docdb"`
 	ElasticBeanstalk        elasticbeanstalk.ElasticBeanstalk `tree:"elasticbeanstalk"`
   Elasticsearch           elasticsearch.Elasticsearch    `tree:"elasticsearch"`
 	FSx                     fsx.FSx                        `tree:"fsx"`

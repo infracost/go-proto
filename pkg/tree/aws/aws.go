@@ -24,6 +24,7 @@ import (
 	"github.com/infracost/go-proto/pkg/tree/aws/ecs"
  	"github.com/infracost/go-proto/pkg/tree/aws/ecr"
  	"github.com/infracost/go-proto/pkg/tree/aws/efs"
+ 	"github.com/infracost/go-proto/pkg/tree/aws/eks"
 	"github.com/infracost/go-proto/pkg/tree/aws/elasticbeanstalk"
  	"github.com/infracost/go-proto/pkg/tree/aws/elasticsearch"
 	"github.com/infracost/go-proto/pkg/tree/aws/fsx"
@@ -53,6 +54,7 @@ type AWS struct {
  	ECR                     ecr.ECR                        `tree:"ecr"`
  	ECS                     ecs.ECS                        `tree:"ecs"`
  	EFS                     efs.EFS                        `tree:"efs"`
+ 	EKS                     eks.EKS                        `tree:"eks"`
 	ElasticBeanstalk        elasticbeanstalk.ElasticBeanstalk `tree:"elasticbeanstalk"`
   Elasticsearch           elasticsearch.Elasticsearch    `tree:"elasticsearch"`
 	FSx                     fsx.FSx                        `tree:"fsx"`

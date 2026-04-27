@@ -10,7 +10,8 @@ import (
 	"github.com/infracost/go-proto/pkg/tree/aws/cloudformation"
 	"github.com/infracost/go-proto/pkg/tree/aws/backup"
 	"github.com/infracost/go-proto/pkg/tree/aws/ec2"
-	"github.com/infracost/go-proto/pkg/tree/aws/elasticsearch"
+	"github.com/infracost/go-proto/pkg/tree/aws/elasticbeanstalk"
+ 	"github.com/infracost/go-proto/pkg/tree/aws/elasticsearch"
 	"github.com/infracost/go-proto/pkg/tree/aws/fsx"
 )
 
@@ -24,7 +25,8 @@ type AWS struct {
 	Backup                  backup.Backup                  `tree:"backup"`
 	CloudFormation          cloudformation.CloudFormation  `tree:"cloudformation"`
   CloudFront              cloudfront.CloudFront          `tree:"cloudfront"`
-	Elasticsearch           elasticsearch.Elasticsearch    `tree:"elasticsearch"`
+	ElasticBeanstalk        elasticbeanstalk.ElasticBeanstalk `tree:"elasticbeanstalk"`
+  Elasticsearch           elasticsearch.Elasticsearch    `tree:"elasticsearch"`
 	FSx                     fsx.FSx                        `tree:"fsx"`
 }
 

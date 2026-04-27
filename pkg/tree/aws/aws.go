@@ -21,6 +21,7 @@ import (
   "github.com/infracost/go-proto/pkg/tree/aws/docdb"
  	"github.com/infracost/go-proto/pkg/tree/aws/dynamodb"
 	"github.com/infracost/go-proto/pkg/tree/aws/ec2"
+ 	"github.com/infracost/go-proto/pkg/tree/aws/ecr"
 	"github.com/infracost/go-proto/pkg/tree/aws/elasticbeanstalk"
  	"github.com/infracost/go-proto/pkg/tree/aws/elasticsearch"
 	"github.com/infracost/go-proto/pkg/tree/aws/fsx"
@@ -47,6 +48,7 @@ type AWS struct {
  	DMS                     dms.DMS                        `tree:"dms"`
  	DocDB                   docdb.DocDB                    `tree:"docdb"`
  	DynamoDB                dynamodb.DynamoDB              `tree:"dynamodb"`
+ 	ECR                     ecr.ECR                        `tree:"ecr"`
 	ElasticBeanstalk        elasticbeanstalk.ElasticBeanstalk `tree:"elasticbeanstalk"`
   Elasticsearch           elasticsearch.Elasticsearch    `tree:"elasticsearch"`
 	FSx                     fsx.FSx                        `tree:"fsx"`
@@ -56,4 +58,8 @@ func (aws *AWS) PostProcess() {
 	// acm
 	// add the cert authorities to the certificate manager so that they can be linked to certificates
 	aws.CertificateManager.AddCertificateAuthorities(&aws.PCACertificateAuthority)
+
+	// ecr
+	// link lifecycle policies to repositories
+	aws.ECR.PostProcess()
 }

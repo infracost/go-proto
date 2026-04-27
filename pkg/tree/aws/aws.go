@@ -6,6 +6,7 @@ import (
 	"github.com/infracost/go-proto/pkg/tree/aws/apigateway"
 	"github.com/infracost/go-proto/pkg/tree/aws/apigatewayv2"
 	"github.com/infracost/go-proto/pkg/tree/aws/appautoscaling"
+	"github.com/infracost/go-proto/pkg/tree/aws/config"
 	"github.com/infracost/go-proto/pkg/tree/aws/codebuild"
 	"github.com/infracost/go-proto/pkg/tree/aws/cloudwatch"
 	"github.com/infracost/go-proto/pkg/tree/aws/cloudtrail"
@@ -26,6 +27,7 @@ type AWS struct {
 	APIGateway              apigateway.APIGateway          `tree:"apigateway"`
 	APIGatewayV2            apigatewayv2.APIGatewayV2      `tree:"apigatewayv2"`
 	AppAutoScaling          appautoscaling.AppAutoScaling  `tree:"appautoscaling"`
+	Config                  config.Config                  `tree:"config"`
 	CodeBuild               codebuild.CodeBuild            `tree:"codebuild"`
 	CloudWatch              cloudwatch.CloudWatch          `tree:"cloudwatch"`
 	Cloudtrail              cloudtrail.CloudTrail          `tree:"cloudtrail"`

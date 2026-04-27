@@ -6,6 +6,7 @@ import (
 	"github.com/infracost/go-proto/pkg/tree/aws/apigateway"
 	"github.com/infracost/go-proto/pkg/tree/aws/apigatewayv2"
 	"github.com/infracost/go-proto/pkg/tree/aws/appautoscaling"
+	"github.com/infracost/go-proto/pkg/tree/aws/directconnect"
 	"github.com/infracost/go-proto/pkg/tree/aws/datatransfer"
 	"github.com/infracost/go-proto/pkg/tree/aws/config"
 	"github.com/infracost/go-proto/pkg/tree/aws/codebuild"
@@ -28,6 +29,7 @@ type AWS struct {
 	APIGateway              apigateway.APIGateway          `tree:"apigateway"`
 	APIGatewayV2            apigatewayv2.APIGatewayV2      `tree:"apigatewayv2"`
 	AppAutoScaling          appautoscaling.AppAutoScaling  `tree:"appautoscaling"`
+	DirectConnect           directconnect.DirectConnect    `tree:"directconnect"`
 	DataTransfer            datatransfer.DataTransfer      `tree:"datatransfer"`
 	Config                  config.Config                  `tree:"config"`
 	CodeBuild               codebuild.CodeBuild            `tree:"codebuild"`

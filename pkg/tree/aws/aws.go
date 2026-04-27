@@ -23,6 +23,7 @@ import (
 	"github.com/infracost/go-proto/pkg/tree/aws/ec2"
 	"github.com/infracost/go-proto/pkg/tree/aws/ecs"
  	"github.com/infracost/go-proto/pkg/tree/aws/ecr"
+ 	"github.com/infracost/go-proto/pkg/tree/aws/efs"
 	"github.com/infracost/go-proto/pkg/tree/aws/elasticbeanstalk"
  	"github.com/infracost/go-proto/pkg/tree/aws/elasticsearch"
 	"github.com/infracost/go-proto/pkg/tree/aws/fsx"
@@ -51,6 +52,7 @@ type AWS struct {
  	DynamoDB                dynamodb.DynamoDB              `tree:"dynamodb"`
  	ECR                     ecr.ECR                        `tree:"ecr"`
  	ECS                     ecs.ECS                        `tree:"ecs"`
+ 	EFS                     efs.EFS                        `tree:"efs"`
 	ElasticBeanstalk        elasticbeanstalk.ElasticBeanstalk `tree:"elasticbeanstalk"`
   Elasticsearch           elasticsearch.Elasticsearch    `tree:"elasticsearch"`
 	FSx                     fsx.FSx                        `tree:"fsx"`

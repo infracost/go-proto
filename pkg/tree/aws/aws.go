@@ -16,7 +16,8 @@ import (
   "github.com/infracost/go-proto/pkg/tree/aws/config"
 	"github.com/infracost/go-proto/pkg/tree/aws/datatransfer"
   "github.com/infracost/go-proto/pkg/tree/aws/directconnect"
-  "github.com/infracost/go-proto/pkg/tree/aws/directoryservice"
+  "github.com/infracost/go-proto/pkg/tree/aws/directoryservice
+ 	"github.com/infracost/go-proto/pkg/tree/aws/dms"
 	"github.com/infracost/go-proto/pkg/tree/aws/ec2"
 	"github.com/infracost/go-proto/pkg/tree/aws/elasticbeanstalk"
  	"github.com/infracost/go-proto/pkg/tree/aws/elasticsearch"
@@ -41,6 +42,7 @@ type AWS struct {
   DataTransfer            datatransfer.DataTransfer      `tree:"datatransfer"`
   DirectConnect           directconnect.DirectConnect    `tree:"directconnect"`
   DirectoryService        directoryservice.DirectoryService `tree:"directoryservice"`
+ 	DMS                     dms.DMS                        `tree:"dms"`
 	ElasticBeanstalk        elasticbeanstalk.ElasticBeanstalk `tree:"elasticbeanstalk"`
   Elasticsearch           elasticsearch.Elasticsearch    `tree:"elasticsearch"`
 	FSx                     fsx.FSx                        `tree:"fsx"`

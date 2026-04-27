@@ -7,7 +7,17 @@ import (
 	"github.com/infracost/go-proto/pkg/tree/aws/apigatewayv2"
 	"github.com/infracost/go-proto/pkg/tree/aws/appautoscaling"
 	"github.com/infracost/go-proto/pkg/tree/aws/config"
+	"github.com/infracost/go-proto/pkg/tree/aws/codebuild"
+	"github.com/infracost/go-proto/pkg/tree/aws/cloudwatch"
+	"github.com/infracost/go-proto/pkg/tree/aws/cloudtrail"
+ 	"github.com/infracost/go-proto/pkg/tree/aws/backup"
+	"github.com/infracost/go-proto/pkg/tree/aws/cloudfront"
+	"github.com/infracost/go-proto/pkg/tree/aws/cloudformation"
+ 	"github.com/infracost/go-proto/pkg/tree/aws/cloudhsmv2"
 	"github.com/infracost/go-proto/pkg/tree/aws/ec2"
+	"github.com/infracost/go-proto/pkg/tree/aws/elasticbeanstalk"
+ 	"github.com/infracost/go-proto/pkg/tree/aws/elasticsearch"
+	"github.com/infracost/go-proto/pkg/tree/aws/fsx"
 )
 
 type AWS struct {
@@ -18,6 +28,16 @@ type AWS struct {
 	APIGatewayV2            apigatewayv2.APIGatewayV2      `tree:"apigatewayv2"`
 	AppAutoScaling          appautoscaling.AppAutoScaling  `tree:"appautoscaling"`
 	Config                  config.Config                  `tree:"config"`
+	CodeBuild               codebuild.CodeBuild            `tree:"codebuild"`
+	CloudWatch              cloudwatch.CloudWatch          `tree:"cloudwatch"`
+	Cloudtrail              cloudtrail.CloudTrail          `tree:"cloudtrail"`
+	Backup                  backup.Backup                  `tree:"backup"`
+	CloudFormation          cloudformation.CloudFormation  `tree:"cloudformation"`
+  CloudFront              cloudfront.CloudFront          `tree:"cloudfront"`
+ 	CloudHSMV2              cloudhsmv2.CloudHSMV2          `tree:"cloudhsmv2"`
+	ElasticBeanstalk        elasticbeanstalk.ElasticBeanstalk `tree:"elasticbeanstalk"`
+  Elasticsearch           elasticsearch.Elasticsearch    `tree:"elasticsearch"`
+	FSx                     fsx.FSx                        `tree:"fsx"`
 }
 
 func (aws *AWS) PostProcess() {

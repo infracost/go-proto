@@ -144,7 +144,7 @@ func TestPostProcess_LaunchTemplateMergesBlockDevices(t *testing.T) {
 					{
 						DeviceName: value.New("/dev/sda1", 0, "", nil),
 						EBSVolume: EBSVolume{
-							Size: value.New(int64(20), 0, "", nil),
+							SizeGB: value.New(int64(20), 0, "", nil),
 						},
 					},
 				},
@@ -157,14 +157,14 @@ func TestPostProcess_LaunchTemplateMergesBlockDevices(t *testing.T) {
 					{
 						DeviceName: value.New("/dev/sda1", 0, "", nil),
 						EBSVolume: EBSVolume{
-							Size: value.New(int64(50), 0, "", nil),
-							IOPS: value.New(int64(3000), 0, "", nil),
+							SizeGB: value.New(int64(50), 0, "", nil),
+							IOPS:   value.New(int64(3000), 0, "", nil),
 						},
 					},
 					{
 						DeviceName: value.New("/dev/sdb", 0, "", nil),
 						EBSVolume: EBSVolume{
-							Size: value.New(int64(100), 0, "", nil),
+							SizeGB: value.New(int64(100), 0, "", nil),
 						},
 					},
 				},
@@ -192,11 +192,11 @@ func TestPostProcess_LaunchTemplateMergesBlockDevices(t *testing.T) {
 	require.NotNil(t, sdb, "expected /dev/sdb")
 
 	// existing device keeps its size, inherits IOPS from launch template
-	assert.Equal(t, int64(20), sda1.EBSVolume.Size.Value())
+	assert.Equal(t, int64(20), sda1.EBSVolume.SizeGB.Value())
 	assert.Equal(t, int64(3000), sda1.EBSVolume.IOPS.Value())
 
 	// new device added from launch template
-	assert.Equal(t, int64(100), sdb.EBSVolume.Size.Value())
+	assert.Equal(t, int64(100), sdb.EBSVolume.SizeGB.Value())
 }
 
 func TestPostProcess_NoLaunchTemplateMatch(t *testing.T) {

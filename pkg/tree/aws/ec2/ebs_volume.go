@@ -9,8 +9,8 @@ type EBSVolume struct {
 	resource.Resource `tree:"-"`
 	Type              value.Value[EBSVolumeType] `tree:"type"`
 	IOPS              value.Int                  `tree:"iops"`
-	Size              value.Int                  `tree:"size"`
-	Throughput        value.Int                  `tree:"throughput"`
+	SizeGB            value.Int                  `tree:"size"`
+	ThroughputMiBperS value.Int                  `tree:"throughput"`
 	MultiAttach       value.Bool                 `tree:"multi_attach"`
 }
 

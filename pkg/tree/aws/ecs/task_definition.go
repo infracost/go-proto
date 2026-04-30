@@ -7,12 +7,30 @@ import (
 
 type TaskDefinition struct {
 	resource.Resource       `tree:"-"`
-	Family                  value.String   `tree:"family"`
-	Memory                  value.String   `tree:"memory"`
-	CPU                     value.String   `tree:"cpu"`
-	CPUArchitecture         value.String   `tree:"cpu_architecture"`
-	RequiresCompatibilities []value.String `tree:"requires_compatibilities"`
-	InferenceAccelerators   []InferenceAccelerator `tree:"inference_accelerators"`
+	Family                  value.String                 `tree:"family"`
+	MemoryGiB               value.Int                    `tree:"memory"`
+	CPU                     value.Int                    `tree:"cpu"`
+	CPUArchitecture         value.Value[CPUArchitecture] `tree:"cpu_architecture"`
+	RequiresCompatibilities value.List[Compatibility]    `tree:"requires_compatibilities"`
+	InferenceAccelerators   []InferenceAccelerator       `tree:"inference_accelerators"`
+	ContainerDefinitions    []ContainerDefinition        `tree:"container_definitions"`
+
+	Relationships TaskDefinitionRelationships `tree:"-"`
+}
+
+type ContainerDefinition struct {
+	Name                 value.String          `tree:"name"`
+	Image                value.String          `tree:"image"`
+	EnvironmentVariables []EnvironmentVariable `tree:"environment_variables"`
+}
+
+type EnvironmentVariable struct {
+	Name  value.String `tree:"name"`
+	Value value.String `tree:"value"`
+}
+
+type TaskDefinitionRelationships struct {
+	Services []*Service
 }
 
 type InferenceAccelerator struct {
@@ -23,10 +41,27 @@ type InferenceAccelerator struct {
 type InferenceAcceleratorDeviceType uint32
 
 const (
-	InferenceAcceleratorDeviceTypeEIA1Medium InferenceAcceleratorDeviceType = 0
-	InferenceAcceleratorDeviceTypeEIA1Large  InferenceAcceleratorDeviceType = 1
-	InferenceAcceleratorDeviceTypeEIA1XLarge InferenceAcceleratorDeviceType = 2
-	InferenceAcceleratorDeviceTypeEIA2Medium InferenceAcceleratorDeviceType = 3
-	InferenceAcceleratorDeviceTypeEIA2Large  InferenceAcceleratorDeviceType = 4
-	InferenceAcceleratorDeviceTypeEIA2XLarge InferenceAcceleratorDeviceType = 5
+	InferenceAcceleratorDeviceTypeUnknown InferenceAcceleratorDeviceType = iota
+	InferenceAcceleratorDeviceTypeEIA1Medium
+	InferenceAcceleratorDeviceTypeEIA1Large
+	InferenceAcceleratorDeviceTypeEIA1XLarge
+	InferenceAcceleratorDeviceTypeEIA2Medium
+	InferenceAcceleratorDeviceTypeEIA2Large
+	InferenceAcceleratorDeviceTypeEIA2XLarge
+)
+
+type CPUArchitecture uint32
+
+const (
+	CPUArchitectureUnknown CPUArchitecture = iota
+	CPUArchitectureX86_64
+	CPUArchitectureARM64
+)
+
+type Compatibility uint32
+
+const (
+	CompatibilityUnknown Compatibility = iota
+	CompatibilityEC2
+	CompatibilityFargate
 )

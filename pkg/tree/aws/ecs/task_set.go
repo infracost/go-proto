@@ -7,12 +7,13 @@ import (
 
 type TaskSet struct {
 	resource.Resource       `tree:"-"`
-	Service                 value.String `tree:"service"`
+	ServiceReference        value.String `tree:"service"`
 	TaskDefinitionReference value.String `tree:"task_definition"`
 
 	Relationships TaskSetRelationships `tree:"-"`
 }
 
 type TaskSetRelationships struct {
+	Service        *Service
 	TaskDefinition *TaskDefinition
 }

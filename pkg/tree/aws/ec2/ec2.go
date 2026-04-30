@@ -1,10 +1,32 @@
 package ec2
 
 type EC2 struct {
-	Hosts           []Host                 `tree:"hosts"`
-	Instances       []Instance             `tree:"instances"`
-	InstanceStates  []InstanceStateMapping `tree:"instance_states"`
-	LaunchTemplates []LaunchTemplate       `tree:"launch_templates"`
+	AutoscalingGroups                []AutoscalingGroup                `tree:"autoscaling_groups"`
+	ClassicLoadBalancers             []ClassicLoadBalancer             `tree:"classic_load_balancers"`
+	ClientVPNEndpoints               []ClientVPNEndpoint               `tree:"client_vpn_endpoints"`
+	ClientVPNNetworkAssociations     []ClientVPNNetworkAssociation     `tree:"client_vpn_network_associations"`
+	DefaultSecurityGroups            []DefaultSecurityGroup            `tree:"default_security_groups"`
+	EBSSnapshots                     []EBSSnapshot                     `tree:"ebs_snapshots"`
+	EBSSnapshotCopies                []EBSSnapshotCopy                 `tree:"ebs_snapshot_copies"`
+	EBSVolumes                       []EBSVolume                       `tree:"ebs_volumes"`
+	ElasticIPs                       []ElasticIP                       `tree:"elastic_ips"`
+	ElasticIPAssociations            []ElasticIPAssociation            `tree:"elastic_ip_associations"`
+	Hosts                            []Host                            `tree:"hosts"`
+	Instances                        []Instance                        `tree:"instances"`
+	InstanceStates                   []InstanceStateMapping            `tree:"instance_states"`
+	LaunchConfigurations             []LaunchConfiguration             `tree:"launch_configurations"`
+	LaunchTemplates                  []LaunchTemplate                  `tree:"launch_templates"`
+	LBListeners                      []LBListener                      `tree:"lb_listeners"`
+	LoadBalancers                    []LoadBalancer                    `tree:"load_balancers"`
+	NATGateways                      []NATGateway                      `tree:"nat_gateways"`
+	Subnets                          []Subnet                          `tree:"subnets"`
+	TrafficMirrorSessions            []TrafficMirrorSession            `tree:"traffic_mirror_sessions"`
+	TransitGateways                  []TransitGateway                  `tree:"transit_gateways"`
+	TransitGatewayPeeringAttachments []TransitGatewayPeeringAttachment `tree:"transit_gateway_peering_attachments"`
+	TransitGatewayVPCAttachments     []TransitGatewayVPCAttachment     `tree:"transit_gateway_vpc_attachments"`
+	VPCs                             []VPC                             `tree:"vpcs"`
+	VPCEndpoints                     []VPCEndpoint                     `tree:"vpc_endpoints"`
+	VPNConnections                   []VPNConnection                   `tree:"vpn_connections"`
 }
 
 func (ec2 *EC2) PostProcess() {
@@ -33,7 +55,7 @@ func (ec2 *EC2) PostProcess() {
 				continue
 			}
 
-			// store the launch template on the instance - useful for policies to have this available
+			// store the launch template on the instance
 			instance.Relationships.LaunchTemplate = lt
 
 			if instance.Type.IsDefaultOrEmpty() && !lt.InstanceType.IsEmpty() {
@@ -77,11 +99,11 @@ func (ec2 *EC2) PostProcess() {
 					if blockDevice.EBSVolume.IOPS.IsDefaultOrEmpty() {
 						blockDevice.EBSVolume.IOPS = launchTemplateBlockDevice.EBSVolume.IOPS
 					}
-					if blockDevice.EBSVolume.Size.IsDefaultOrEmpty() {
-						blockDevice.EBSVolume.Size = launchTemplateBlockDevice.EBSVolume.Size
+					if blockDevice.EBSVolume.SizeGB.IsDefaultOrEmpty() {
+						blockDevice.EBSVolume.SizeGB = launchTemplateBlockDevice.EBSVolume.SizeGB
 					}
-					if blockDevice.EBSVolume.Throughput.IsDefaultOrEmpty() {
-						blockDevice.EBSVolume.Throughput = launchTemplateBlockDevice.EBSVolume.Throughput
+					if blockDevice.EBSVolume.ThroughputMiBperS.IsDefaultOrEmpty() {
+						blockDevice.EBSVolume.ThroughputMiBperS = launchTemplateBlockDevice.EBSVolume.ThroughputMiBperS
 					}
 				}
 				blockDevices = append(blockDevices, blockDevice)
@@ -99,6 +121,150 @@ func (ec2 *EC2) PostProcess() {
 			// save changes
 			ec2.Instances[i] = instance
 			break
+		}
+	}
+
+	// link launch templates and launch configurations to autoscaling groups
+	for i, asg := range ec2.AutoscalingGroups {
+		for j := range ec2.LaunchTemplates {
+			lt := &ec2.LaunchTemplates[j]
+			if (!asg.LaunchTemplateID.IsEmpty() && asg.LaunchTemplateID.Equal(lt.ID)) ||
+				(!asg.LaunchTemplateName.IsEmpty() && asg.LaunchTemplateName.Value() == lt.Name.Value()) ||
+				(!asg.LaunchTemplateID.IsEmpty() && asg.LaunchTemplateID.Value() == lt.Name.Value()) {
+				ec2.AutoscalingGroups[i].Relationships.LaunchTemplate = lt
+			}
+			if !asg.MixedInstanceLaunchTemplateID.IsEmpty() && asg.MixedInstanceLaunchTemplateID.Equal(lt.ID) {
+				ec2.AutoscalingGroups[i].Relationships.MixedInstanceLaunchTemplate = lt
+			}
+		}
+		for j := range ec2.LaunchConfigurations {
+			lc := &ec2.LaunchConfigurations[j]
+			if !asg.LaunchConfigurationName.IsEmpty() &&
+				(asg.LaunchConfigurationName.Value() == lc.Name.Value() || asg.LaunchConfigurationName.Equal(lc.ID)) {
+				ec2.AutoscalingGroups[i].Relationships.LaunchConfiguration = lc
+			}
+		}
+	}
+
+	// link VPC endpoints to VPCs
+	for i, vpcEndpoint := range ec2.VPCEndpoints {
+		for j := range ec2.VPCs {
+			if ec2.VPCs[j].ID == vpcEndpoint.VPCID.Value() {
+				ec2.VPCEndpoints[i].Relationships.VPC = &ec2.VPCs[j]
+				ec2.VPCs[j].Relationships.VPCEndpoints = append(ec2.VPCs[j].Relationships.VPCEndpoints, &ec2.VPCEndpoints[i])
+				break
+			}
+		}
+	}
+
+	// link VPC endpoints to subnets
+	for i, vpcEndpoint := range ec2.VPCEndpoints {
+		for j := range ec2.Subnets {
+			if vpcEndpoint.SubnetIDs.Contains(ec2.Subnets[j].ID) {
+				ec2.VPCEndpoints[i].Relationships.Subnets = append(ec2.VPCEndpoints[i].Relationships.Subnets, &ec2.Subnets[j])
+			}
+		}
+	}
+
+	// link EBS snapshots to volumes (inherit size)
+	for i, snapshot := range ec2.EBSSnapshots {
+		if !snapshot.VolumeID.IsEmpty() {
+			for _, volume := range ec2.EBSVolumes {
+				if volume.ID == snapshot.VolumeID.Value() {
+					if snapshot.SizeGB.IsDefaultOrEmpty() {
+						ec2.EBSSnapshots[i].SizeGB = volume.SizeGB
+					}
+					break
+				}
+			}
+		}
+	}
+
+	// link EBS snapshot copies to source snapshots (inherit size)
+	for i, snapshotCopy := range ec2.EBSSnapshotCopies {
+		if !snapshotCopy.SourceSnapshotID.IsEmpty() {
+			for _, snapshot := range ec2.EBSSnapshots {
+				if snapshot.ID == snapshotCopy.SourceSnapshotID.Value() {
+					if snapshotCopy.SizeGB.IsDefaultOrEmpty() {
+						ec2.EBSSnapshotCopies[i].SizeGB = snapshot.SizeGB
+					}
+					break
+				}
+			}
+		}
+	}
+
+	// link NAT gateways to subnets and elastic IPs
+	for i := range ec2.NATGateways {
+		for j := range ec2.Subnets {
+			if ec2.Subnets[j].ID == ec2.NATGateways[i].SubnetID.Value() {
+				ec2.Subnets[j].Relationships.NATGateways = append(ec2.Subnets[j].Relationships.NATGateways, &ec2.NATGateways[i])
+				ec2.NATGateways[i].Relationships.Subnet = &ec2.Subnets[j]
+				break
+			}
+		}
+		for j := range ec2.ElasticIPs {
+			if ec2.ElasticIPs[j].ID == ec2.NATGateways[i].AllocationID.Value() {
+				ec2.ElasticIPs[j].Relationships.NATGateway = &ec2.NATGateways[i]
+				ec2.NATGateways[i].Relationships.AllocatedElasticIP = &ec2.ElasticIPs[j]
+				break
+			}
+		}
+	}
+
+	// link elastic IP associations to elastic IPs
+	for i := range ec2.ElasticIPAssociations {
+		for j := range ec2.ElasticIPs {
+			if ec2.ElasticIPs[j].ID == ec2.ElasticIPAssociations[i].AllocationID.Value() {
+				ec2.ElasticIPs[j].Relationships.Association = &ec2.ElasticIPAssociations[i]
+				ec2.ElasticIPAssociations[i].Relationships.ElasticIP = &ec2.ElasticIPs[j]
+				break
+			}
+		}
+	}
+
+	// link transit gateway VPC attachments to VPCs and transit gateways
+	for i, attachment := range ec2.TransitGatewayVPCAttachments {
+		for j := range ec2.VPCs {
+			if ec2.VPCs[j].ID == attachment.VPCID.Value() {
+				ec2.TransitGatewayVPCAttachments[i].Relationships.VPC = &ec2.VPCs[j]
+				break
+			}
+		}
+		for j := range ec2.TransitGateways {
+			if ec2.TransitGateways[j].ID == attachment.TransitGatewayID.Value() {
+				ec2.TransitGatewayVPCAttachments[i].Relationships.TransitGateway = &ec2.TransitGateways[j]
+				break
+			}
+		}
+	}
+
+	// link transit gateway peering attachments to transit gateways
+	for i, attachment := range ec2.TransitGatewayPeeringAttachments {
+		for j := range ec2.TransitGateways {
+			if ec2.TransitGateways[j].ID == attachment.TransitGatewayID.Value() {
+				ec2.TransitGatewayPeeringAttachments[i].Relationships.TransitGateway = &ec2.TransitGateways[j]
+				break
+			}
+		}
+	}
+
+	// link load balancer subnet mappings to elastic IPs and subnets
+	for i := range ec2.LoadBalancers {
+		for j, mapping := range ec2.LoadBalancers[i].SubnetMappings {
+			for k := range ec2.ElasticIPs {
+				if ec2.ElasticIPs[k].ID == mapping.AllocationID.Value() {
+					ec2.ElasticIPs[k].Relationships.LoadBalancer = &ec2.LoadBalancers[i]
+					ec2.LoadBalancers[i].SubnetMappings[j].Relationships.Allocation = &ec2.ElasticIPs[k]
+					break
+				}
+			}
+			for k := range ec2.Subnets {
+				if ec2.Subnets[k].ID == mapping.SubnetID.Value() {
+					ec2.LoadBalancers[i].SubnetMappings[j].Relationships.Subnet = &ec2.Subnets[k]
+					break
+				}
+			}
 		}
 	}
 }

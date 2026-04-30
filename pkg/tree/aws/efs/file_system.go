@@ -9,5 +9,5 @@ type FileSystem struct {
 	resource.Resource           `tree:"-"`
 	AvailabilityZoneName        value.String `tree:"availability_zone_name"`
 	HasLifecyclePolicy          value.Bool   `tree:"has_lifecycle_policy"`
-	ProvisionedThroughputInMiBps value.Double `tree:"provisioned_throughput_in_mibps"`
+	ProvisionedThroughputInMBps value.Double `tree:"provisioned_throughput_in_mbps"`
 }

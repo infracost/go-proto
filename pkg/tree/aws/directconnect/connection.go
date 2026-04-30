@@ -6,17 +6,26 @@ import (
 )
 
 type Connection struct {
-	resource.Resource    `tree:"-"`
-	Bandwidth            value.String                `tree:"bandwidth"`
-	Location             value.String                `tree:"location"`
-	ConnectionType       value.Value[ConnectionType] `tree:"connection_type"`
-	VirtualInterfaceType value.String                `tree:"virtual_interface_type"`
+	resource.Resource `tree:"-"`
+	Bandwidth         value.Value[Bandwidth] `tree:"bandwidth"`
+	Location          value.String           `tree:"location"`
 }
 
-type ConnectionType uint32
+type Bandwidth uint32
 
 const (
-	ConnectionTypeUnknown   ConnectionType = 0
-	ConnectionTypeDedicated ConnectionType = 1
-	ConnectionTypeHosted    ConnectionType = 2
+	BandwidthUnknown Bandwidth = iota
+	Bandwidth50Mbps
+	Bandwidth100Mbps
+	Bandwidth200Mbps
+	Bandwidth300Mbps
+	Bandwidth400Mbps
+	Bandwidth500Mbps
+	Bandwidth1Gbps
+	Bandwidth2Gbps
+	Bandwidth5Gbps
+	Bandwidth10Gbps
+	Bandwidth25Gbps
+	Bandwidth100Gbps
+	Bandwidth400Gbps
 )

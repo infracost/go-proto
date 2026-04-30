@@ -6,9 +6,17 @@ import (
 )
 
 type Target struct {
-	resource.Resource  `tree:"-"`
-	ResourceID         value.String `tree:"resource_id"`
-	ScalabaleDimension value.String `tree:"scalable_dimension"`
-	MinCapacity        value.Int    `tree:"min_capacity"`
-	MaxCapacity        value.Int    `tree:"max_capacity"`
+	resource.Resource `tree:"-"`
+	ResourceID        value.String                   `tree:"resource_id"`
+	ScalableDimension value.Value[ScalableDimension] `tree:"scalable_dimension"`
+	MinCapacity       value.Int                      `tree:"min_capacity"`
+	MaxCapacity       value.Int                      `tree:"max_capacity"`
 }
+
+type ScalableDimension uint32
+
+const (
+	ScalableDimensionUnknown ScalableDimension = iota
+	ScalableDimensionReadCapacityUnits
+	ScalableDimensionWriteCapacityUnits
+)

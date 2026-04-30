@@ -219,8 +219,8 @@ func TestNestedSubResourceRoundTrip(t *testing.T) {
 									ID:     "vol-root",
 									Region: "us-east-1",
 								},
-								Type: value.New(ec2.EBSVolumeTypeGP3, 0, "", nil),
-								Size: value.New[int64](50, 0, "", nil),
+								Type:   value.New(ec2.EBSVolumeTypeGP3, 0, "", nil),
+								SizeGB: value.New[int64](50, 0, "", nil),
 							},
 						},
 						BlockDeviceMappings: []ec2.BlockDeviceMapping{
@@ -231,9 +231,9 @@ func TestNestedSubResourceRoundTrip(t *testing.T) {
 										ID:     "vol-extra",
 										Region: "eu-west-1",
 									},
-									Type: value.New(ec2.EBSVolumeTypeIO1, 0, "", nil),
-									Size: value.New[int64](100, 0, "", nil),
-									IOPS: value.New[int64](3000, 0, "", nil),
+									Type:   value.New(ec2.EBSVolumeTypeIO1, 0, "", nil),
+									SizeGB: value.New[int64](100, 0, "", nil),
+									IOPS:   value.New[int64](3000, 0, "", nil),
 								},
 							},
 						},
@@ -261,7 +261,7 @@ func TestNestedSubResourceRoundTrip(t *testing.T) {
 	assert.Equal(t, "us-east-1", inst.RootBlockDevice.EBSVolume.Region)
 	assert.Equal(t, "/dev/sda1", inst.RootBlockDevice.DeviceName.Value())
 	assert.Equal(t, ec2.EBSVolumeTypeGP3, inst.RootBlockDevice.EBSVolume.Type.Value())
-	assert.Equal(t, int64(50), inst.RootBlockDevice.EBSVolume.Size.Value())
+	assert.Equal(t, int64(50), inst.RootBlockDevice.EBSVolume.SizeGB.Value())
 
 	// additional block device sub-resource keeps its own region
 	require.Len(t, inst.BlockDeviceMappings, 1)
@@ -270,7 +270,7 @@ func TestNestedSubResourceRoundTrip(t *testing.T) {
 	assert.Equal(t, "eu-west-1", extra.EBSVolume.Region)
 	assert.Equal(t, "/dev/sdb", extra.DeviceName.Value())
 	assert.Equal(t, ec2.EBSVolumeTypeIO1, extra.EBSVolume.Type.Value())
-	assert.Equal(t, int64(100), extra.EBSVolume.Size.Value())
+	assert.Equal(t, int64(100), extra.EBSVolume.SizeGB.Value())
 	assert.Equal(t, int64(3000), extra.EBSVolume.IOPS.Value())
 }
 

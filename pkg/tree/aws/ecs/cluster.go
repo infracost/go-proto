@@ -6,9 +6,9 @@ import (
 )
 
 type Cluster struct {
-	resource.Resource                `tree:"-"`
-	Name                             value.String              `tree:"name"`
-	DefaultCapacityProviderStrategy  *CapacityProviderStrategy `tree:"default_capacity_provider_strategy"`
+	resource.Resource               `tree:"-"`
+	Name                            value.String             `tree:"name"`
+	DefaultCapacityProviderStrategy CapacityProviderStrategy `tree:"default_capacity_provider_strategy"`
 
 	Relationships ClusterRelationships `tree:"-"`
 }

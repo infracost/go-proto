@@ -1,0 +1,11 @@
+package compute
+
+import (
+	"github.com/infracost/go-proto/pkg/tree/resource"
+	"github.com/infracost/go-proto/pkg/tree/value"
+)
+
+type NodeTemplate struct {
+	resource.Resource `tree:"-"`
+	NodeType          value.String `tree:"node_type"`
+}

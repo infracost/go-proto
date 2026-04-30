@@ -324,3 +324,12 @@ func NewList[T Primitive](items []Value[T], flags flag.Flags, fieldName string, 
 func (l *List[T]) Items() []Value[T] {
 	return l.items
 }
+
+func (l *List[T]) Contains(v T) bool {
+	for _, item := range l.items {
+		if item.Value() == v {
+			return true
+		}
+	}
+	return false
+}

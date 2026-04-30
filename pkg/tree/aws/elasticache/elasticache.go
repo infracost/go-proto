@@ -18,7 +18,7 @@ func (e *ElastiCache) PostProcess() {
 
 		// link cluster to replication group
 		for j, rg := range e.ReplicationGroups {
-			if rg.ReplicationGroupID.Value() == cluster.ReplicationGroupID.Value() {
+			if rg.ID.Value() == cluster.ReplicationGroupID.Value() {
 				e.Clusters[i].Relationships.ReplicationGroup = &e.ReplicationGroups[j]
 
 				if cluster.Engine.IsDefaultOrEmpty() {

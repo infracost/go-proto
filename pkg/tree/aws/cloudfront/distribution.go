@@ -6,20 +6,21 @@ import (
 )
 
 type Distribution struct {
-	resource.Resource      `tree:"-"`
-	DefaultRootObject      value.String      `tree:"default_root_object"`
-	WebACLID               value.String      `tree:"web_acl_id"`
-	Origins                []Origin          `tree:"origins"`
-	DefaultCacheBehaviour  CacheBehaviour    `tree:"default_cache_behaviour"`
-	OrderedCacheBehaviours []CacheBehaviour  `tree:"ordered_cache_behaviours"`
-	LoggingConfig          *LoggingConfig    `tree:"logging_config"`
-	ViwerCertificate       ViewerCertificate `tree:"viewer_certificate"`
+	resource.Resource     `tree:"-"`
+	DefaultRootObject     value.String      `tree:"default_root_object"`
+	WebACLID              value.String      `tree:"web_acl_id"`
+	Origins               []Origin          `tree:"origins"`
+	DefaultCacheBehavior  CacheBehavior     `tree:"default_cache_behavior"`
+	OrderedCacheBehaviors []CacheBehavior   `tree:"ordered_cache_behaviors"`
+	LoggingConfig         LoggingConfig     `tree:"logging_config"`
+	ViewerCertificate     ViewerCertificate `tree:"viewer_certificate"`
 }
 
 type ViewerProtocolPolicy uint32
 
 const (
-	ViewerProtocolPolicyAllowAll ViewerProtocolPolicy = iota
+	ViewerProtocolPolicyUnknown ViewerProtocolPolicy = iota
+	ViewerProtocolPolicyAllowAll
 	ViewerProtocolPolicyHTTPSOnly
 	ViewerProtocolPolicyRedirectToHTTPS
 )
@@ -27,15 +28,16 @@ const (
 type SSLSupportMethod uint32
 
 const (
-	SSLSupportMethodSniOnly SSLSupportMethod = iota
+	SSLSupportMethodUnknown SSLSupportMethod = iota
+	SSLSupportMethodSniOnly
 	SSLSupportMethodVip
 	SSLSupportMethodStaticIP
 )
 
 type Origin struct {
-	DomainName     value.String    `tree:"domain_name"`
-	S3OriginConfig *S3OriginConfig `tree:"s3_origin_config"`
-	OriginShield   *OriginShield   `tree:"origin_shield"`
+	DomainName     value.String   `tree:"domain_name"`
+	S3OriginConfig S3OriginConfig `tree:"s3_origin_config"`
+	OriginShield   OriginShield   `tree:"origin_shield"`
 }
 
 type S3OriginConfig struct {
@@ -47,7 +49,7 @@ type OriginShield struct {
 	OriginShieldRegion value.String `tree:"origin_shield_region"`
 }
 
-type CacheBehaviour struct {
+type CacheBehavior struct {
 	ViewerProtocolPolicy   value.Value[ViewerProtocolPolicy] `tree:"viewer_protocol_policy"`
 	FieldLevelEncryptionID value.String                      `tree:"field_level_encryption_id"`
 }

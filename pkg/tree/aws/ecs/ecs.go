@@ -3,20 +3,20 @@ package ecs
 import "strings"
 
 type ECS struct {
-	TaskDefinitions          []TaskDefinition          `tree:"task_definitions"`
-	Services                 []ServiceResource         `tree:"services"`
-	Clusters                 []Cluster                 `tree:"clusters"`
+	TaskDefinitions          []TaskDefinition           `tree:"task_definitions"`
+	Services                 []Service                  `tree:"services"`
+	Clusters                 []Cluster                  `tree:"clusters"`
 	ClusterCapacityProviders []ClusterCapacityProviders `tree:"cluster_capacity_providers"`
-	TaskSets                 []TaskSet                 `tree:"task_sets"`
-	CapacityProviders        []CapacityProvider        `tree:"capacity_providers"`
+	TaskSets                 []TaskSet                  `tree:"task_sets"`
+	CapacityProviders        []CapacityProvider         `tree:"capacity_providers"`
 }
 
 func (e *ECS) PostProcess() {
 	// Build capacity provider type map
 	cpTypes := make(map[string]CapacityProviderType)
 	for _, cp := range e.CapacityProviders {
-		if name := cp.Name.Value(); name != "" {
-			cpTypes[name] = cp.ProviderType.Value()
+		if name := cp.Name.String(); name != "" {
+			cpTypes[name] = cp.CapacityProviderType.Value()
 		}
 	}
 
@@ -58,7 +58,7 @@ func (e *ECS) PostProcess() {
 
 		for j := range e.TaskSets {
 			ts := &e.TaskSets[j]
-			if ts.Service.Value() == svc.ID || (!svc.Name.IsEmpty() && ts.Service.Value() == svc.Name.Value()) {
+			if ts.ServiceReference.Value() == svc.ID || (!svc.Name.IsEmpty() && ts.ServiceReference.Value() == svc.Name.Value()) {
 				e.Services[i].Relationships.TaskDefinition = ts.Relationships.TaskDefinition
 				break
 			}

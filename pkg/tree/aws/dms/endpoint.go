@@ -13,8 +13,9 @@ type Endpoint struct {
 type SslMode uint32
 
 const (
-	SslModeNone      SslMode = 0
-	SslModeRequire   SslMode = 1
-	SslModeVerifyCA  SslMode = 2
-	SslModeVerifyFull SslMode = 3
+	SslModeUnknown SslMode = iota
+	SslModeNone
+	SslModeRequire
+	SslModeVerifyCA
+	SslModeVerifyFull
 )

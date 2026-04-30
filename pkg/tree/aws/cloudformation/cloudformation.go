@@ -1,6 +1,6 @@
 package cloudformation
 
 type CloudFormation struct {
-	Stacks    []Stack    `tree:"stacks,flatten"`
-	StackSets []StackSet `tree:"stack_sets,flatten"`
+	Stacks    []Stack    `tree:"stacks"`
+	StackSets []StackSet `tree:"stack_sets"`
 }

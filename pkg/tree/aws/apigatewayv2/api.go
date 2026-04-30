@@ -7,5 +7,13 @@ import (
 
 type API struct {
 	resource.Resource `tree:"-"`
-	ProtocolType      value.String `tree:"protocol_type"`
+	ProtocolType      value.Value[ProtocolType] `tree:"protocol_type"`
 }
+
+type ProtocolType uint32
+
+const (
+	ProtocolTypeUnknown   ProtocolType = iota
+	ProtocolTypeHTTP
+	ProtocolTypeWebSocket
+)

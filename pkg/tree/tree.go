@@ -5,6 +5,7 @@ import (
 	"reflect"
 
 	"github.com/infracost/go-proto/pkg/tree/aws"
+	"github.com/infracost/go-proto/pkg/tree/azure"
 	"github.com/infracost/go-proto/pkg/tree/resource"
 )
 
@@ -16,6 +17,7 @@ type Resource interface {
 
 type Tree struct {
 	AWS                  aws.AWS              `tree:"aws"`
+	Azure                azure.Azure          `tree:"azure"`
 	UnsupportedResources []*resource.Resource `tree:"-"` // these get handled as a special case
 }
 

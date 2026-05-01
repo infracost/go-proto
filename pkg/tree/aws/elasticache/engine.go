@@ -6,4 +6,5 @@ const (
 	CacheEngineUnknown   CacheEngine = iota
 	CacheEngineMemcached
 	CacheEngineRedis
+	CacheEngineValkey
 )

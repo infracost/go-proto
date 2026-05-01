@@ -89,18 +89,8 @@ type Azure struct {
 }
 
 func (az *Azure) PostProcess() {
-	// intra-service PostProcess calls
-	az.ActiveDirectory.PostProcess()
-	az.AppService.PostProcess()
-	az.Cognitive.PostProcess()
-	az.Container.PostProcess()
-	az.CosmosDB.PostProcess()
-	az.Firewall.PostProcess()
-	az.KeyVault.PostProcess()
-	az.Network.PostProcess()
-	az.RecoveryServices.PostProcess()
-	az.Storage.PostProcess()
-	az.Synapse.PostProcess()
+	// NOTE: Service-level PostProcess() methods are invoked automatically by the
+	// reflective tree walker in tree.go. Only cross-service wiring belongs here.
 
 	// cross-service: link backup protected VMs to compute virtual machines
 	for i, vm := range az.RecoveryServices.BackupProtectedVMs {

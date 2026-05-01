@@ -7,6 +7,8 @@ import (
 
 	"github.com/infracost/go-proto/pkg/tree/aws"
 	"github.com/infracost/go-proto/pkg/tree/aws/ec2"
+	"github.com/infracost/go-proto/pkg/tree/aws/rds"
+	"github.com/infracost/go-proto/pkg/tree/aws/s3"
 	"github.com/infracost/go-proto/pkg/tree/resource"
 	"github.com/infracost/go-proto/pkg/tree/value"
 	"github.com/stretchr/testify/assert"
@@ -106,6 +108,78 @@ func TestToResourcesMixed(t *testing.T) {
 
 	assert.Equal(t, "i-111", resources[0].GetBase().ID)
 	assert.Equal(t, "unsupported-1", resources[1].GetBase().ID)
+}
+
+// TestPostProcess_NoDoubleInvocation verifies that calling Tree.PostProcess()
+// does not invoke service-level PostProcess methods twice. The reflective walker
+// in tree.go discovers and calls PostProcess on each service struct. Provider-level
+// PostProcess methods (AWS, Azure, Google) must NOT also call service-level
+// PostProcess, or relationships will be duplicated.
+func TestPostProcess_NoDoubleInvocation(t *testing.T) {
+	tree := &Tree{
+		AWS: aws.AWS{
+			S3: s3.S3{
+				Buckets: []s3.Bucket{
+					{Resource: resource.Resource{ID: "bucket-1"}, Name: value.New("my-bucket", 0, "", nil)},
+				},
+				BucketVersioningConfigurations: []s3.BucketVersioningConfiguration{
+					{Resource: resource.Resource{ID: "vc-1"}, BucketName: value.New("my-bucket", 0, "", nil), Enabled: value.New(true, 0, "", nil)},
+				},
+				LifecycleConfigurations: []s3.LifecycleConfiguration{
+					{Resource: resource.Resource{ID: "lc-1"}, BucketName: value.New("my-bucket", 0, "", nil)},
+				},
+				BucketPolicies: []s3.BucketPolicy{
+					{Resource: resource.Resource{ID: "bp-1"}, BucketName: value.New("my-bucket", 0, "", nil)},
+				},
+				IntelligentTieringConfigurations: []s3.IntelligentTieringConfiguration{
+					{Resource: resource.Resource{ID: "it-1"}, BucketName: value.New("my-bucket", 0, "", nil)},
+				},
+			},
+			RDS: rds.RDS{
+				Clusters: []rds.Cluster{
+					{Resource: resource.Resource{ID: "cluster-1"}, Identifier: value.New("my-cluster", 0, "", nil)},
+				},
+				Instances: []rds.Instance{
+					{Resource: resource.Resource{ID: "inst-1"}, ClusterID: value.New("my-cluster", 0, "", nil)},
+				},
+			},
+		},
+	}
+
+	tree.PostProcess()
+
+	// S3: each relationship should be linked exactly once
+	bucket := tree.AWS.S3.Buckets[0]
+	assert.Len(t, bucket.Relationships.BucketVersioningConfigurations, 1, "versioning should be linked exactly once")
+	assert.Len(t, bucket.Relationships.LifecycleConfigurations, 1, "lifecycle should be linked exactly once")
+	assert.Len(t, bucket.Relationships.BucketPolicies, 1, "policy should be linked exactly once")
+	assert.Len(t, bucket.Relationships.IntelligentTieringConfigurations, 1, "intelligent tiering should be linked exactly once")
+
+	// RDS: instance→cluster should be linked exactly once
+	inst := tree.AWS.RDS.Instances[0]
+	require.NotNil(t, inst.Relationships.Cluster, "RDS instance should be linked to cluster")
+	assert.Len(t, tree.AWS.RDS.Clusters[0].Relationships.Instances, 1, "cluster should have exactly one instance")
+}
+
+// TestPostProcess_MultipleCallsDoNotPanic verifies that calling PostProcess
+// multiple times does not panic.
+func TestPostProcess_MultipleCallsDoNotPanic(t *testing.T) {
+	tree := &Tree{
+		AWS: aws.AWS{
+			EC2: ec2.EC2{
+				Instances: []ec2.Instance{
+					{Resource: resource.Resource{ID: "i-111"}},
+				},
+				InstanceStates: []ec2.InstanceStateMapping{
+					{InstanceID: value.New("i-111", 0, "", nil)},
+				},
+			},
+		},
+	}
+
+	// Should not panic on multiple calls
+	tree.PostProcess()
+	tree.PostProcess()
 }
 
 func TestAllFieldsHaveTreeTag(t *testing.T) {

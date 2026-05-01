@@ -8,7 +8,7 @@ import (
 type TaskDefinition struct {
 	resource.Resource       `tree:"-"`
 	Family                  value.String                 `tree:"family"`
-	MemoryGiB               value.Int                    `tree:"memory"`
+	MemoryMiB               value.Int                    `tree:"memory"`
 	CPU                     value.Int                    `tree:"cpu"`
 	CPUArchitecture         value.Value[CPUArchitecture] `tree:"cpu_architecture"`
 	RequiresCompatibilities value.List[Compatibility]    `tree:"requires_compatibilities"`

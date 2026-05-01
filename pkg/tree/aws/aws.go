@@ -126,26 +126,9 @@ func (aws *AWS) PostProcess() {
 	// acm - link cert authorities to certificate manager
 	aws.CertificateManager.AddCertificateAuthorities(&aws.PCACertificateAuthority)
 
-	// ec2 - link instance states, launch templates to instances, ASGs to LTs/LCs, etc.
-	aws.EC2.PostProcess()
-	// elasticache - link parameter groups and replication groups to clusters
-	aws.ElastiCache.PostProcess()
-	// ecs - link capacity providers, task definitions, and clusters to services
-	aws.ECS.PostProcess()
-	// ecr - link lifecycle policies to repositories
-	aws.ECR.PostProcess()
-	// neptune - link cluster instances and snapshots to clusters
-	aws.Neptune.PostProcess()
-	// rds - link instances to clusters and replica sources
-	aws.RDS.PostProcess()
-	// s3 - link lifecycle configs, versioning, policies to buckets
-	aws.S3.PostProcess()
-	// sns - link subscriptions to topics
-	aws.SNS.PostProcess()
-	// kinesis - link firehose delivery streams to kinesis streams
-	aws.Kinesis.PostProcess()
-	// route53 - link alias records to target records
-	aws.Route53.PostProcess()
+	// NOTE: Service-level PostProcess() methods (EC2, ECS, RDS, S3, etc.) are NOT called
+	// here — they are invoked automatically by the reflective tree walker in tree.go.
+	// Only cross-service relationship wiring belongs in this method.
 
 	// cross-service: link app autoscaling targets to MSK clusters
 	for i, cluster := range aws.MSK.Clusters {

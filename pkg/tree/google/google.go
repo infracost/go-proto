@@ -41,10 +41,8 @@ type Google struct {
 }
 
 func (g *Google) PostProcess() {
-	g.Compute.PostProcess()
-	g.Container.PostProcess()
-	g.SecretManager.PostProcess()
-	g.Spanner.PostProcess()
+	// NOTE: Service-level PostProcess() methods are invoked automatically by the
+	// reflective tree walker in tree.go. Only cross-service wiring belongs here.
 
 	// cross-service: link compute addresses to instances by NATIP
 	for i, addr := range g.Compute.Addresses {

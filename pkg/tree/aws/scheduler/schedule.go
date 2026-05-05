@@ -7,9 +7,8 @@ import (
 )
 
 type Schedule struct {
-	resource.Resource   `tree:"-"`
-	PropagateTagsToTask value.Bool   `tree:"propagate_tags_to_task"`
-	TaskDefinitionARN   value.String `tree:"task_definition_arn"`
+	resource.Resource `tree:"-"`
+	TaskDefinitionARN value.String `tree:"task_definition_arn"`
 
 	Relationships ScheduleRelationships `tree:"-"`
 }

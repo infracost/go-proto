@@ -14,7 +14,6 @@ type Table struct {
 	ReadCapacity               value.Int                `tree:"read_capacity"`
 	PointInTimeRecoveryEnabled value.Bool               `tree:"point_in_time_recovery_enabled"`
 	ReplicaRegions             value.List[string]       `tree:"replica_regions"`
-	PropagateTags              value.Bool               `tree:"propagate_tags"`
 	TimeToLiveSpecs            []TTLSpec                `tree:"time_to_live_specs"`
 
 	Relationships TableRelationships `tree:"-"`

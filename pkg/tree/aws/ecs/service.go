@@ -12,7 +12,6 @@ type Service struct {
 	DesiredCount            value.Int               `tree:"desired_count"`
 	ClusterReference        value.String            `tree:"cluster"`
 	TaskDefinitionReference value.String            `tree:"task_definition"`
-	PropagateTags           value.String            `tree:"propagate_tags"`
 	AssignPublicIP          value.Bool              `tree:"assign_public_ip"`
 	Name                    value.String            `tree:"name"`
 	SubnetIDs               value.List[string]      `tree:"subnet_ids"`

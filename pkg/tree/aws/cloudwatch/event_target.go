@@ -7,9 +7,8 @@ import (
 )
 
 type EventTarget struct {
-	resource.Resource   `tree:"-"`
-	PropagateTagsToTask value.Bool   `tree:"propagate_tags_to_task"` // from task def
-	TaskDefinitionID    value.String `tree:"task_definition_id"`
+	resource.Resource `tree:"-"`
+	TaskDefinitionID  value.String `tree:"task_definition_id"`
 
 	Relationships EventTargetRelationships `tree:"-"`
 }

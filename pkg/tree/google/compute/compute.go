@@ -34,7 +34,23 @@ type Compute struct {
 }
 
 func (c *Compute) PostProcess() {
-	// Link InstanceGroupManagers to InstanceTemplates by TemplateRef matching template Name or ID
+	// Increment InstanceGroupManager TargetSize for each PerInstanceConfig that references it
+	for i := range c.InstanceGroupManagers {
+		for _, config := range c.PerInstanceConfigs {
+			igm := &c.InstanceGroupManagers[i]
+			if config.InstanceGroupManagerRef.Value() == igm.ID || config.InstanceGroupManagerRef.Value() == igm.Name.Value() {
+				igm.TargetSize = value.New(
+					igm.TargetSize.Value()+1,
+					igm.TargetSize.Flags(),
+					igm.TargetSize.Field(),
+					igm.TargetSize.Source(),
+				)
+			}
+		}
+	}
+
+	// Link InstanceGroupManagers to InstanceTemplates by TemplateRef matching template Name or ID,
+	// and copy template fields (MachineType, DiskData, GuestAccelerators, ScratchDisks) to the IGM
 	for i, igm := range c.InstanceGroupManagers {
 		if igm.TemplateRef.IsEmpty() {
 			continue
@@ -43,6 +59,10 @@ func (c *Compute) PostProcess() {
 			t := &c.InstanceTemplates[j]
 			if igm.TemplateRef.Equal(t.ID) || igm.TemplateRef.Value() == t.Name.Value() {
 				c.InstanceGroupManagers[i].Relationships.InstanceTemplate = t
+				c.InstanceGroupManagers[i].MachineType = t.MachineType
+				c.InstanceGroupManagers[i].DiskData = t.DiskData
+				c.InstanceGroupManagers[i].GuestAccelerators = t.GuestAccelerators
+				c.InstanceGroupManagers[i].ScratchDisks = t.ScratchDisks
 				break
 			}
 		}
@@ -84,6 +104,13 @@ func (c *Compute) PostProcess() {
 					inst.AttachedDisk.Value() == c.Disks[j].Name.Value() ||
 					inst.AttachedDisk.Value() == c.Disks[j].SelfLink.Value() {
 					c.Disks[j].IsAttached = true
+				}
+			}
+			for j := range c.RegionDisks {
+				if inst.AttachedDisk.Value() == c.RegionDisks[j].ID ||
+					inst.AttachedDisk.Value() == c.RegionDisks[j].Name.Value() ||
+					inst.AttachedDisk.Value() == c.RegionDisks[j].SelfLink.Value() {
+					c.RegionDisks[j].IsAttached = true
 				}
 			}
 		}

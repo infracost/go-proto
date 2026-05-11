@@ -23,6 +23,10 @@ type Domain struct {
 	EBSVolumeIOPS                 value.Int                      `tree:"ebs_volume_iops"`
 	EBSVolumeThroughputMiBperS    value.Int                      `tree:"ebs_volume_throughput"`
 	IsOpenSearch                  value.Bool                     `tree:"is_opensearch"`
+	EncryptAtRestEnabled          value.Bool                     `tree:"encrypt_at_rest_enabled"`
+	NodeToNodeEncryptionEnabled   value.Bool                     `tree:"node_to_node_encryption_enabled"`
+	EnforceHTTPS                  value.Bool                     `tree:"enforce_https"`
+	TLSSecurityPolicy             value.String                   `tree:"tls_security_policy"`
 }
 
 type EBSVolumeType uint32

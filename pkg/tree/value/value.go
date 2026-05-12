@@ -21,6 +21,8 @@ type Value[T Primitive] struct {
 var (
 	_ Valuer   = (*Value[bool])(nil)
 	_ Settable = (*Value[bool])(nil)
+	_ Valuer   = (*List[bool])(nil)
+	_ Settable = (*List[bool])(nil)
 )
 
 // Settable extends Valuer to allow setting the proto value via reflection.
@@ -323,6 +325,43 @@ func NewList[T Primitive](items []Value[T], flags flag.Flags, fieldName string, 
 
 func (l *List[T]) Items() []Value[T] {
 	return l.items
+}
+
+func (l *List[T]) ToProto() *prototree.Value {
+	if l == nil {
+		return nil
+	}
+	pl := &prototree.ValueList{
+		Values: make([]*prototree.Value, len(l.items)),
+	}
+	for i, item := range l.items {
+		pl.Values[i] = item.ToProto()
+	}
+	return &prototree.Value{
+		Flags:           l.Flags,
+		SourceFieldName: l.SourceFieldName,
+		Source:          l.Source,
+		Value:           &prototree.Value_ListValue{ListValue: pl},
+	}
+}
+
+func (l *List[T]) SetProto(p *prototree.Value) {
+	if l == nil || p == nil {
+		return
+	}
+	l.Flags = p.Flags
+	l.SourceFieldName = p.SourceFieldName
+	l.Source = p.Source
+	lv := p.GetListValue()
+	if lv == nil {
+		l.items = nil
+		return
+	}
+	items := make([]Value[T], 0, len(lv.Values))
+	for _, item := range lv.Values {
+		items = append(items, FromProto[T](item))
+	}
+	l.items = items
 }
 
 func (l *List[T]) Contains(v T) bool {

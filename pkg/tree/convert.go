@@ -33,6 +33,12 @@ func structToValueObject(v reflect.Value) *prototree.ValueObject {
 	if v.Kind() == reflect.Pointer {
 		v = v.Elem()
 	}
+	// Make the struct addressable so its fields can satisfy pointer-receiver Valuer interfaces.
+	if !v.CanAddr() {
+		addr := reflect.New(v.Type()).Elem()
+		addr.Set(v)
+		v = addr
+	}
 
 	obj := &prototree.ValueObject{
 		Entries: make(map[string]*prototree.Value),
@@ -65,6 +71,9 @@ func structToValueObject(v reflect.Value) *prototree.ValueObject {
 func fieldToProtoValue(field reflect.Value) *prototree.Value {
 	if field.Type().Implements(valuerType) {
 		return field.Interface().(value.Valuer).ToProto()
+	}
+	if field.CanAddr() && reflect.PointerTo(field.Type()).Implements(valuerType) {
+		return field.Addr().Interface().(value.Valuer).ToProto()
 	}
 
 	switch field.Kind() {

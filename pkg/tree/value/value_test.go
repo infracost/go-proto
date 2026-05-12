@@ -6,6 +6,7 @@ import (
 	"github.com/infracost/go-proto/pkg/flag"
 	prototree "github.com/infracost/proto/gen/go/infracost/tree"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestStringValue(t *testing.T) {
@@ -215,6 +216,25 @@ func TestNewList(t *testing.T) {
 func TestNewList_Empty(t *testing.T) {
 	l := NewList([]Value[int64]{}, 0, "", nil)
 	assert.Empty(t, l.Items())
+}
+
+func TestList_ToProtoRoundTrip(t *testing.T) {
+	in := NewList([]Value[string]{
+		New("a", flag.TerraformCode, "items", nil),
+		New("b", flag.TerraformCode, "items", nil),
+	}, flag.TerraformCode, "items", nil)
+
+	p := in.ToProto()
+	require.NotNil(t, p)
+	require.NotNil(t, p.GetListValue())
+	require.Len(t, p.GetListValue().Values, 2)
+
+	var out List[string]
+	out.SetProto(p)
+	assert.Equal(t, "items", *out.SourceFieldName)
+	require.Len(t, out.Items(), 2)
+	assert.Equal(t, "a", out.Items()[0].Value())
+	assert.Equal(t, "b", out.Items()[1].Value())
 }
 
 func TestContains(t *testing.T) {

@@ -5,6 +5,7 @@ import (
 
 	"github.com/infracost/go-proto/pkg/tree/aws"
 	"github.com/infracost/go-proto/pkg/tree/aws/ec2"
+	"github.com/infracost/go-proto/pkg/tree/aws/eks"
 	"github.com/infracost/go-proto/pkg/tree/resource"
 	"github.com/infracost/go-proto/pkg/tree/value"
 	prototree "github.com/infracost/proto/gen/go/infracost/tree"
@@ -85,6 +86,33 @@ func TestRoundTrip(t *testing.T) {
 	assert.Equal(t, "t3.micro", result.AWS.EC2.Instances[0].Type.Value())
 	assert.Equal(t, "m5.large", result.AWS.EC2.Instances[1].Type.Value())
 	assert.Equal(t, "c5.xlarge", result.AWS.EC2.Instances[2].Type.Value())
+}
+
+func TestRoundTrip_ListField(t *testing.T) {
+	original := &Tree{
+		AWS: aws.AWS{
+			EKS: eks.EKS{
+				NodeGroups: []eks.NodeGroup{{
+					InstanceTypes: *value.NewList([]value.Value[string]{
+						value.New("t3.micro", 0, "instance_types", nil),
+						value.New("t3.small", 0, "instance_types", nil),
+					}, 0, "instance_types", nil),
+				}},
+			},
+		},
+	}
+
+	proto, err := original.ToProto()
+	require.NoError(t, err)
+
+	result, err := FromProto(proto)
+	require.NoError(t, err)
+
+	require.Len(t, result.AWS.EKS.NodeGroups, 1)
+	items := result.AWS.EKS.NodeGroups[0].InstanceTypes.Items()
+	require.Len(t, items, 2, "list items should survive proto round-trip")
+	assert.Equal(t, "t3.micro", items[0].Value())
+	assert.Equal(t, "t3.small", items[1].Value())
 }
 
 func TestFromProtoUnmappedProvider(t *testing.T) {

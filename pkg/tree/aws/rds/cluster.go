@@ -17,6 +17,8 @@ type Cluster struct {
 	AvailabilityZones                value.List[string]                  `tree:"availability_zones"`
 	ServerlessV2ScalingConfiguration []ServerlessV2ScalingConfiguration `tree:"serverless_v2_scaling_configuration"`
 	StorageEncrypted                 value.Bool                          `tree:"storage_encrypted"`
+	CopyTagsToSnapshot               value.Bool                          `tree:"copy_tags_to_snapshot"`
+	EnabledCloudwatchLogsExports     value.List[string]                  `tree:"enabled_cloudwatch_logs_exports"`
 
 	Relationships ClusterRelationships `tree:"-"`
 }

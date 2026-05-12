@@ -24,6 +24,8 @@ type Instance struct {
 	AllocatedStorageGB                 value.Double                `tree:"allocated_storage"`
 	StorageEncrypted                   value.Bool                  `tree:"storage_encrypted"`
 	IsClusterInstance                  value.Bool                  `tree:"is_cluster_instance"`
+	CopyTagsToSnapshot                 value.Bool                  `tree:"copy_tags_to_snapshot"`
+	EnabledCloudwatchLogsExports       value.List[string]          `tree:"enabled_cloudwatch_logs_exports"`
 
 	Relationships InstanceRelationships `tree:"-"`
 }

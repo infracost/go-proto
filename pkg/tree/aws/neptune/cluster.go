@@ -6,10 +6,11 @@ import (
 )
 
 type Cluster struct {
-	resource.Resource     `tree:"-"`
-	Identifier            value.String                 `tree:"identifier"`
-	BackupRetentionPeriod value.Int                    `tree:"backup_retention_period"`
-	StorageType           value.Value[NeptuneStorageType] `tree:"storage_type"`
+	resource.Resource            `tree:"-"`
+	Identifier                   value.String                    `tree:"identifier"`
+	BackupRetentionPeriod        value.Int                       `tree:"backup_retention_period"`
+	StorageType                  value.Value[NeptuneStorageType] `tree:"storage_type"`
+	EnableCloudwatchLogsExports  value.List[string]              `tree:"enable_cloudwatch_logs_exports"`
 }
 
 type NeptuneStorageType uint32

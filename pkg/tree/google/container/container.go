@@ -24,6 +24,13 @@ func (c *Container) PostProcess() {
 
 				// Append to Cluster's NodePools
 				cluster.Relationships.NodePools = append(cluster.Relationships.NodePools, &c.NodePools[i])
+
+				// A node pool synthesised from the cluster's inline node_config block
+				// is recorded against the cluster (IsChild==true). Treat the first
+				// such pool as the default.
+				if np.IsChild && cluster.Relationships.DefaultNodePool == nil {
+					cluster.Relationships.DefaultNodePool = &c.NodePools[i]
+				}
 				break
 			}
 		}

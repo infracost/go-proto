@@ -12,5 +12,6 @@ type WindowsVirtualMachine struct {
 	Zone              value.String `tree:"zone"`
 	EncryptionAtHost  value.Bool   `tree:"encryption_at_host"`
 	UltraSSDEnabled   value.Bool   `tree:"ultra_ssd_enabled"`
+	AvailabilitySetID value.String `tree:"availability_set_id"`
 	OSDisk            *DiskData    `tree:"os_disk"`
 }

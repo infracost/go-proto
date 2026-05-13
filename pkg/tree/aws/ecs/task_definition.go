@@ -29,9 +29,7 @@ type EnvironmentVariable struct {
 	Value value.String `tree:"value"`
 }
 
-type TaskDefinitionRelationships struct {
-	Services []*Service
-}
+type TaskDefinitionRelationships struct{}
 
 type InferenceAccelerator struct {
 	DeviceType value.Value[InferenceAcceleratorDeviceType] `tree:"device_type"`

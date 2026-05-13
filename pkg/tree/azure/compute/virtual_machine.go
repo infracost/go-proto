@@ -12,6 +12,7 @@ type VirtualMachine struct {
 	LicenseType                    value.Value[LicenseType] `tree:"license_type"`
 	Zone                           value.String `tree:"zone"`
 	EncryptionAtHost               value.Bool   `tree:"encryption_at_host"`
+	AvailabilitySetID              value.String `tree:"availability_set_id"`
 	OSDisk                         *DiskData    `tree:"os_disk"`
 	StorageOSDisk                  *DiskData    `tree:"storage_os_disk"`
 	StorageDataDisks               []*DiskData  `tree:"storage_data_disks"`

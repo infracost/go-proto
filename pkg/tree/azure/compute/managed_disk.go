@@ -11,4 +11,14 @@ type ManagedDisk struct {
 	DiskSizeGB        value.Int    `tree:"disk_size_gb"`
 	IOPS              value.Int    `tree:"iops"`
 	MBpsReadWrite     value.Int    `tree:"mbps_read_write"`
+
+	Relationships ManagedDiskRelationships `tree:"-"`
+}
+
+// ManagedDiskRelationships links a managed disk to whichever VM resource it
+// is attached to (only one of the three pointers should be non-nil).
+type ManagedDiskRelationships struct {
+	VirtualMachine        *VirtualMachine
+	LinuxVirtualMachine   *LinuxVirtualMachine
+	WindowsVirtualMachine *WindowsVirtualMachine
 }

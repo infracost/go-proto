@@ -8,6 +8,9 @@ const (
 	RDSEnginePostgres
 	RDSEngineMariaDB
 	RDSEngineOracleEE
+	RDSEngineOracleEECDB
+	RDSEngineOracleSE
+	RDSEngineOracleSE1
 	RDSEngineOracleSE2
 	RDSEngineOracleSE2CDB
 	RDSEngineSQLServerEE

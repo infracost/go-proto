@@ -91,4 +91,18 @@ func (c *Compute) PostProcess() {
 			})
 		}
 	}
+
+	// Snapshots that don't set disk_size_gb directly inherit the size of the
+	// managed disk identified by source_disk_id. Matches the legacy
+	// internal/tree/azure/compute/service.go behaviour and drives the
+	// snapshot storage cost.
+	for i := range c.Snapshots {
+		snap := &c.Snapshots[i]
+		if snap.DiskSizeGB.Value() != 0 {
+			continue
+		}
+		if disk, ok := diskByID[snap.SourceDiskID.Value()]; ok {
+			snap.DiskSizeGB = snap.DiskSizeGB.WithValue(disk.DiskSizeGB.Value())
+		}
+	}
 }

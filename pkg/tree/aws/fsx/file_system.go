@@ -53,6 +53,7 @@ const (
 	DataCompressionUnknown DataCompression = iota
 	DataCompressionNone
 	DataCompressionZSTD
+	DataCompressionLZ4
 )
 
 type ProvisionedIOPSMode uint32

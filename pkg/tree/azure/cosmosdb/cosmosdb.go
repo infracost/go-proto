@@ -5,6 +5,8 @@ type CosmosDB struct {
 	Databases        []Database        `tree:"databases"`
 	CassandraTables  []CassandraTable  `tree:"cassandra_tables"`
 	MongoCollections []MongoCollection `tree:"mongo_collections"`
+	GremlinGraphs    []GremlinGraph    `tree:"gremlin_graphs"`
+	SQLContainers    []SQLContainer    `tree:"sql_containers"`
 }
 
 func (s *CosmosDB) PostProcess() {
@@ -30,6 +32,36 @@ func (s *CosmosDB) PostProcess() {
 		for j := range s.Databases {
 			if mc.DatabaseName.Value() == s.Databases[j].Name.Value() {
 				s.MongoCollections[i].Relationships.Database = &s.Databases[j]
+				break
+			}
+		}
+	}
+
+	for i, g := range s.GremlinGraphs {
+		for j := range s.Databases {
+			if g.DatabaseName.Value() == s.Databases[j].Name.Value() {
+				s.GremlinGraphs[i].Relationships.Database = &s.Databases[j]
+				break
+			}
+		}
+		for j := range s.Accounts {
+			if g.AccountName.Value() == s.Accounts[j].Name.Value() {
+				s.GremlinGraphs[i].Relationships.Account = &s.Accounts[j]
+				break
+			}
+		}
+	}
+
+	for i, c := range s.SQLContainers {
+		for j := range s.Databases {
+			if c.DatabaseName.Value() == s.Databases[j].Name.Value() {
+				s.SQLContainers[i].Relationships.Database = &s.Databases[j]
+				break
+			}
+		}
+		for j := range s.Accounts {
+			if c.AccountName.Value() == s.Accounts[j].Name.Value() {
+				s.SQLContainers[i].Relationships.Account = &s.Accounts[j]
 				break
 			}
 		}

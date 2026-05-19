@@ -14,6 +14,7 @@ func (s *Storage) PostProcess() {
 			if queue.StorageAccountName.Value() == s.Accounts[j].Name.Value() {
 				s.Queues[i].AccountReplicationType = s.Accounts[j].AccountReplicationType
 				s.Queues[i].AccountKind = s.Accounts[j].AccountKind
+				s.Queues[i].AccountTier = s.Accounts[j].AccountTier
 				break
 			}
 		}
@@ -25,6 +26,7 @@ func (s *Storage) PostProcess() {
 			if share.StorageAccountName.Value() == s.Accounts[j].Name.Value() {
 				s.Shares[i].AccountReplicationType = s.Accounts[j].AccountReplicationType
 				s.Shares[i].AccountKind = s.Accounts[j].AccountKind
+				s.Shares[i].AccountTier = s.Accounts[j].AccountTier
 				break
 			}
 		}

@@ -19,4 +19,7 @@ const (
 	ScalableDimensionUnknown ScalableDimension = iota
 	ScalableDimensionReadCapacityUnits
 	ScalableDimensionWriteCapacityUnits
+	ScalableDimensionMSKBrokerStorageVolumeSize
+	ScalableDimensionElastiCacheReplicationGroupNodeGroups
+	ScalableDimensionElastiCacheReplicationGroupReplicas
 )

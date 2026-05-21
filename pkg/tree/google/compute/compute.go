@@ -34,17 +34,18 @@ type Compute struct {
 }
 
 func (c *Compute) PostProcess() {
-	// Increment InstanceGroupManager TargetSize for each PerInstanceConfig that references it
+	// Link PerInstanceConfigs to their InstanceGroupManager so pricing can sum them
+	// with TargetSize. Must be idempotent: clear before populating since PostProcess
+	// can run multiple times (parser + processor).
 	for i := range c.InstanceGroupManagers {
-		for _, config := range c.PerInstanceConfigs {
-			igm := &c.InstanceGroupManagers[i]
+		c.InstanceGroupManagers[i].Relationships.PerInstanceConfigs = nil
+	}
+	for i := range c.InstanceGroupManagers {
+		igm := &c.InstanceGroupManagers[i]
+		for j := range c.PerInstanceConfigs {
+			config := &c.PerInstanceConfigs[j]
 			if config.InstanceGroupManagerRef.Value() == igm.ID || config.InstanceGroupManagerRef.Value() == igm.Name.Value() {
-				igm.TargetSize = value.New(
-					igm.TargetSize.Value()+1,
-					igm.TargetSize.Flags(),
-					igm.TargetSize.Field(),
-					igm.TargetSize.Source(),
-				)
+				igm.Relationships.PerInstanceConfigs = append(igm.Relationships.PerInstanceConfigs, config)
 			}
 		}
 	}

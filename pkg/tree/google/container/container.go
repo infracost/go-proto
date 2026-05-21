@@ -7,6 +7,17 @@ type Container struct {
 }
 
 func (c *Container) PostProcess() {
+	// Reset relationships first to keep this idempotent — PostProcess can run
+	// multiple times (parser builds the tree, processor re-hydrates from proto
+	// and runs PostProcess again).
+	for j := range c.Clusters {
+		c.Clusters[j].Relationships.NodePools = nil
+		c.Clusters[j].Relationships.DefaultNodePool = nil
+	}
+	for i := range c.NodePools {
+		c.NodePools[i].Relationships.Cluster = nil
+	}
+
 	// Link NodePools to Clusters by ClusterID
 	for i, np := range c.NodePools {
 		if np.ClusterID.IsEmpty() {
@@ -25,10 +36,10 @@ func (c *Container) PostProcess() {
 				// Append to Cluster's NodePools
 				cluster.Relationships.NodePools = append(cluster.Relationships.NodePools, &c.NodePools[i])
 
-				// A node pool synthesised from the cluster's inline node_config block
-				// is recorded against the cluster (IsChild==true). Treat the first
-				// such pool as the default.
-				if np.IsChild && cluster.Relationships.DefaultNodePool == nil {
+				// Inline pools named "default-pool" (either an explicit block in HCL
+				// or the synthetic default the parser creates when no explicit
+				// default is present) become the cluster's DefaultNodePool.
+				if np.IsChild && np.Name.Value() == "default-pool" && cluster.Relationships.DefaultNodePool == nil {
 					cluster.Relationships.DefaultNodePool = &c.NodePools[i]
 				}
 				break

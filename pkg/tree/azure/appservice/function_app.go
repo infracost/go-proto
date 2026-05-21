@@ -8,7 +8,7 @@ import (
 type FunctionApp struct {
 	resource.Resource  `tree:"-"`
 	SKU                value.String `tree:"sku"`
-	Tier               value.String `tree:"tier"`
+	Tier               value.Value[AppServiceTier] `tree:"tier"`
 	OSType             value.String `tree:"os_type"`
 	MinTLSVersion      value.String `tree:"min_tls_version"`
 	HTTPSOnly          value.Bool   `tree:"https_only"`

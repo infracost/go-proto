@@ -17,11 +17,11 @@ type ActionGroup struct {
 }
 
 type SMSReceiver struct {
-	CountryCode int `tree:"country_code"`
-	Count       int `tree:"count"`
+	CountryCode value.Int `tree:"country_code"`
+	Count       value.Int `tree:"count"`
 }
 
 type VoiceReceiver struct {
-	CountryCode int `tree:"country_code"`
-	Count       int `tree:"count"`
+	CountryCode value.Int `tree:"country_code"`
+	Count       value.Int `tree:"count"`
 }

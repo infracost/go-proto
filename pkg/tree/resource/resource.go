@@ -23,6 +23,7 @@ type Resource struct {
 	IsFree                 bool
 	SupportsTags           bool
 	SupportsDefaultTags    bool
+	IsProduction           bool
 	BasicChecksum          string
 	FullChecksum           string
 	Flags                  uint64

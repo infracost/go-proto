@@ -92,6 +92,19 @@ func (az *Azure) PostProcess() {
 	// NOTE: Service-level PostProcess() methods are invoked automatically by the
 	// reflective tree walker in tree.go. Only cross-service wiring belongs here.
 
+	// cross-service: mark log analytics workspaces as sentinel-enabled when any
+	// sentinel data connector references them. This matches the legacy
+	// internal/tree/azure/azure.go:ManageRelationships() behaviour and drives
+	// the "Sentinel data ingestion" cost component on Workspace.
+	for i, workspace := range az.LogAnalytics.Workspaces {
+		for _, dc := range az.Sentinel.DataConnectors {
+			if dc.WorkspaceID.Value() == workspace.ID {
+				az.LogAnalytics.Workspaces[i].SentinelEnabled = az.LogAnalytics.Workspaces[i].SentinelEnabled.WithValue(true)
+				break
+			}
+		}
+	}
+
 	// cross-service: link backup protected VMs to compute virtual machines
 	for i, vm := range az.RecoveryServices.BackupProtectedVMs {
 		for j := range az.Compute.VirtualMachines {

@@ -25,6 +25,8 @@ const (
 	CapacityProviderTypeUnknown CapacityProviderType = iota
 	CapacityProviderTypeFargate
 	CapacityProviderTypeFargateSpot
+	CapacityProviderTypeASG
+	CapacityProviderTypeManagedInstances
 )
 
 type CapacityProvider struct {

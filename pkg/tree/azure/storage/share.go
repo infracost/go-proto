@@ -12,4 +12,5 @@ type Share struct {
 	StorageAccountName     value.String                        `tree:"storage_account_name"`
 	AccountReplicationType value.Value[AccountReplicationType] `tree:"account_replication_type"`
 	AccountKind            value.Value[AccountKind]            `tree:"account_kind"`
+	AccountTier            value.Value[AccountTier]            `tree:"account_tier"`
 }

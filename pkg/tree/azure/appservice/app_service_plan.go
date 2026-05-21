@@ -12,6 +12,6 @@ type AppServicePlan struct {
 	SKUCapacity       value.Int    `tree:"sku_capacity"`
 	WorkerCount       value.Int    `tree:"worker_count"`
 	OSType            value.String `tree:"os_type"`
-	Kind              value.String `tree:"kind"`
-	Tier              value.String `tree:"tier"`
+	Kind              value.Value[AppServiceKind] `tree:"kind"`
+	Tier              value.Value[AppServiceTier] `tree:"tier"`
 }

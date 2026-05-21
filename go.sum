@@ -26,6 +26,8 @@ github.com/hashicorp/hcl/v2 v2.24.0 h1:2QJdZ454DSsYGoaE6QheQZjtKZSUs9Nh2izTWiwQx
 github.com/hashicorp/hcl/v2 v2.24.0/go.mod h1:oGoO1FIQYfn/AgyOhlg9qLC6/nOJPX3qGbkZpYAcqfM=
 github.com/infracost/proto v1.34.0 h1:zkp3C8YCozE6hZ8bP00dk4jQE2c0/QZDZjkII08k9/g=
 github.com/infracost/proto v1.34.0/go.mod h1:Z8vPWBWblwJlw+/ksO+BtsXwf9NiOcSTWx0WRWNbfUA=
+github.com/infracost/proto v1.138.0 h1:WDwRHGkhH8nSe0Ctbe/R2E8PB5aVcYdmsc229jaOsxk=
+github.com/infracost/proto v1.138.0/go.mod h1:Z8vPWBWblwJlw+/ksO+BtsXwf9NiOcSTWx0WRWNbfUA=
 github.com/mitchellh/go-wordwrap v1.0.1 h1:TLuKupo69TCn6TQSyGxwI1EblZZEsQ0vMlAFQflz0v0=
 github.com/mitchellh/go-wordwrap v1.0.1/go.mod h1:R62XHJLzvMFRBbcrT7m7WgmE1eOyTSsCt+hzestvNj0=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=

@@ -20,5 +20,6 @@ type InstanceGroupManager struct {
 }
 
 type InstanceGroupManagerRelationships struct {
-	InstanceTemplate *InstanceTemplate
+	InstanceTemplate   *InstanceTemplate
+	PerInstanceConfigs []*PerInstanceConfig
 }

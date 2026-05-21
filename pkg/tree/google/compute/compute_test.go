@@ -70,7 +70,7 @@ func TestPostProcess_IGMLinkedByName(t *testing.T) {
 	assert.Equal(t, "e2-micro", c.InstanceGroupManagers[0].MachineType.Value())
 }
 
-func TestPostProcess_PerInstanceConfigIncrementsTargetSize(t *testing.T) {
+func TestPostProcess_PerInstanceConfigLinkedToIGM(t *testing.T) {
 	c := &Compute{
 		InstanceGroupManagers: []InstanceGroupManager{
 			{
@@ -89,7 +89,8 @@ func TestPostProcess_PerInstanceConfigIncrementsTargetSize(t *testing.T) {
 
 	c.PostProcess()
 
-	assert.Equal(t, int64(4), c.InstanceGroupManagers[0].TargetSize.Value())
+	assert.Equal(t, int64(3), c.InstanceGroupManagers[0].TargetSize.Value())
+	assert.Len(t, c.InstanceGroupManagers[0].Relationships.PerInstanceConfigs, 1)
 }
 
 func TestPostProcess_PerInstanceConfigMatchesByName(t *testing.T) {
@@ -111,10 +112,10 @@ func TestPostProcess_PerInstanceConfigMatchesByName(t *testing.T) {
 
 	c.PostProcess()
 
-	assert.Equal(t, int64(3), c.InstanceGroupManagers[0].TargetSize.Value())
+	assert.Len(t, c.InstanceGroupManagers[0].Relationships.PerInstanceConfigs, 1)
 }
 
-func TestPostProcess_MultiplePerInstanceConfigsIncrementCumulatively(t *testing.T) {
+func TestPostProcess_MultiplePerInstanceConfigsAllLinked(t *testing.T) {
 	c := &Compute{
 		InstanceGroupManagers: []InstanceGroupManager{
 			{
@@ -137,7 +138,32 @@ func TestPostProcess_MultiplePerInstanceConfigsIncrementCumulatively(t *testing.
 
 	c.PostProcess()
 
-	assert.Equal(t, int64(3), c.InstanceGroupManagers[0].TargetSize.Value())
+	assert.Len(t, c.InstanceGroupManagers[0].Relationships.PerInstanceConfigs, 2)
+}
+
+// PostProcess must be idempotent — the parser runs it once on its tree, then the
+// processor runs it again on a re-hydrated copy after proto serialization.
+func TestPostProcess_PerInstanceConfigIdempotent(t *testing.T) {
+	c := &Compute{
+		InstanceGroupManagers: []InstanceGroupManager{
+			{
+				Resource:   resource.Resource{ID: "igm-1"},
+				Name:       value.New("my-igm", 0, "", nil),
+				TargetSize: value.New(int64(0), 0, "", nil),
+			},
+		},
+		PerInstanceConfigs: []PerInstanceConfig{
+			{
+				Resource:                resource.Resource{ID: "pic-1"},
+				InstanceGroupManagerRef: value.New("igm-1", 0, "", nil),
+			},
+		},
+	}
+
+	c.PostProcess()
+	c.PostProcess()
+
+	assert.Len(t, c.InstanceGroupManagers[0].Relationships.PerInstanceConfigs, 1)
 }
 
 func TestPostProcess_RegionDiskMarkedAsAttached(t *testing.T) {

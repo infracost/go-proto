@@ -13,6 +13,7 @@ type SQLDatabase struct {
 	Family            value.String                   `tree:"family"`
 	Cores             value.Int                      `tree:"cores"`
 	MaxSizeGB         value.Double                   `tree:"max_size_gb"`
+	ReadReplicaCount  value.Int                      `tree:"read_replica_count"`
 	ZoneRedundant     value.Bool                     `tree:"zone_redundant"`
 	BackupStorageType value.Value[BackupStorageType] `tree:"backup_storage_type"`
 	AutoPauseDelay    value.Int                      `tree:"auto_pause_delay"`

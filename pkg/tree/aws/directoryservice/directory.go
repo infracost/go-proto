@@ -7,9 +7,18 @@ import (
 
 type Directory struct {
 	resource.Resource `tree:"-"`
-	Type              value.Value[DirectoryType] `tree:"type"`
-	Size              value.Value[DirectorySize] `tree:"size"`
+	Type              value.Value[DirectoryType]    `tree:"type"`
+	Size              value.Value[DirectorySize]    `tree:"size"`
+	Edition           value.Value[DirectoryEdition] `tree:"edition"`
 }
+
+type DirectoryEdition uint32
+
+const (
+	DirectoryEditionUnknown DirectoryEdition = iota
+	DirectoryEditionStandard
+	DirectoryEditionEnterprise
+)
 
 type DirectoryType uint32
 

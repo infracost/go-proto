@@ -15,7 +15,7 @@ type Disk struct {
 	InstanceCount     value.Int              `tree:"instance_count"`
 	SourceImage       value.String           `tree:"source_image"`
 	SourceSnapshot    value.String           `tree:"source_snapshot"`
-	IsAttached        bool                   `tree:"-"`
+	IsAttached        value.Bool             `tree:"is_attached"`
 }
 
 type DiskType uint32

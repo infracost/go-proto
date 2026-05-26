@@ -188,8 +188,8 @@ func TestPostProcess_RegionDiskMarkedAsAttached(t *testing.T) {
 
 	c.PostProcess()
 
-	assert.True(t, c.RegionDisks[0].IsAttached)
-	assert.False(t, c.RegionDisks[1].IsAttached)
+	assert.True(t, c.RegionDisks[0].IsAttached.Value())
+	assert.False(t, c.RegionDisks[1].IsAttached.Value())
 }
 
 func TestPostProcess_RegionDiskMatchedByName(t *testing.T) {
@@ -210,7 +210,7 @@ func TestPostProcess_RegionDiskMatchedByName(t *testing.T) {
 
 	c.PostProcess()
 
-	assert.True(t, c.RegionDisks[0].IsAttached)
+	assert.True(t, c.RegionDisks[0].IsAttached.Value())
 }
 
 func TestPostProcess_RegionDiskMatchedBySelfLink(t *testing.T) {
@@ -232,7 +232,7 @@ func TestPostProcess_RegionDiskMatchedBySelfLink(t *testing.T) {
 
 	c.PostProcess()
 
-	assert.True(t, c.RegionDisks[0].IsAttached)
+	assert.True(t, c.RegionDisks[0].IsAttached.Value())
 }
 
 func TestPostProcess_DiskStillMarkedAsAttached(t *testing.T) {
@@ -253,5 +253,5 @@ func TestPostProcess_DiskStillMarkedAsAttached(t *testing.T) {
 
 	c.PostProcess()
 
-	assert.True(t, c.Disks[0].IsAttached)
+	assert.True(t, c.Disks[0].IsAttached.Value())
 }

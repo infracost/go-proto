@@ -1,6 +1,9 @@
 package compute
 
-import "github.com/infracost/go-proto/pkg/tree/value"
+import (
+	"github.com/infracost/go-proto/pkg/flag"
+	"github.com/infracost/go-proto/pkg/tree/value"
+)
 
 type Compute struct {
 	Addresses                []Address              `tree:"addresses"`
@@ -104,14 +107,14 @@ func (c *Compute) PostProcess() {
 				if inst.AttachedDisk.Value() == c.Disks[j].ID ||
 					inst.AttachedDisk.Value() == c.Disks[j].Name.Value() ||
 					inst.AttachedDisk.Value() == c.Disks[j].SelfLink.Value() {
-					c.Disks[j].IsAttached = true
+					c.Disks[j].IsAttached = value.New(true, flag.Synthetic, "", nil)
 				}
 			}
 			for j := range c.RegionDisks {
 				if inst.AttachedDisk.Value() == c.RegionDisks[j].ID ||
 					inst.AttachedDisk.Value() == c.RegionDisks[j].Name.Value() ||
 					inst.AttachedDisk.Value() == c.RegionDisks[j].SelfLink.Value() {
-					c.RegionDisks[j].IsAttached = true
+					c.RegionDisks[j].IsAttached = value.New(true, flag.Synthetic, "", nil)
 				}
 			}
 		}

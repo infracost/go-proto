@@ -9,5 +9,5 @@ type RegionDisk struct {
 	resource.Resource `tree:"-"`
 	Name              value.String `tree:"name"`
 	SelfLink          value.String `tree:"self_link"`
-	IsAttached        bool         `tree:"-"`
+	IsAttached        value.Bool   `tree:"is_attached"`
 }

@@ -17,7 +17,7 @@ type NodePool struct {
 	DiskSizeGB         value.Double                      `tree:"disk_size_gb"`
 	LocalSSDCount      value.Int                         `tree:"local_ssd_count"`
 	GuestAccelerators  []compute.GuestAccelerator        `tree:"guest_accelerators"`
-	Inline             bool                              `tree:"-"`
+	Inline             value.Bool                        `tree:"inline"`
 	ClusterID          value.String                      `tree:"cluster_id"`
 
 	Relationships NodePoolRelationships `tree:"-"`

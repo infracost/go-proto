@@ -1,6 +1,8 @@
 package azure
 
 import (
+	"github.com/infracost/go-proto/pkg/flag"
+	"github.com/infracost/go-proto/pkg/tree/value"
 	"github.com/infracost/go-proto/pkg/tree/azure/activedirectory"
 	"github.com/infracost/go-proto/pkg/tree/azure/apimanagement"
 	"github.com/infracost/go-proto/pkg/tree/azure/appconfiguration"
@@ -138,7 +140,7 @@ func (az *Azure) PostProcess() {
 	for _, fa := range az.AppService.FunctionApps {
 		for j := range az.Storage.Accounts {
 			if fa.StorageAccountName.Value() == az.Storage.Accounts[j].Name.Value() {
-				az.Storage.Accounts[j].UsedByFunctionApps = true
+				az.Storage.Accounts[j].UsedByFunctionApps = value.New(true, flag.Synthetic, "", nil)
 				break
 			}
 		}

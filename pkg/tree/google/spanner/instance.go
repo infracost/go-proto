@@ -13,7 +13,7 @@ type Instance struct {
 	Edition              value.Value[SpannerEdition]    `tree:"edition"`
 	Config               value.String                   `tree:"config"`
 	InstanceType         value.Value[SpannerInstanceType] `tree:"instance_type"`
-	HasManagedAutoscaler bool                           `tree:"-"`
+	HasManagedAutoscaler value.Bool                       `tree:"has_managed_autoscaler"`
 }
 
 type SpannerInstanceType uint32

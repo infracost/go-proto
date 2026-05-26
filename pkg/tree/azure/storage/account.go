@@ -15,7 +15,7 @@ type Account struct {
 	NFSv3                        value.Bool   `tree:"nfsv3"`
 	LastTimeBlobEnabled          value.Bool   `tree:"last_time_blob_enabled"`
 	PublicNetworkAccessEnabled   value.Bool   `tree:"public_network_access_enabled"`
-	UsedByFunctionApps          bool         `tree:"-"`
+	UsedByFunctionApps           value.Bool   `tree:"used_by_function_apps"`
 
 	Relationships AccountRelationships `tree:"-"`
 }

@@ -148,6 +148,7 @@ func FromProto(p *prototree.Tree) (*Tree, error) {
 				}
 			}
 		}
+
 	}
 
 	if len(p.Providers) > 0 {
@@ -169,6 +170,8 @@ func FromProto(p *prototree.Tree) (*Tree, error) {
 	for i, p := range p.UnsupportedResources {
 		t.UnsupportedResources[i] = convertResourceFromProto(p, nil)
 	}
+
+	t.PostProcess()
 
 	return t, nil
 }

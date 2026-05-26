@@ -302,6 +302,37 @@ func TestNestedSubResourceRoundTrip(t *testing.T) {
 	assert.Equal(t, int64(3000), extra.EBSVolume.IOPS.Value())
 }
 
+func TestRoundTrip_RelinksRelationships(t *testing.T) {
+	original := &Tree{
+		AWS: aws.AWS{
+			EC2: ec2.EC2{
+				Instances: []ec2.Instance{
+					{Resource: resource.Resource{ID: "i-111"}},
+				},
+				InstanceStates: []ec2.InstanceStateMapping{
+					{InstanceID: value.New("i-111", 0, "", nil)},
+				},
+			},
+		},
+	}
+
+	original.PostProcess()
+	require.NotNil(t, original.AWS.EC2.Instances[0].Relationships.InstanceState,
+		"precondition: relationship should be set on the original tree")
+
+	proto, err := original.ToProto()
+	require.NoError(t, err)
+
+	result, err := FromProto(proto)
+	require.NoError(t, err)
+
+	require.Len(t, result.AWS.EC2.Instances, 1)
+	require.Len(t, result.AWS.EC2.InstanceStates, 1)
+	require.NotNil(t, result.AWS.EC2.Instances[0].Relationships.InstanceState,
+		"FromProto should re-link relationships via PostProcess")
+	assert.Equal(t, &result.AWS.EC2.InstanceStates[0], result.AWS.EC2.Instances[0].Relationships.InstanceState)
+}
+
 func TestEmptyTree(t *testing.T) {
 	tree := &Tree{}
 

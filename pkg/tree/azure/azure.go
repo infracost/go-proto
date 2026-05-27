@@ -94,6 +94,11 @@ func (az *Azure) PostProcess() {
 	// NOTE: Service-level PostProcess() methods are invoked automatically by the
 	// reflective tree walker in tree.go. Only cross-service wiring belongs here.
 
+	// Reset relationships this method writes to so PostProcess is idempotent.
+	for i := range az.RecoveryServices.BackupProtectedVMs {
+		az.RecoveryServices.BackupProtectedVMs[i].Relationships.SourceVM = nil
+	}
+
 	// cross-service: mark log analytics workspaces as sentinel-enabled when any
 	// sentinel data connector references them. This matches the legacy
 	// internal/tree/azure/azure.go:ManageRelationships() behaviour and drives

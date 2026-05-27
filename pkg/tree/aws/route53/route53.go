@@ -8,6 +8,11 @@ type Route53 struct {
 }
 
 func (r *Route53) PostProcess() {
+	// Reset relationships this method writes to so PostProcess is idempotent.
+	for i := range r.Records {
+		r.Records[i].Relationships.AliasRecord = nil
+	}
+
 	// link alias records to their target records
 	for i, recA := range r.Records {
 		for j, recB := range r.Records {

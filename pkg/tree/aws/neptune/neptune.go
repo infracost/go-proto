@@ -7,6 +7,14 @@ type Neptune struct {
 }
 
 func (n *Neptune) PostProcess() {
+	// Reset relationships this method writes to so PostProcess is idempotent.
+	for i := range n.ClusterInstances {
+		n.ClusterInstances[i].Relationships.Cluster = nil
+	}
+	for i := range n.ClusterSnapshots {
+		n.ClusterSnapshots[i].Relationships.Cluster = nil
+	}
+
 	// link cluster instances to clusters
 	for i, instance := range n.ClusterInstances {
 		for j := range n.Clusters {

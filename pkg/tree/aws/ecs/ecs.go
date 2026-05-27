@@ -12,6 +12,20 @@ type ECS struct {
 }
 
 func (e *ECS) PostProcess() {
+	// Reset relationships this method writes to so PostProcess is idempotent.
+	for i := range e.Clusters {
+		e.Clusters[i].Relationships.CapacityProviders = nil
+		e.Clusters[i].Relationships.KnownCapacityProviderTypes = nil
+	}
+	for i := range e.TaskSets {
+		e.TaskSets[i].Relationships.TaskDefinition = nil
+	}
+	for i := range e.Services {
+		e.Services[i].Relationships.KnownCapacityProviderTypes = nil
+		e.Services[i].Relationships.Cluster = nil
+		e.Services[i].Relationships.TaskDefinition = nil
+	}
+
 	// Build capacity provider type map
 	cpTypes := make(map[string]CapacityProviderType)
 	for _, cp := range e.CapacityProviders {

@@ -6,6 +6,11 @@ type SNS struct {
 }
 
 func (s *SNS) PostProcess() {
+	// Reset relationships this method writes to so PostProcess is idempotent.
+	for i := range s.Topics {
+		s.Topics[i].Relationships.Subscriptions = nil
+	}
+
 	// link subscriptions to topics
 	for i, sub := range s.Subscriptions {
 		for j := range s.Topics {

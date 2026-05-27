@@ -44,6 +44,11 @@ func (g *Google) PostProcess() {
 	// NOTE: Service-level PostProcess() methods are invoked automatically by the
 	// reflective tree walker in tree.go. Only cross-service wiring belongs here.
 
+	// Reset relationships this method writes to so PostProcess is idempotent.
+	for i := range g.Compute.Addresses {
+		g.Compute.Addresses[i].Relationships.Instance = nil
+	}
+
 	// cross-service: link compute addresses to instances by NATIP
 	for i, addr := range g.Compute.Addresses {
 		for j := range g.Compute.Instances {

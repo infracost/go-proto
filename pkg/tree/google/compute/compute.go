@@ -37,11 +37,9 @@ type Compute struct {
 }
 
 func (c *Compute) PostProcess() {
-	// Link PerInstanceConfigs to their InstanceGroupManager so pricing can sum them
-	// with TargetSize. Must be idempotent: clear before populating since PostProcess
-	// can run multiple times (parser + processor).
+	// Reset relationships this method writes to so PostProcess is idempotent.
 	for i := range c.InstanceGroupManagers {
-		c.InstanceGroupManagers[i].Relationships.PerInstanceConfigs = nil
+		c.InstanceGroupManagers[i].Relationships = InstanceGroupManagerRelationships{}
 	}
 	for i := range c.InstanceGroupManagers {
 		igm := &c.InstanceGroupManagers[i]

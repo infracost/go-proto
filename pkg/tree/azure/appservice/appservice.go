@@ -19,6 +19,11 @@ type AppService struct {
 }
 
 func (s *AppService) PostProcess() {
+	// Reset relationships this method writes to so PostProcess is idempotent.
+	for i := range s.CertificateBindings {
+		s.CertificateBindings[i].Relationships.Certificate = nil
+	}
+
 	// link certificate bindings to certificates
 	for i, binding := range s.CertificateBindings {
 		for j := range s.Certificates {

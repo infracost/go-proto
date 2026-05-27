@@ -30,9 +30,41 @@ type EC2 struct {
 }
 
 func (ec2 *EC2) PostProcess() {
-	// reset instance relationships
+	// Reset relationships this method writes to so PostProcess is idempotent.
 	for i := range ec2.Instances {
 		ec2.Instances[i].Relationships = InstanceRelationships{}
+	}
+	for i := range ec2.AutoscalingGroups {
+		ec2.AutoscalingGroups[i].Relationships = AutoscalingGroupRelationships{}
+	}
+	for i := range ec2.VPCEndpoints {
+		ec2.VPCEndpoints[i].Relationships = VPCEndpointRelationships{}
+	}
+	for i := range ec2.VPCs {
+		ec2.VPCs[i].Relationships.VPCEndpoints = nil
+	}
+	for i := range ec2.Subnets {
+		ec2.Subnets[i].Relationships.NATGateways = nil
+	}
+	for i := range ec2.NATGateways {
+		ec2.NATGateways[i].Relationships = NATGatewayRelationships{}
+	}
+	for i := range ec2.ElasticIPs {
+		ec2.ElasticIPs[i].Relationships = ElasticIPRelationships{}
+	}
+	for i := range ec2.ElasticIPAssociations {
+		ec2.ElasticIPAssociations[i].Relationships = ElasticIPAssociationRelationships{}
+	}
+	for i := range ec2.TransitGatewayVPCAttachments {
+		ec2.TransitGatewayVPCAttachments[i].Relationships = TransitGatewayVPCAttachmentRelationships{}
+	}
+	for i := range ec2.TransitGatewayPeeringAttachments {
+		ec2.TransitGatewayPeeringAttachments[i].Relationships = TransitGatewayPeeringAttachmentRelationships{}
+	}
+	for i := range ec2.LoadBalancers {
+		for j := range ec2.LoadBalancers[i].SubnetMappings {
+			ec2.LoadBalancers[i].SubnetMappings[j].Relationships = SubnetMappingRelationships{}
+		}
 	}
 
 	// link instance states to instances

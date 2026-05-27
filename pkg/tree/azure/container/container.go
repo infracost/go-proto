@@ -9,6 +9,14 @@ type Container struct {
 }
 
 func (s *Container) PostProcess() {
+	// Reset relationships this method writes to so PostProcess is idempotent.
+	for i := range s.KubernetesClusterNodePools {
+		s.KubernetesClusterNodePools[i].Relationships.Cluster = nil
+	}
+	for i := range s.Apps {
+		s.Apps[i].Relationships = AppRelationships{}
+	}
+
 	for i, nodePool := range s.KubernetesClusterNodePools {
 		for j := range s.KubernetesClusters {
 			if nodePool.ClusterID.Value() == s.KubernetesClusters[j].ID {

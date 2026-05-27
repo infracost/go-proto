@@ -17,6 +17,11 @@ type Compute struct {
 // PostProcess links each managed disk to the VM it is attached to via
 // DiskAttachment entries or via the VM's inline OS/data disk references.
 func (c *Compute) PostProcess() {
+	// Reset relationships this method writes to so PostProcess is idempotent.
+	for i := range c.ManagedDisks {
+		c.ManagedDisks[i].Relationships = ManagedDiskRelationships{}
+	}
+
 	diskByID := make(map[string]*ManagedDisk)
 	for i := range c.ManagedDisks {
 		if id := c.ManagedDisks[i].ID; id != "" {

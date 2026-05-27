@@ -6,6 +6,14 @@ type RDS struct {
 }
 
 func (r *RDS) PostProcess() {
+	// Reset relationships this method writes to so PostProcess is idempotent.
+	for i := range r.Instances {
+		r.Instances[i].Relationships = InstanceRelationships{}
+	}
+	for i := range r.Clusters {
+		r.Clusters[i].Relationships.Instances = nil
+	}
+
 	// link instances to clusters
 	for i, instance := range r.Instances {
 		if !instance.ClusterID.IsEmpty() {

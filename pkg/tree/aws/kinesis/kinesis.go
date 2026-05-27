@@ -8,6 +8,11 @@ type Kinesis struct {
 }
 
 func (k *Kinesis) PostProcess() {
+	// Reset relationships this method writes to so PostProcess is idempotent.
+	for i := range k.DeliveryStreams {
+		k.DeliveryStreams[i].Relationships.KinesisStream = nil
+	}
+
 	// link firehose delivery streams to kinesis streams
 	for i, deliveryStream := range k.DeliveryStreams {
 		if deliveryStream.KinesisStreamARN.IsEmpty() {

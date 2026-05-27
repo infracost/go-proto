@@ -123,6 +123,35 @@ type AWS struct {
 }
 
 func (aws *AWS) PostProcess() {
+	// Reset relationships this method writes to so PostProcess is idempotent.
+	for i := range aws.MSK.Clusters {
+		aws.MSK.Clusters[i].Relationships.AppAutoscalingTargets = nil
+	}
+	for i := range aws.DynamoDB.Tables {
+		aws.DynamoDB.Tables[i].Relationships.AppAutoscalingTargets = nil
+	}
+	for i := range aws.ElastiCache.ReplicationGroups {
+		aws.ElastiCache.ReplicationGroups[i].Relationships.AppAutoscalingTargets = nil
+	}
+	for i := range aws.EKS.NodeGroups {
+		aws.EKS.NodeGroups[i].Relationships.LaunchTemplate = nil
+	}
+	for i := range aws.Scheduler.Schedules {
+		aws.Scheduler.Schedules[i].Relationships.TaskDefinition = nil
+	}
+	for i := range aws.CloudWatch.EventTargets {
+		aws.CloudWatch.EventTargets[i].Relationships.TaskDefinition = nil
+	}
+	for i := range aws.Pipes.Pipes {
+		aws.Pipes.Pipes[i].Relationships.TaskDefinition = nil
+	}
+	for i := range aws.DirectConnect.GatewayAssociations {
+		aws.DirectConnect.GatewayAssociations[i].Relationships.TransitGateway = nil
+	}
+	for i := range aws.ECS.Services {
+		aws.ECS.Services[i].Relationships.Subnets = nil
+	}
+
 	// acm - link cert authorities to certificate manager
 	aws.CertificateManager.AddCertificateAuthorities(&aws.PCACertificateAuthority)
 

@@ -30,6 +30,23 @@ type Network struct {
 }
 
 func (s *Network) PostProcess() {
+	// Reset relationships this method writes to so PostProcess is idempotent.
+	for i := range s.LoadBalancerRules {
+		s.LoadBalancerRules[i].Relationships.LoadBalancer = nil
+	}
+	for i := range s.VirtualNetworkGatewayConnections {
+		s.VirtualNetworkGatewayConnections[i].Relationships.Gateway = nil
+	}
+	for i := range s.VirtualNetworkPeerings {
+		s.VirtualNetworkPeerings[i].Relationships = VirtualNetworkPeeringRelationships{}
+	}
+	for i := range s.TrafficManagerEndpoints {
+		s.TrafficManagerEndpoints[i].Relationships.Profile = nil
+	}
+	for i := range s.CDNEndpoints {
+		s.CDNEndpoints[i].Relationships.Profile = nil
+	}
+
 	// Link LB rules to LBs
 	for i, rule := range s.LoadBalancerRules {
 		for j := range s.LoadBalancers {

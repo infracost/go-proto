@@ -10,6 +10,23 @@ type CosmosDB struct {
 }
 
 func (s *CosmosDB) PostProcess() {
+	// Reset relationships this method writes to so PostProcess is idempotent.
+	for i := range s.Databases {
+		s.Databases[i].Relationships.Account = nil
+	}
+	for i := range s.CassandraTables {
+		s.CassandraTables[i].Relationships.Database = nil
+	}
+	for i := range s.MongoCollections {
+		s.MongoCollections[i].Relationships.Database = nil
+	}
+	for i := range s.GremlinGraphs {
+		s.GremlinGraphs[i].Relationships = GremlinGraphRelationships{}
+	}
+	for i := range s.SQLContainers {
+		s.SQLContainers[i].Relationships = SQLContainerRelationships{}
+	}
+
 	for i, db := range s.Databases {
 		for j := range s.Accounts {
 			if db.AccountName.Value() == s.Accounts[j].Name.Value() {

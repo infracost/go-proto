@@ -12,6 +12,11 @@ type S3 struct {
 }
 
 func (s *S3) PostProcess() {
+	// Reset relationships this method writes to so PostProcess is idempotent.
+	for i := range s.Buckets {
+		s.Buckets[i].Relationships = BucketRelationships{}
+	}
+
 	bucketMap := make(map[string]*Bucket)
 	for i := range s.Buckets {
 		if name := s.Buckets[i].Name.Value(); name != "" {

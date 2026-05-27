@@ -7,6 +7,12 @@ type ElastiCache struct {
 }
 
 func (e *ElastiCache) PostProcess() {
+	// Reset relationships this method writes to so PostProcess is idempotent.
+	for i := range e.Clusters {
+		e.Clusters[i].Relationships.ParameterGroup = nil
+		e.Clusters[i].Relationships.ReplicationGroup = nil
+	}
+
 	for i, cluster := range e.Clusters {
 		// link cluster to parameter group
 		for j, pg := range e.ParameterGroups {

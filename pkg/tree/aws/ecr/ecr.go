@@ -6,6 +6,7 @@ type ECR struct {
 }
 
 func (e *ECR) PostProcess() {
+	// Reset relationships this method writes to so PostProcess is idempotent.
 	for i := range e.Repositories {
 		e.Repositories[i].Relationships = RepositoryRelationships{}
 	}

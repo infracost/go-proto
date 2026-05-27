@@ -9,6 +9,11 @@ type Cognitive struct {
 }
 
 func (s *Cognitive) PostProcess() {
+	// Reset relationships this method writes to so PostProcess is idempotent.
+	for i := range s.Deployments {
+		s.Deployments[i].Relationships.Account = nil
+	}
+
 	for i, deployment := range s.Deployments {
 		for j := range s.Accounts {
 			if deployment.CognitiveAccountID.Value() == s.Accounts[j].ID {

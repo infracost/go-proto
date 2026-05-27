@@ -8,6 +8,11 @@ type Storage struct {
 }
 
 func (s *Storage) PostProcess() {
+	// Reset relationships this method writes to so PostProcess is idempotent.
+	for i := range s.Accounts {
+		s.Accounts[i].Relationships.ManagementPolicy = nil
+	}
+
 	// Link queues to accounts by StorageAccountName
 	for i, queue := range s.Queues {
 		for j := range s.Accounts {

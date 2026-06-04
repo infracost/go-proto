@@ -12,6 +12,7 @@ type EBSVolume struct {
 	SizeGB            value.Int                  `tree:"size"`
 	ThroughputMiBperS value.Int                  `tree:"throughput"`
 	MultiAttach       value.Bool                 `tree:"multi_attach"`
+	Encrypted         value.Bool                 `tree:"encrypted"`
 }
 
 type EBSVolumeType uint32

@@ -110,21 +110,35 @@ func (ec2 *EC2) PostProcess() {
 				instance.Tenancy = lt.Tenancy
 			}
 
-			launchTemplateBlockDeviceMap := make(map[string]BlockDeviceMapping)
+			// Iterate the original slices for deterministic order — Go map
+			// iteration is randomised, and downstream consumers index into this
+			// slice to name sub-resources, so unstable order produces flaky
+			// output (instance-defined and LT-only devices can swap positions).
+			// Maps are only used for lookups during the merge.
+			//
+			// TODO: LT-derived block devices currently inherit their address
+			// from the launch template (e.g. `aws_launch_template.X.block_device_mapping[0]`).
+			// Downstream the providers package falls back to a synthetic
+			// `ebs_block_device[N]` name for these because the address doesn't
+			// start with the instance's. It would be more accurate to surface
+			// the actual LT-prefixed address so users can see where the device
+			// is really defined — left for a follow-up since it changes
+			// user-visible output.
+			launchTemplateBlockDeviceMap := make(map[string]BlockDeviceMapping, len(lt.BlockDeviceMappings))
 			for _, blockDevice := range lt.BlockDeviceMappings {
 				launchTemplateBlockDeviceMap[blockDevice.DeviceName.Value()] = blockDevice
 			}
 
-			instanceBlockDeviceMap := make(map[string]BlockDeviceMapping)
+			instanceBlockDeviceNames := make(map[string]struct{}, len(instance.BlockDeviceMappings))
 			for _, blockDevice := range instance.BlockDeviceMappings {
-				instanceBlockDeviceMap[blockDevice.DeviceName.Value()] = blockDevice
+				instanceBlockDeviceNames[blockDevice.DeviceName.Value()] = struct{}{}
 			}
 
-			blockDevices := []BlockDeviceMapping{}
+			blockDevices := make([]BlockDeviceMapping, 0, len(instance.BlockDeviceMappings)+len(lt.BlockDeviceMappings))
 
-			// merge any defaults from the launch template into existing block devices
-			for name, blockDevice := range instanceBlockDeviceMap {
-				if launchTemplateBlockDevice, ok := launchTemplateBlockDeviceMap[name]; ok {
+			// instance-defined first, merging any defaults from the launch template
+			for _, blockDevice := range instance.BlockDeviceMappings {
+				if launchTemplateBlockDevice, ok := launchTemplateBlockDeviceMap[blockDevice.DeviceName.Value()]; ok {
 					if blockDevice.EBSVolume.Type.IsDefaultOrEmpty() {
 						blockDevice.EBSVolume.Type = launchTemplateBlockDevice.EBSVolume.Type
 					}
@@ -141,9 +155,9 @@ func (ec2 *EC2) PostProcess() {
 				blockDevices = append(blockDevices, blockDevice)
 			}
 
-			// add any new block devices from the launch template
-			for name, blockDevice := range launchTemplateBlockDeviceMap {
-				if _, ok := instanceBlockDeviceMap[name]; !ok {
+			// LT-only block devices appended after, in launch template order
+			for _, blockDevice := range lt.BlockDeviceMappings {
+				if _, ok := instanceBlockDeviceNames[blockDevice.DeviceName.Value()]; !ok {
 					blockDevices = append(blockDevices, blockDevice)
 				}
 			}

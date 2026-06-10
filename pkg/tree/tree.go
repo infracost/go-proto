@@ -18,17 +18,19 @@ type Resource interface {
 
 type Tree struct {
 	AWS                  aws.AWS              `tree:"aws"`
-	Azure                azure.Azure           `tree:"azure"`
-	Google               google.Google         `tree:"google"`
-	UnsupportedResources []*resource.Resource  `tree:"-"` // these get handled as a special case
+	Azure                azure.Azure          `tree:"azure"`
+	Google               google.Google        `tree:"google"`
+	UnsupportedResources []*resource.Resource `tree:"-"` // these get handled as a special case
 }
 
 // ToResources returns every struct in the tree that embeds resource.Resource.
-func (t *Tree) ToResources() []Resource {
+func (t *Tree) ToResources(includeUnsupported bool) []Resource {
 	var output []Resource
 	collectResources(reflect.ValueOf(t).Elem(), &output)
-	for _, res := range t.UnsupportedResources {
-		output = append(output, res)
+	if includeUnsupported {
+		for _, res := range t.UnsupportedResources {
+			output = append(output, res)
+		}
 	}
 	return output
 }
@@ -62,13 +64,13 @@ func collectResources(v reflect.Value, out *[]Resource) {
 	}
 }
 
-// ModifyResource finds the equivlanet resource of _target_ in a cloned tree and modifies it with the supplied function
+// ModifyResource finds the equivalent resource of _target_ in a cloned tree and modifies it with the supplied function
 // Note that _target_ MUST be a pointer for this to compile
 func ModifyResource[T interface {
 	Resource
 	~*E
 }, E any](t *Tree, target T, modify func(t T)) error {
-	for _, resource := range t.ToResources() {
+	for _, resource := range t.ToResources(true) {
 		if match, ok := resource.(T); ok && match.GetBase().Definition.Address.Equal(target.GetBase().Definition.Address) {
 			modify(match)
 			return nil

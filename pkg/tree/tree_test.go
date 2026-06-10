@@ -27,7 +27,7 @@ func TestToResources(t *testing.T) {
 		},
 	}
 
-	resources := tree.ToResources()
+	resources := tree.ToResources(false)
 	require.Len(t, resources, 2)
 
 	inst0, ok := resources[0].(*ec2.Instance)
@@ -41,7 +41,7 @@ func TestToResources(t *testing.T) {
 
 func TestToResourcesEmpty(t *testing.T) {
 	tree := &Tree{}
-	resources := tree.ToResources()
+	resources := tree.ToResources(false)
 	assert.Empty(t, resources)
 }
 
@@ -53,7 +53,9 @@ func TestToResourcesUnsupported(t *testing.T) {
 		},
 	}
 
-	resources := tree.ToResources()
+	supportedResources := tree.ToResources(false)
+	require.Len(t, supportedResources, 0)
+	resources := tree.ToResources(true)
 	require.Len(t, resources, 2)
 
 	assert.Equal(t, "unsupported-1", resources[0].GetBase().ID)
@@ -103,7 +105,9 @@ func TestToResourcesMixed(t *testing.T) {
 		},
 	}
 
-	resources := tree.ToResources()
+	supportedResources := tree.ToResources(false)
+	require.Len(t, supportedResources, 1)
+	resources := tree.ToResources(true)
 	require.Len(t, resources, 2)
 
 	assert.Equal(t, "i-111", resources[0].GetBase().ID)

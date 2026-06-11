@@ -12,7 +12,6 @@ import (
 	"github.com/infracost/go-proto/pkg/tree/value"
 	"github.com/infracost/proto/gen/go/infracost/parser"
 	"github.com/infracost/proto/gen/go/infracost/provider"
-	"github.com/infracost/proto/gen/go/infracost/tree"
 	prototree "github.com/infracost/proto/gen/go/infracost/tree"
 )
 
@@ -349,7 +348,7 @@ func BaseToProviderResource(base *Resource) *provider.Resource {
 	return outputResource
 }
 
-func convertTagPropagationProblems(problems []*tree.TagPropagationProblem) []*provider.TagPropagationProblem {
+func convertTagPropagationProblems(problems []*prototree.TagPropagationProblem) []*provider.TagPropagationProblem {
 	protoProblems := make([]*provider.TagPropagationProblem, 0, len(problems))
 	for _, problem := range problems {
 		protoProblems = append(protoProblems, &provider.TagPropagationProblem{

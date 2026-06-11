@@ -168,7 +168,7 @@ func FromProto(p *prototree.Tree) (*Tree, error) {
 
 	t.UnsupportedResources = make([]*resource.Resource, len(p.UnsupportedResources))
 	for i, p := range p.UnsupportedResources {
-		t.UnsupportedResources[i] = convertResourceFromProto(p, nil)
+		t.UnsupportedResources[i] = ResourceFromProto(p)
 	}
 
 	t.PostProcess()
@@ -190,20 +190,10 @@ func setBaseResource(v reflect.Value, res *prototree.Resource) {
 		return
 	}
 
-	var providerConfig *resource.ProviderConfiguration
-	if res.Definition != nil {
-		if c := res.Definition.ProviderConfiguration; c != nil {
-			providerConfig = &resource.ProviderConfiguration{
-				Source:             c.Source,
-				VersionConstraints: c.VersionConstraints,
-			}
-		}
-	}
-
-	f.Set(reflect.ValueOf(convertResourceFromProto(res, providerConfig)).Elem())
+	f.Set(reflect.ValueOf(ResourceFromProto(res)).Elem())
 }
 
-func convertResourceFromProto(res *prototree.Resource, providerConfig *resource.ProviderConfiguration) *resource.Resource {
+func ResourceFromProto(res *prototree.Resource) *resource.Resource {
 	r := &resource.Resource{
 		ID:                     res.Id,
 		Region:                 res.Region,
@@ -221,6 +211,13 @@ func convertResourceFromProto(res *prototree.Resource, providerConfig *resource.
 		TagPropagationProblems: res.TagPropagationProblems,
 	}
 	if res.Definition != nil {
+		var providerConfig *resource.ProviderConfiguration
+		if c := res.Definition.ProviderConfiguration; c != nil {
+			providerConfig = &resource.ProviderConfiguration{
+				Source:             c.Source,
+				VersionConstraints: c.VersionConstraints,
+			}
+		}
 		r.Definition = resource.Definition{
 			CallStack:             res.Definition.CallStack,
 			ProviderConfiguration: providerConfig,

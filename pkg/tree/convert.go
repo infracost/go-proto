@@ -124,7 +124,7 @@ func valueObjectToStruct(obj *prototree.ValueObject, v reflect.Value) {
 	if obj.Resource != nil {
 		f := v.FieldByName("Resource")
 		if f.IsValid() && f.Type() == resourceType {
-			f.Set(reflect.ValueOf(convertResourceFromProto(obj.Resource, nil)).Elem())
+			f.Set(reflect.ValueOf(ResourceFromProto(obj.Resource)).Elem())
 		}
 	}
 }

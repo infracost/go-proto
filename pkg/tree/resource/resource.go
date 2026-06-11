@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/infracost/go-proto/pkg/address"
+	"github.com/infracost/go-proto/pkg/flag"
 	"github.com/infracost/go-proto/pkg/tree/value"
 	"github.com/infracost/proto/gen/go/infracost/parser"
 	"github.com/infracost/proto/gen/go/infracost/provider"
@@ -154,12 +155,137 @@ func hash(s string) string {
 // Relationships — instead of just the embedded base.
 func ToProviderResource(impl Implementation) *provider.Resource {
 	base := impl.GetBase()
+	c := BaseToProviderResource(base)
+	c.Metadata.DeepChecksum = CalculateDeepChecksum(impl)
+	return c
+}
 
+// ProtoToProviderResource converts a *prototree.Resource directly to a
+// *provider.Resource without first decoding into the intermediate Go
+// Resource struct. Use this when you only have the proto representation
+// in hand and don't need the typed helpers attached to the Go Resource.
+//
+// DeepChecksum on the returned message is set to FullChecksum — the
+// deep-checksum walker requires a typed Implementation, so callers that
+// need a true deep checksum should go through ToProviderResource.
+func ProtoToProviderResource(res *prototree.Resource) *provider.Resource {
+	if res == nil {
+		return nil
+	}
+
+	resourceMetadata := provider.ResourceMetadata{
+		DefaultTagsChecksum:    defaultTagsChecksumFromProto(res.Tags),
+		BasicChecksum:          res.BasicChecksum,
+		AttributeValueChecksum: res.FullChecksum,
+		DeepChecksum:           res.FullChecksum, // overridden by consumer
+	}
+
+	var (
+		callStack    *parser.CallStack
+		resourceType string
+		name         string
+		providerLink string
+	)
+	if def := res.Definition; def != nil {
+		callStack = def.CallStack
+		resourceType = def.ResourceType
+		name = address.FromProto(def.Address).String()
+
+		if def.CallStack != nil {
+			var fullAddressSize int
+			resourceMetadata.ModuleCalls = make([]*provider.ModuleCall, 0, len(def.CallStack.Frames))
+			for _, frame := range def.CallStack.Frames {
+				resourceMetadata.ModuleCalls = append(resourceMetadata.ModuleCalls, &provider.ModuleCall{
+					Filename:       frame.SourceRange.Filename,
+					StartLine:      frame.SourceRange.StartLine,
+					EndLine:        frame.SourceRange.EndLine,
+					DefinitionName: address.FromProto(frame.Address).From(fullAddressSize).String(),
+				})
+				fullAddressSize = address.FromProto(frame.Address).Len()
+			}
+		}
+
+		if srcRange := def.Source; srcRange != nil {
+			resourceMetadata.StartLine = srcRange.StartLine
+			resourceMetadata.EndLine = srcRange.EndLine
+			resourceMetadata.Filename = srcRange.Filename
+			resourceMetadata.ModuleCalls = nil
+		}
+
+		if pc := def.ProviderConfiguration; pc != nil && pc.Source != nil {
+			providerLink = pc.Source.Filename
+		}
+	}
+
+	outputResource := &provider.Resource{
+		Id:                  res.Id,
+		Metadata:            &resourceMetadata,
+		Type:                resourceType,
+		ProviderLink:        providerLink,
+		Name:                name,
+		IsSupported:         false, // overridden by consumer
+		IsFree:              res.IsFree,
+		IsProviderSupported: true,                      // overridden by consumer
+		Costs:               &provider.ResourceCosts{}, // overridden by consumer
+		ChildResources:      nil,
+		Tagging: &provider.Tagging{
+			Tags:                make([]*provider.Tag, 0, len(res.Tags)),
+			SupportsDefaultTags: res.SupportsDefaultTags,
+			SupportsTags:        res.SupportsTags,
+			PropagationProblems: convertTagPropagationProblems(res.TagPropagationProblems),
+		},
+		Region:    res.Region,
+		Action:    provider.ResourceAction_RESOURCE_ACTION_UNSPECIFIED,
+		CallStack: callStack,
+	}
+
+	// Match BaseToProviderResource's observable tag ordering: tags come out
+	// sorted by key (a side effect of DefaultChecksum sorting Tags in place).
+	sortedTags := make([]*prototree.Tag, len(res.Tags))
+	copy(sortedTags, res.Tags)
+	sort.Slice(sortedTags, func(i, j int) bool {
+		return sortedTags[i].GetKey().GetStringValue() < sortedTags[j].GetKey().GetStringValue()
+	})
+	for _, tag := range sortedTags {
+		outputResource.Tagging.Tags = append(outputResource.Tagging.Tags, &provider.Tag{
+			Key:              tag.GetKey().GetStringValue(),
+			Value:            tag.GetValue().GetStringValue(),
+			IsDefault:        tag.IsDefault,
+			IsKeySynthetic:   flag.Flags(tag.GetKey().GetFlags()).IsSynthetic(),
+			IsValueSynthetic: flag.Flags(tag.GetValue().GetFlags()).IsSynthetic(),
+		})
+	}
+
+	return outputResource
+}
+
+func defaultTagsChecksumFromProto(tags []*prototree.Tag) string {
+	sorted := make([]*prototree.Tag, len(tags))
+	copy(sorted, tags)
+	sort.Slice(sorted, func(i, j int) bool {
+		return sorted[i].GetKey().GetStringValue() < sorted[j].GetKey().GetStringValue()
+	})
+
+	var b strings.Builder
+	for _, tag := range sorted {
+		if !tag.IsDefault {
+			continue
+		}
+		b.WriteString(tag.GetKey().GetStringValue())
+		b.WriteString("=")
+		b.WriteString(tag.GetValue().GetStringValue())
+		b.WriteString("\n")
+	}
+	return hash(b.String())
+}
+
+// BaseToProviderResource converts the base Resource struct to a provider.Resource proto message.
+func BaseToProviderResource(base *Resource) *provider.Resource {
 	resourceMetadata := provider.ResourceMetadata{
 		DefaultTagsChecksum:    base.Tags.DefaultChecksum(),
 		BasicChecksum:          base.BasicChecksum,
 		AttributeValueChecksum: base.FullChecksum,
-		DeepChecksum:           CalculateDeepChecksum(impl),
+		DeepChecksum:           base.FullChecksum, // overridden by consumer or by impl hashing
 	}
 
 	var fullAddressSize int

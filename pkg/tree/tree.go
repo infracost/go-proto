@@ -7,6 +7,7 @@ import (
 	"github.com/infracost/go-proto/pkg/tree/aws"
 	"github.com/infracost/go-proto/pkg/tree/azure"
 	"github.com/infracost/go-proto/pkg/tree/google"
+	"github.com/infracost/go-proto/pkg/tree/kubernetes"
 	"github.com/infracost/go-proto/pkg/tree/resource"
 )
 
@@ -17,10 +18,11 @@ type Resource interface {
 }
 
 type Tree struct {
-	AWS                  aws.AWS              `tree:"aws"`
-	Azure                azure.Azure          `tree:"azure"`
-	Google               google.Google        `tree:"google"`
-	UnsupportedResources []*resource.Resource `tree:"-"` // these get handled as a special case
+	AWS                  aws.AWS               `tree:"aws"`
+	Azure                azure.Azure           `tree:"azure"`
+	Google               google.Google         `tree:"google"`
+	Kubernetes           kubernetes.Kubernetes `tree:"kubernetes"`
+	UnsupportedResources []*resource.Resource  `tree:"-"` // these get handled as a special case
 }
 
 // ToResources returns every struct in the tree that embeds resource.Resource.

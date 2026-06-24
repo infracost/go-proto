@@ -48,6 +48,18 @@ func structToValueObject(v reflect.Value) *prototree.ValueObject {
 	for i := range t.NumField() {
 		field := v.Field(i)
 		fieldType := t.Field(i)
+
+		// Flatten embedded structs (other than the specially-handled
+		// resource.Resource) into this object, so kind-specific types can embed
+		// a shared base and have its tagged fields serialized as if declared
+		// inline rather than nested under a sub-key.
+		if fieldType.Anonymous && fieldType.Type.Kind() == reflect.Struct && fieldType.Type != resourceType {
+			for k, pv := range structToValueObject(field).Entries {
+				obj.Entries[k] = pv
+			}
+			continue
+		}
+
 		name := fieldType.Tag.Get("tree")
 		if name == "" || name == "-" {
 			continue
@@ -106,6 +118,16 @@ func valueObjectToStruct(obj *prototree.ValueObject, v reflect.Value) {
 	t := v.Type()
 	for i := range t.NumField() {
 		fieldType := t.Field(i)
+		field := v.Field(i)
+
+		// Mirror structToValueObject: embedded structs (other than the
+		// specially-handled resource.Resource) were flattened into this object,
+		// so populate them from the same flat entries.
+		if fieldType.Anonymous && fieldType.Type.Kind() == reflect.Struct && fieldType.Type != resourceType {
+			valueObjectToStruct(obj, field)
+			continue
+		}
+
 		name := fieldType.Tag.Get("tree")
 		if name == "" || name == "-" {
 			continue
@@ -116,7 +138,6 @@ func valueObjectToStruct(obj *prototree.ValueObject, v reflect.Value) {
 			continue
 		}
 
-		field := v.Field(i)
 		setFieldFromProtoValue(field, entry)
 	}
 

@@ -94,13 +94,18 @@ func (gs Guardrails) Evaluate(
 					continue
 				}
 
-				inc := calcIncrease(p.TotalMonthlyCost, p.PastTotalMonthlyCost)
+				// Only projects that exceed the threshold contribute to the reported
+				// figure, and we report the largest increase among them. Considering
+				// non-triggering projects here would let the message show an increase
+				// for a project that didn't actually breach the guardrail. Matches the
+				// dashboard (api/src/services/guardrails.ts getTriggeredGuardrails).
 				if thresholdExceeded(g, p.TotalMonthlyCost, p.PastTotalMonthlyCost) {
 					triggeringNames = append(triggeringNames, p.ProjectName)
-				}
 
-				if maxIncrease.increase == nil || inc.increase.GreaterThan(maxIncrease.increase) {
-					maxIncrease = inc
+					inc := calcIncrease(p.TotalMonthlyCost, p.PastTotalMonthlyCost)
+					if maxIncrease.increase == nil || inc.increase.GreaterThan(maxIncrease.increase) {
+						maxIncrease = inc
+					}
 				}
 			}
 

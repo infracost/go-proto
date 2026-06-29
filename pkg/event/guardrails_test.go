@@ -204,8 +204,35 @@ func TestGuardrails_ProjectScope_NoneTriggered(t *testing.T) {
 	results := gs.Evaluate(rat.New(1200), rat.New(1000), projects)
 	require.Len(t, results, 1)
 	assert.False(t, results[0].Triggered)
-	// Max increase is still populated
-	assert.True(t, results[0].Increase.Equals(rat.New(200)))
+	// No project breached the threshold, so there is no increase to report.
+	assert.True(t, results[0].Increase.Equals(rat.New(0)))
+}
+
+// The reported increase must come from a project that actually breached the
+// threshold, not from a larger increase on a project that did not trigger.
+func TestGuardrails_ProjectScope_ReportsTriggeringProjectIncrease(t *testing.T) {
+	gs := Guardrails{
+		{
+			Id:                       "g1",
+			Scope:                    event.Guardrail_PROJECT,
+			IncreasePercentThreshold: rat.New(50).Proto(),
+		},
+	}
+
+	projects := []ProjectCostInfo{
+		// Large $ increase but only +9% — does NOT breach the 50% threshold.
+		{ProjectName: "big", TotalMonthlyCost: rat.New(10900), PastTotalMonthlyCost: rat.New(10000)},
+		// Small $ increase but +100% — breaches the threshold.
+		{ProjectName: "small", TotalMonthlyCost: rat.New(200), PastTotalMonthlyCost: rat.New(100)},
+	}
+
+	results := gs.Evaluate(rat.New(11100), rat.New(10100), projects)
+	require.Len(t, results, 1)
+	assert.True(t, results[0].Triggered)
+	assert.Equal(t, []string{"small"}, results[0].TriggeringProjectNames)
+	// Reports "small" (+$100), not the larger non-triggering "big" (+$900).
+	assert.True(t, results[0].Increase.Equals(rat.New(100)))
+	assert.True(t, results[0].PercentIncrease.Equals(rat.New(100)))
 }
 
 func TestGuardrails_ProjectScope_WithFilter(t *testing.T) {

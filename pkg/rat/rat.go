@@ -417,11 +417,16 @@ func (r *Rat) Round(places int) *Rat {
 	num := scaled.Num()
 	denom := scaled.Denom()
 
-	// integer division with rounding
-	quo := new(big.Int).Div(num, denom)
-	rem := new(big.Int).Mod(num, denom)
+	// Truncated division (toward zero), not big.Int.Div which floors toward −∞.
+	// The away-from-zero step below assumes quo was truncated; using floored
+	// division double-rounds negatives (e.g. -34.17 → -36 instead of -34, or
+	// -0.4 → -2 instead of 0). QuoRem gives rem the sign of num, and denom is
+	// always positive (big.Rat normalizes the sign into the numerator).
+	quo := new(big.Int)
+	rem := new(big.Int)
+	quo.QuoRem(num, denom, rem)
 
-	// if remainder >= denom/2, round up (away from zero)
+	// if |remainder| >= denom/2, round away from zero
 	rem.Mul(rem, big.NewInt(2))
 	if rem.CmpAbs(denom) >= 0 {
 		if scaled.Sign() > 0 {

@@ -249,6 +249,41 @@ func TestRound(t *testing.T) {
 	}
 }
 
+// TestRoundHalfAwayFromZero pins symmetric round-half-away-from-zero behavior.
+// Regression: Round used Euclidean division (big.Int.Div floors toward −∞) and
+// then applied away-from-zero rounding using the Euclidean remainder, which
+// double-rounded negatives (e.g. -34.1753 → -36 instead of -34, -0.4 → -2
+// instead of 0). Magnitudes must round identically regardless of sign.
+func TestRoundHalfAwayFromZero(t *testing.T) {
+	tests := []struct {
+		input    float64
+		places   int
+		expected string
+	}{
+		// Positives (guard against regression).
+		{34.1753, 0, "34"},
+		{34.5, 0, "35"},
+		{34.67, 0, "35"},
+		{0.4, 0, "0"},
+		{1.235, 2, "1.24"},
+		// Negatives — these expose the bug; each mirrors a positive above.
+		{-34.1753, 0, "-34"},
+		{-34.5, 0, "-35"},
+		{-34.67, 0, "-35"},
+		{-98.36, 0, "-98"},
+		{-0.4, 0, "0"},
+		{-0.5, 0, "-1"},
+		{-1.235, 2, "-1.24"},
+		{-1.245, 2, "-1.25"},
+	}
+
+	for _, tt := range tests {
+		if got := rat.New(tt.input).Round(tt.places).String(); got != tt.expected {
+			t.Errorf("Round(%v, %d) = %s, want %s", tt.input, tt.places, got, tt.expected)
+		}
+	}
+}
+
 func TestIntPart(t *testing.T) {
 	r, _ := rat.NewFromString("7/3") // 2.33...
 	if got := r.IntPart().Int(); got != 2 {

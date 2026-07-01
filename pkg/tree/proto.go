@@ -1,7 +1,6 @@
 package tree
 
 import (
-	"fmt"
 	"reflect"
 
 	"github.com/infracost/go-proto/pkg/address"
@@ -151,21 +150,12 @@ func FromProto(p *prototree.Tree) (*Tree, error) {
 
 	}
 
-	if len(p.Providers) > 0 {
-		for name := range p.Providers {
-			found := false
-			for i := range tt.NumField() {
-				if tt.Field(i).Tag.Get("tree") == name {
-					found = true
-					break
-				}
-			}
-			if !found {
-				return nil, fmt.Errorf("unmapped provider: %s", name)
-			}
-		}
-	}
-
+	// Providers present in the proto but with no matching struct field are
+	// ignored, mirroring how unknown services and resource types are skipped
+	// above. This keeps FromProto forward-compatible: a reader built against an
+	// older go-proto must degrade gracefully when a newer emitter introduces a
+	// provider it doesn't know about, decoding what it recognises rather than
+	// failing the entire tree.
 	t.UnsupportedResources = make([]*resource.Resource, len(p.UnsupportedResources))
 	for i, p := range p.UnsupportedResources {
 		t.UnsupportedResources[i] = ResourceFromProto(p)

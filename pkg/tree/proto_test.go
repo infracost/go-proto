@@ -115,17 +115,21 @@ func TestRoundTrip_ListField(t *testing.T) {
 	assert.Equal(t, "t3.small", items[1].Value())
 }
 
-func TestFromProtoUnmappedProvider(t *testing.T) {
+func TestFromProtoUnknownProviderIgnored(t *testing.T) {
+	// A provider the struct has no field for (e.g. one added by a newer
+	// go-proto emitter) must be skipped, not error the whole tree — otherwise
+	// an older reader drops every resource the moment a new provider appears.
 	proto := &prototree.Tree{
 		Providers: map[string]*prototree.Provider{
-			"gcp": {
+			"some-future-provider": {
 				Services: map[string]*prototree.Service{},
 			},
 		},
 	}
 
-	_, err := FromProto(proto)
-	assert.ErrorContains(t, err, "unmapped provider: gcp")
+	result, err := FromProto(proto)
+	require.NoError(t, err)
+	assert.Empty(t, result.ToResources(true))
 }
 
 func TestBaseResourceRoundTrip(t *testing.T) {

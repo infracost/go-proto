@@ -1,5 +1,7 @@
 package s3
 
+import "strings"
+
 type S3 struct {
 	Buckets                          []Bucket                          `tree:"buckets"`
 	LifecycleConfigurations          []LifecycleConfiguration          `tree:"lifecycle_configurations"`
@@ -66,8 +68,102 @@ func (s *S3) PostProcess() {
 	}
 
 	for i, bp := range s.BucketPolicies {
-		if b, ok := findBucket(bp.BucketName.Value(), bp.ID); ok {
+		b, ok := findBucket(bp.BucketName.Value(), bp.ID)
+		if ok {
 			b.Relationships.BucketPolicies = append(b.Relationships.BucketPolicies, &s.BucketPolicies[i])
 		}
+		finalizeDeniesInsecureTransport(&s.BucketPolicies[i], b, ok)
 	}
+}
+
+// finalizeDeniesInsecureTransport resolves whether a bucket policy denies non-SSL
+// transport for the bucket it is attached to. The SSL-deny statement itself is
+// extracted at parse time (BucketPolicy.SSLDeny); the coverage decision — whether
+// that statement's Resource ARNs actually refer to THIS bucket and cover both the
+// bucket and its objects — is made here because it needs the owning bucket's
+// identities, which are only known after linking. Matching against both the
+// bucket's resolved name and its synthetic instance token makes the result
+// correct no matter whether either side resolved to a literal ARN or to an
+// unresolved reference.
+func finalizeDeniesInsecureTransport(bp *BucketPolicy, bucket *Bucket, linked bool) {
+	d := bp.SSLDeny
+	if d == nil {
+		// A converter that does not compute SSL-deny facts (e.g. one that has not
+		// adopted this path). Leave the value it already set untouched.
+		return
+	}
+
+	var denies bool
+	switch {
+	case d.Opaque:
+		// The policy document was not parseable but was synthetic: its real
+		// contents are unknowable, so give it the benefit of the doubt.
+		denies = true
+	case !d.Present:
+		denies = false
+	case !linked:
+		// A valid non-SSL deny statement exists but the policy could not be linked
+		// to a bucket in this project, so there is no bucket to verify coverage
+		// against. Accept it rather than emit a false positive; unlinked policies
+		// are not surfaced by the S3.5 finding anyway.
+		denies = true
+	default:
+		denies = denyResourcesCoverBucket(d.Resources, bucket)
+	}
+
+	bp.DeniesInsecureTransport = bp.DeniesInsecureTransport.WithValue(denies)
+}
+
+// denyResourcesCoverBucket reports whether the non-SSL deny statements' combined
+// Resource list protects both the bucket and its objects for the given bucket. A
+// policy that only covers "<arn>/*" (objects) or that targets a different bucket
+// leaves this bucket unprotected and is not compliant.
+func denyResourcesCoverBucket(resources []string, bucket *Bucket) bool {
+	hasBucket := false
+	hasObjects := false
+	for _, r := range resources {
+		if r == "*" {
+			// A wildcard resource covers the bucket and all of its objects.
+			return true
+		}
+		bare := strings.TrimSuffix(r, "/*")
+		isObjects := bare != r
+		if !arnRefersToBucket(bare, bucket) {
+			continue
+		}
+		if isObjects {
+			hasObjects = true
+		} else {
+			hasBucket = true
+		}
+	}
+	return hasBucket && hasObjects
+}
+
+// arnRefersToBucket reports whether an S3 ARN (with any "/*" object suffix already
+// removed) refers to the given bucket. It matches either of the bucket's two
+// identities:
+//
+//   - its synthetic instance token: the placeholder the parser emits for the
+//     bucket's computed attributes (.arn/.id) when they are unresolved. This
+//     equals the bucket's own ID, so a deny statement written against
+//     `aws_s3_bucket.x.arn` matches even when the policy's `bucket` argument
+//     resolved to a literal name; and
+//   - its resolved name: matching an `arn:aws:s3:::<name>` ARN or a bare "<name>".
+//
+// Checking both makes coverage detection independent of which side happened to
+// resolve, while still rejecting ARNs that refer to a different bucket.
+func arnRefersToBucket(arn string, bucket *Bucket) bool {
+	if bucket == nil {
+		return false
+	}
+	if id := bucket.ID; id != "" && arn == id {
+		return true
+	}
+	if name := bucket.Name.Value(); name != "" {
+		if arn == name || strings.HasSuffix(arn, ":"+name) {
+			return true
+		}
+	}
+	return false
 }

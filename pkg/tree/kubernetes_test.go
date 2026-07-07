@@ -6,6 +6,7 @@ import (
 	"github.com/infracost/go-proto/pkg/tree/kubernetes"
 	"github.com/infracost/go-proto/pkg/tree/kubernetes/apps"
 	"github.com/infracost/go-proto/pkg/tree/kubernetes/batch"
+	"github.com/infracost/go-proto/pkg/tree/kubernetes/core"
 	"github.com/infracost/go-proto/pkg/tree/kubernetes/workload"
 	"github.com/infracost/go-proto/pkg/tree/resource"
 	"github.com/infracost/go-proto/pkg/tree/value"
@@ -57,6 +58,18 @@ func TestKubernetesRoundTrip(t *testing.T) {
 						},
 					},
 				},
+				StatefulSets: []apps.StatefulSet{
+					{
+						Workload: workload.Workload{Resource: resource.Resource{ID: "db"}},
+						Replicas: value.New[int64](3, 0, "", nil),
+						VolumeClaimTemplates: []core.StorageRequest{
+							{
+								StorageClassName: value.New("gp3", 0, "", nil),
+								RequestBytes:     value.New[int64](10737418240, 0, "", nil),
+							},
+						},
+					},
+				},
 			},
 			Batch: batch.Batch{
 				CronJobs: []batch.CronJob{
@@ -70,12 +83,52 @@ func TestKubernetesRoundTrip(t *testing.T) {
 					},
 				},
 			},
+			Core: core.Core{
+				PersistentVolumeClaims: []core.PersistentVolumeClaim{
+					{
+						Resource: resource.Resource{
+							ID: "data",
+							Tags: resource.Tags{
+								{Key: value.New("app", 0, "", nil), Value: value.New("api", 0, "", nil)},
+							},
+						},
+						StorageRequest: core.StorageRequest{
+							StorageClassName: value.New("io2", 0, "", nil),
+							RequestBytes:     value.New[int64](21474836480, 0, "", nil),
+						},
+						Annotations: []resource.Tag{
+							{
+								Key:   value.New("volume.beta.kubernetes.io/storage-provisioner", 0, "", nil),
+								Value: value.New("ebs.csi.aws.com", 0, "", nil),
+							},
+						},
+					},
+				},
+				Services: []core.Service{
+					{
+						Resource: resource.Resource{ID: "api-lb"},
+						Type:     value.New("LoadBalancer", 0, "", nil),
+						Annotations: []resource.Tag{
+							{
+								Key:   value.New("service.beta.kubernetes.io/aws-load-balancer-type", 0, "", nil),
+								Value: value.New("nlb", 0, "", nil),
+							},
+						},
+						Ports: []core.ServicePort{
+							{Port: value.New[int64](443, 0, "", nil), Protocol: value.New("TCP", 0, "", nil)},
+						},
+					},
+				},
+			},
 		},
 	}
 
 	origDep := original.Kubernetes.Apps.Deployments[0]
 	origDaemon := original.Kubernetes.Apps.DaemonSets[0]
+	origSts := original.Kubernetes.Apps.StatefulSets[0]
 	origCron := original.Kubernetes.Batch.CronJobs[0]
+	origPVC := original.Kubernetes.Core.PersistentVolumeClaims[0]
+	origSvc := original.Kubernetes.Core.Services[0]
 
 	proto, err := original.ToProto()
 	require.NoError(t, err)
@@ -86,6 +139,12 @@ func TestKubernetesRoundTrip(t *testing.T) {
 	assert.Equal(t, origDep.Replicas.Value(), depAttrs["replicas"].GetIntValue())
 	require.NotNil(t, depAttrs["containers"], "embedded base fields must be flattened")
 	require.NotNil(t, depAttrs["annotations"], "embedded base fields must be flattened")
+
+	// The PersistentVolumeClaim embeds StorageRequest, so its storage fields are
+	// flattened to the claim's top level rather than nested under an embed key.
+	pvcAttrs := proto.Providers["kubernetes"].Services["core"].Resources[0].Attributes.Entries
+	assert.Equal(t, origPVC.StorageClassName.Value(), pvcAttrs["storage_class_name"].GetStringValue())
+	assert.Equal(t, origPVC.RequestBytes.Value(), pvcAttrs["request_bytes"].GetIntValue())
 
 	result, err := FromProto(proto)
 	require.NoError(t, err)
@@ -110,6 +169,37 @@ func TestKubernetesRoundTrip(t *testing.T) {
 	assert.Equal(t, origDaemon.ID, daemon.ID)
 	require.Len(t, daemon.Containers, len(origDaemon.Containers))
 	assert.Equal(t, origDaemon.Containers[0].Name.Value(), daemon.Containers[0].Name.Value())
+
+	// StatefulSet volumeClaimTemplates: a slice of nested StorageRequest structs.
+	require.Len(t, result.Kubernetes.Apps.StatefulSets, 1)
+	sts := result.Kubernetes.Apps.StatefulSets[0]
+	assert.Equal(t, origSts.ID, sts.ID)
+	assert.Equal(t, origSts.Replicas.Value(), sts.Replicas.Value())
+	require.Len(t, sts.VolumeClaimTemplates, len(origSts.VolumeClaimTemplates))
+	assert.Equal(t, origSts.VolumeClaimTemplates[0].StorageClassName.Value(), sts.VolumeClaimTemplates[0].StorageClassName.Value())
+	assert.Equal(t, origSts.VolumeClaimTemplates[0].RequestBytes.Value(), sts.VolumeClaimTemplates[0].RequestBytes.Value())
+
+	// core group: PersistentVolumeClaim (embedded StorageRequest) and Service.
+	require.Len(t, result.Kubernetes.Core.PersistentVolumeClaims, 1)
+	pvc := result.Kubernetes.Core.PersistentVolumeClaims[0]
+	assert.Equal(t, origPVC.ID, pvc.ID)
+	assert.Equal(t, origPVC.StorageClassName.Value(), pvc.StorageClassName.Value())
+	assert.Equal(t, origPVC.RequestBytes.Value(), pvc.RequestBytes.Value())
+	require.Len(t, pvc.Tags, len(origPVC.Tags))
+	assert.Equal(t, origPVC.Tags[0].Key.Value(), pvc.Tags[0].Key.Value())
+	require.Len(t, pvc.Annotations, len(origPVC.Annotations))
+	assert.Equal(t, origPVC.Annotations[0].Key.Value(), pvc.Annotations[0].Key.Value())
+	assert.Equal(t, origPVC.Annotations[0].Value.Value(), pvc.Annotations[0].Value.Value())
+
+	require.Len(t, result.Kubernetes.Core.Services, 1)
+	svc := result.Kubernetes.Core.Services[0]
+	assert.Equal(t, origSvc.ID, svc.ID)
+	assert.Equal(t, origSvc.Type.Value(), svc.Type.Value())
+	require.Len(t, svc.Annotations, len(origSvc.Annotations))
+	assert.Equal(t, origSvc.Annotations[0].Key.Value(), svc.Annotations[0].Key.Value())
+	require.Len(t, svc.Ports, len(origSvc.Ports))
+	assert.Equal(t, origSvc.Ports[0].Port.Value(), svc.Ports[0].Port.Value())
+	assert.Equal(t, origSvc.Ports[0].Protocol.Value(), svc.Ports[0].Protocol.Value())
 
 	// Multi-level embedding: CronJob -> Job -> Workload all flatten together.
 	require.Len(t, result.Kubernetes.Batch.CronJobs, 1)

@@ -8,6 +8,7 @@ import (
 type Function struct {
 	resource.Resource `tree:"-"`
 	Name              value.String       `tree:"name"`
+	Runtime           value.String       `tree:"runtime"`
 	Architectures     value.List[string] `tree:"architectures"`
 	MemorySizeMB      value.Int          `tree:"memory_size"`
 	StorageSizeMB     value.Int          `tree:"storage_size"`

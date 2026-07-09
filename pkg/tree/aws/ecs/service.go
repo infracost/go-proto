@@ -9,6 +9,7 @@ import (
 type Service struct {
 	resource.Resource       `tree:"-"`
 	LaunchType              value.Value[LaunchType] `tree:"launch_type"`
+	PlatformVersion         value.String            `tree:"platform_version"`
 	DesiredCount            value.Int               `tree:"desired_count"`
 	ClusterReference        value.String            `tree:"cluster"`
 	TaskDefinitionReference value.String            `tree:"task_definition"`

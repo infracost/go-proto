@@ -8,6 +8,7 @@ import (
 type Instance struct {
 	resource.Resource        `tree:"-"`
 	Type                     value.String                 `tree:"instance_type"`
+	AMI                      value.String                 `tree:"ami"`
 	PurchaseOption           value.Value[PurchaseOption]  `tree:"purchase_option"`
 	Tenancy                  value.Value[Tenancy]         `tree:"tenancy"`
 	EBSOptimized             value.Bool                   `tree:"ebs_optimized"`

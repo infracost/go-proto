@@ -7,6 +7,7 @@ import (
 
 type Cluster struct {
 	resource.Resource     `tree:"-"`
-	BackupRetentionPeriod value.Int  `tree:"backup_retention_period"`
-	StorageEncrypted      value.Bool `tree:"storage_encrypted"`
+	BackupRetentionPeriod value.Int    `tree:"backup_retention_period"`
+	EngineVersion         value.String `tree:"engine_version"`
+	StorageEncrypted      value.Bool   `tree:"storage_encrypted"`
 }

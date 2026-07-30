@@ -68,8 +68,13 @@ func (s *AppService) PostProcess() {
 				s.FunctionApps[i].SKU = plan.SKUName
 				s.FunctionApps[i].OSType = plan.OSType
 				tier := AppServiceTierStandard
-				if strings.HasPrefix(strings.ToLower(plan.SKUName.Value()), "ep") {
+				skuLower := strings.ToLower(plan.SKUName.Value())
+				if strings.HasPrefix(skuLower, "ep") {
 					tier = AppServiceTierPremium
+				} else if strings.HasPrefix(skuLower, "fc") {
+					// FC1 (Flex Consumption) bills execution time/GB-seconds on the
+					// Function App using different meters than the Y1 Consumption plan.
+					tier = AppServiceTierFlexConsumption
 				}
 				s.FunctionApps[i].Tier = value.New(tier, 0, "", nil)
 				break

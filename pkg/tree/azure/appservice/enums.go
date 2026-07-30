@@ -23,6 +23,8 @@ const (
 	AppServiceTierDynamic
 	// WorkflowStandard is used by Logic Apps Standard plans (WS1/WS2/WS3).
 	AppServiceTierWorkflowStandard
+	// FlexConsumption is the Flex Consumption plan tier (used by the FC1 SKU).
+	AppServiceTierFlexConsumption
 )
 
 // AppServiceKind reflects the App Service Plan "kind" attribute. It is a

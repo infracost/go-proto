@@ -1,5 +1,7 @@
 package s3
 
+import "strings"
+
 type S3 struct {
 	Buckets                          []Bucket                          `tree:"buckets"`
 	LifecycleConfigurations          []LifecycleConfiguration          `tree:"lifecycle_configurations"`
@@ -32,9 +34,11 @@ func (s *S3) PostProcess() {
 	// CloudFormation/CDK buckets often have no explicit BucketName (the physical
 	// name is generated at deploy time), so inline configurations (lifecycle,
 	// intelligent-tiering, versioning) carry an empty bucket name. For those, the
-	// sub-resource shares the owning bucket's logical ID, so the ID fallback links
-	// them correctly. Standalone resources (e.g. a separate lifecycle configuration
-	// or bucket policy) have their own distinct ID and so never false-match.
+	// sub-resource either shares the owning bucket's logical ID, or is a child
+	// synthesized by the parser whose ID is "<bucketID>:<path>" — the ID fallback
+	// links both correctly. Standalone resources (e.g. a separate lifecycle
+	// configuration or bucket policy) have their own distinct ID and so never
+	// false-match.
 	findBucket := func(bucketName, id string) (*Bucket, bool) {
 		if b, ok := bucketMap[bucketName]; ok {
 			return b, true
@@ -42,6 +46,11 @@ func (s *S3) PostProcess() {
 		if id != "" {
 			if b, ok := bucketMap[id]; ok {
 				return b, true
+			}
+			if parentID, _, isChild := strings.Cut(id, ":"); isChild {
+				if b, ok := bucketMap[parentID]; ok {
+					return b, true
+				}
 			}
 		}
 		return nil, false

@@ -50,6 +50,41 @@ func TestPostProcess_LinksInlineConfigsForNamelessBucketByID(t *testing.T) {
 	assert.Len(t, s.Buckets[0].Relationships.BucketVersioningConfigurations, 1)
 }
 
+// Inline configurations synthesized by the parsers as child resources carry an
+// ID of the form "<bucketID>:<path>" rather than sharing the bucket's ID
+// verbatim. PostProcess must link those to the owning bucket too.
+func TestPostProcess_LinksInlineConfigsForNamelessBucketByChildID(t *testing.T) {
+	const bucketID = "DevArtifactBucket2651DA98"
+
+	s := &S3{
+		Buckets: []Bucket{
+			{
+				Resource: resource.Resource{ID: bucketID},
+				Name:     value.New("", 0, "", nil), // no explicit BucketName
+			},
+		},
+		LifecycleConfigurations: []LifecycleConfiguration{
+			{
+				Resource:   resource.Resource{ID: bucketID + ":lifecycle_rule", IsChild: true},
+				BucketName: value.New("", 0, "", nil),
+			},
+		},
+		BucketVersioningConfigurations: []BucketVersioningConfiguration{
+			{
+				Resource:   resource.Resource{ID: bucketID + ":versioning.0", IsChild: true},
+				BucketName: value.New("", 0, "", nil),
+			},
+		},
+	}
+
+	s.PostProcess()
+
+	assert.Len(t, s.Buckets[0].Relationships.LifecycleConfigurations, 1,
+		"a synthesized child lifecycle configuration should link to a nameless bucket via its parent ID")
+	assert.Len(t, s.Buckets[0].Relationships.BucketVersioningConfigurations, 1,
+		"a synthesized child versioning configuration should link to a nameless bucket via its parent ID")
+}
+
 // A standalone sub-resource with its own distinct ID and a non-matching bucket
 // name must NOT be linked to an unrelated bucket by the ID fallback.
 func TestPostProcess_DoesNotFalseMatchStandaloneConfig(t *testing.T) {

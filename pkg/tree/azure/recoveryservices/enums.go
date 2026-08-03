@@ -7,5 +7,4 @@ const (
 	StorageModeTypeGeoRedundant
 	StorageModeTypeLocallyRedundant
 	StorageModeTypeZoneRedundant
-	StorageModeTypeReadAccessGeoZoneRedundant
 )

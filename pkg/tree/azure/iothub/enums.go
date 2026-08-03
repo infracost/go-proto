@@ -11,7 +11,6 @@ const (
 	HubSKUS1
 	HubSKUS2
 	HubSKUS3
-	HubSKUGEN2
 )
 
 type DPSSKU uint32

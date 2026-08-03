@@ -15,6 +15,7 @@ const (
 	BackupStorageTypeGeo
 	BackupStorageTypeLocal
 	BackupStorageTypeZone
+	BackupStorageTypeGeoZone
 )
 
 type StorageAccountType uint32
@@ -24,4 +25,5 @@ const (
 	StorageAccountTypeGRS
 	StorageAccountTypeLRS
 	StorageAccountTypeZRS
+	StorageAccountTypeGZRS
 )

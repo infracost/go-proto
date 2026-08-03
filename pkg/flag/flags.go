@@ -34,6 +34,7 @@ const (
 	JSONEncoded                          // this variable is in JSON format (e.g. passed by terragrunt)
 	TerraformPlanJSON                    // defined in terraform plan JSON output
 	Defaulted                            // defaulted based on e.g. cloud api specs, terraform provider specs
+	Partial                              // partial/runtime-unknown object: absent keys are unknown state, not errors (e.g. an ARM reference() result)
 	// <-- new values here please!
 
 	flagMax // for testing - MUST remain at end of enum!
@@ -61,6 +62,7 @@ var names = map[Flags]string{
 	JSONEncoded:        "json_encoded",
 	TerraformPlanJSON:  "terraform_plan_json",
 	Defaulted:          "defaulted",
+	Partial:            "partial",
 }
 
 // DescribeFlags returns a human-readable string describing the set flags.

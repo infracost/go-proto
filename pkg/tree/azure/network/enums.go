@@ -14,6 +14,7 @@ const (
 	PublicIPSKUUnknown PublicIPSKU = iota
 	PublicIPSKUBasic
 	PublicIPSKUStandard
+	PublicIPSKUStandardV2
 )
 
 type PublicIPSKUTier uint32
@@ -30,6 +31,7 @@ const (
 	LoadBalancerSKUUnknown LoadBalancerSKU = iota
 	LoadBalancerSKUBasic
 	LoadBalancerSKUStandard
+	LoadBalancerSKUGateway
 )
 
 type FirewallSKUTier uint32
@@ -38,6 +40,7 @@ const (
 	FirewallSKUTierUnknown FirewallSKUTier = iota
 	FirewallSKUTierStandard
 	FirewallSKUTierPremium
+	FirewallSKUTierBasic
 )
 
 type GatewayConnectionType uint32
@@ -47,6 +50,7 @@ const (
 	GatewayConnectionTypeIPsec
 	GatewayConnectionTypeExpressRoute
 	GatewayConnectionTypeVnet2Vnet
+	GatewayConnectionTypeVPNClient
 )
 
 type VPNGatewayType uint32

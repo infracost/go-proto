@@ -1,0 +1,61 @@
+// Package project holds the canonical definition of an IaC project type: the
+// value a parser plugin reports via GetParserConfig's config_file_project_type,
+// which the config file records and ProjectInfo.type carries over the wire.
+//
+// This package is the single source of truth for those values. The config
+// package aliases them rather than declaring its own, so config, the CLI and
+// the runner all agree on the spelling. It deliberately has no imports, so it
+// can sit at the bottom of the dependency graph.
+package project
+
+// Type is the project type reported by a parser plugin. It is an open string
+// rather than an enum: a plugin may return a custom type via
+// config_file_project_type, defaulting to its own name when unset.
+type Type string
+
+const (
+	// Unknown is a project with no recorded type. Treated as Terraform, which
+	// is what the config file assumes for an untyped project.
+	Unknown        Type = ""
+	Terraform      Type = "terraform"
+	Terragrunt     Type = "terragrunt"
+	CloudFormation Type = "cloudformation"
+	CDKTypeScript  Type = "cdk_typescript"
+	CDKJavaScript  Type = "cdk_javascript"
+	CDKPython      Type = "cdk_python"
+	CiscoStacks    Type = "cisco_stacks"
+	Kubernetes     Type = "kubernetes"
+)
+
+// Filterable is the set of types a governance policy can be filtered by, in
+// display order. It is deliberately coarser than the full set above:
+// NormalizeForFilter folds the niche and derived types onto the family a user
+// would recognise, so policies are written against a short, stable list.
+var Filterable = []Type{Terraform, Terragrunt, CloudFormation, Kubernetes}
+
+// NormalizeForFilter collapses a project type onto the Filterable set, so a
+// policy targeting "cloudformation" also covers the CDK variants that the
+// cloudformation plugin parses, and one targeting "terraform" covers the
+// Terraform-family types that are not worth surfacing separately.
+//
+// Terragrunt is kept distinct despite sharing Terraform's options schema: it is
+// a tool users target deliberately. Cisco Stacks is not, and is already
+// reported as Terraform elsewhere.
+//
+// Anything unrecognised is returned unchanged: a new plugin's type must not
+// silently fall into an existing family before it is added above. Callers
+// filtering on the result will simply not match it, which is the safe default.
+func NormalizeForFilter(t Type) Type {
+	switch t {
+	case Unknown, Terraform, CiscoStacks:
+		return Terraform
+	case CloudFormation, CDKTypeScript, CDKJavaScript, CDKPython:
+		return CloudFormation
+	case "terraform-plan":
+		// Not a declared project type: the terraform-plan plugin sets no
+		// config_file_project_type, so the caller falls back to the plugin name.
+		return Terraform
+	default:
+		return t
+	}
+}

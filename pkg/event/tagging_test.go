@@ -408,6 +408,56 @@ func TestEvaluateAgainstResources_ProjectFilter(t *testing.T) {
 	})
 }
 
+func TestEvaluateAgainstResources_IacTypeFilter(t *testing.T) {
+	resources := []*provider.Resource{
+		mkResource("aws_instance.web", "aws_instance", []*provider.Tag{mkTag("Env", "prod")}),
+	}
+	requirements := []*eventpb.TagPolicyRequirement{
+		{Key: "Env", Type: eventpb.TagPolicyRequirement_ANY, Mandatory: true},
+	}
+
+	tests := []struct {
+		name        string
+		filter      *eventpb.StringFilter
+		projectType string
+		wantApplies bool
+	}{
+		{"no filter applies to everything", nil, "kubernetes", true},
+		{"included type applies", &eventpb.StringFilter{Include: []string{"kubernetes"}}, "kubernetes", true},
+		{"type outside include list is skipped", &eventpb.StringFilter{Include: []string{"kubernetes"}}, "terraform", false},
+		{"excluded type is skipped", &eventpb.StringFilter{Exclude: []string{"kubernetes"}}, "kubernetes", false},
+		{"type outside exclude list applies", &eventpb.StringFilter{Exclude: []string{"kubernetes"}}, "terraform", true},
+		{"multiple included types", &eventpb.StringFilter{Include: []string{"terraform", "cloudformation"}}, "cloudformation", true},
+
+		// The project's type is collapsed onto the selectable set before
+		// matching, so CDK projects are covered by a cloudformation policy.
+		{"cdk project matches cloudformation", &eventpb.StringFilter{Include: []string{"cloudformation"}}, "cdk_python", true},
+		{"cisco stacks matches terraform", &eventpb.StringFilter{Include: []string{"terraform"}}, "cisco_stacks", true},
+		{"untyped project matches terraform", &eventpb.StringFilter{Include: []string{"terraform"}}, "", true},
+		{"terragrunt is not covered by terraform", &eventpb.StringFilter{Include: []string{"terraform"}}, "terragrunt", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			policies := TagPolicies{{
+				Id:            "iac-type-filter",
+				Name:          "IaC Type Filter Policy",
+				IacTypeFilter: tt.filter,
+				Requirements:  requirements,
+			}}
+
+			projectInfo := &provider.ProjectInfo{Name: "proj", BranchName: "main", Type: tt.projectType}
+			results := policies.EvaluateAgainstResources(resources, projectInfo)
+
+			if tt.wantApplies {
+				assert.Len(t, results, 1)
+			} else {
+				assert.Empty(t, results)
+			}
+		})
+	}
+}
+
 func TestEvaluateAgainstResources_MultipleRequirements(t *testing.T) {
 	policy := &eventpb.TagPolicy{
 		Id:   "multi-req",

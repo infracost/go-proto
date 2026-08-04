@@ -42,33 +42,59 @@ const (
 	Kubernetes     Type = "kubernetes"
 )
 
-// Resolve returns the project type to use when looking up a parser plugin.
+// IsCDK reports whether a project is one of the CDK languages.
 //
-// An untyped project comes from a config file written before the type was
-// recorded, so its directory is probed to tell Terragrunt from Terraform. CDK
-// projects are preprocessed into CloudFormation templates and so reuse the
+// Matched by prefix rather than against the known CDK constants, so a future
+// cdk_<language> is handled without a change here.
+func IsCDK(t Type) bool {
+	return strings.HasPrefix(string(t), "cdk_")
+}
+
+// ResolveUntyped fills in a missing project type by probing its directory.
+//
+// An Unknown type comes from a config file written before the type was
+// recorded, so the directory is probed to tell Terragrunt from Terraform. A
+// project that already has a type is returned unchanged.
+//
+// This deliberately does not fold CDK onto CloudFormation: callers that need
+// the project's own type, such as deciding whether to default a CDK project's
+// AWS region, must still be able to see it. Compose with ParserFamily, or use
+// Resolve, when the parser plugin is what's wanted.
+func ResolveUntyped(t Type, dir string) Type {
+	if t != Unknown {
+		return t
+	}
+
+	for _, name := range []string{"terragrunt.hcl", "terragrunt.hcl.json"} {
+		if stat, err := os.Stat(filepath.Join(dir, name)); err == nil && !stat.IsDir() {
+			return Terragrunt
+		}
+	}
+
+	return Terraform
+}
+
+// ParserFamily returns the type whose parser plugin handles t.
+//
+// CDK projects are preprocessed into CloudFormation templates and so reuse the
 // cloudformation plugin. Everything else passes through unchanged, including
 // types like Cisco Stacks that have a parser of their own.
 //
 // Callers wanting the type for governance filtering want NormalizeForFilter
-// instead: using this would load the right plugin but filter the wrong family.
-func Resolve(t Type, dir string) Type {
-	if t == Unknown {
-		for _, name := range []string{"terragrunt.hcl", "terragrunt.hcl.json"} {
-			if stat, err := os.Stat(filepath.Join(dir, name)); err == nil && !stat.IsDir() {
-				return Terragrunt
-			}
-		}
-		return Terraform
-	}
-
-	// Matched by prefix rather than against the three known CDK constants, so a
-	// future cdk_<language> is handled without a change here.
-	if strings.HasPrefix(string(t), "cdk_") {
+// instead: this would load the right plugin but filter the wrong family.
+func ParserFamily(t Type) Type {
+	if IsCDK(t) {
 		return CloudFormation
 	}
 
 	return t
+}
+
+// Resolve returns the project type to use when looking up a parser plugin:
+// ResolveUntyped followed by ParserFamily. It is idempotent, so a caller that
+// has already resolved a type can safely call it again.
+func Resolve(t Type, dir string) Type {
+	return ParserFamily(ResolveUntyped(t, dir))
 }
 
 // Filterable is the set of types a governance policy can be filtered by, in

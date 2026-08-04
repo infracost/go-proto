@@ -50,6 +50,49 @@ func TestResolve(t *testing.T) {
 	}
 }
 
+// ResolveUntyped must not fold CDK away: callers such as the runner's AWS
+// region defaulting still need to see that a project is CDK.
+func TestResolveUntyped_PreservesCDK(t *testing.T) {
+	for _, projectType := range []Type{CDKTypeScript, CDKJavaScript, CDKPython} {
+		t.Run(string(projectType), func(t *testing.T) {
+			assert.Equal(t, projectType, ResolveUntyped(projectType, t.TempDir()))
+		})
+	}
+}
+
+func TestParserFamily(t *testing.T) {
+	tests := []struct {
+		input    Type
+		expected Type
+	}{
+		{Terraform, Terraform},
+		{Terragrunt, Terragrunt},
+		{CloudFormation, CloudFormation},
+		{Kubernetes, Kubernetes},
+		{CiscoStacks, CiscoStacks},
+		{CDKTypeScript, CloudFormation},
+		{CDKJavaScript, CloudFormation},
+		{CDKPython, CloudFormation},
+		{"cdk_go", CloudFormation},
+		// Left alone rather than probed: ParserFamily does no IO.
+		{Unknown, Unknown},
+	}
+
+	for _, tt := range tests {
+		t.Run(string(tt.input), func(t *testing.T) {
+			assert.Equal(t, tt.expected, ParserFamily(tt.input))
+		})
+	}
+}
+
+func TestIsCDK(t *testing.T) {
+	assert.True(t, IsCDK(CDKPython))
+	assert.True(t, IsCDK("cdk_go"), "a future CDK language should match")
+	assert.False(t, IsCDK(Terraform))
+	assert.False(t, IsCDK(Unknown))
+	assert.False(t, IsCDK("cloudformation_cdk"), "cdk must be a prefix, not a substring")
+}
+
 // A directory named terragrunt.hcl must not be mistaken for the file.
 func TestResolve_IgnoresTerragruntDirectory(t *testing.T) {
 	dir := t.TempDir()

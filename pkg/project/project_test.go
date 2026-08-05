@@ -67,10 +67,12 @@ func TestParserFamily(t *testing.T) {
 		expected Type
 	}{
 		{Terraform, Terraform},
-		{Terragrunt, Terragrunt},
 		{CloudFormation, CloudFormation},
 		{Kubernetes, Kubernetes},
 		{ARM, ARM},
+		// NormalizeForFilter folds these onto terraform, but each has its own
+		// parser plugin, so folding them here would load the wrong one.
+		{Terragrunt, Terragrunt},
 		{CiscoStacks, CiscoStacks},
 		{CDKTypeScript, CloudFormation},
 		{CDKJavaScript, CloudFormation},
@@ -110,13 +112,15 @@ func TestNormalizeForFilter(t *testing.T) {
 		expected Type
 	}{
 		{"terraform is unchanged", Terraform, Terraform},
-		{"terragrunt stays distinct", Terragrunt, Terragrunt},
 		{"cloudformation is unchanged", CloudFormation, CloudFormation},
 		{"kubernetes is unchanged", Kubernetes, Kubernetes},
 		{"arm is unchanged", ARM, ARM},
 
-		{"untyped project folds to terraform", Unknown, Terraform},
+		// The Terraform family is the same HCL tags on the same resources, so a
+		// policy written for one covers all of them.
+		{"terragrunt folds to terraform", Terragrunt, Terraform},
 		{"cisco stacks folds to terraform", CiscoStacks, Terraform},
+		{"untyped project folds to terraform", Unknown, Terraform},
 		{"terraform-plan folds to terraform", "terraform-plan", Terraform},
 
 		{"cdk typescript folds to cloudformation", CDKTypeScript, CloudFormation},

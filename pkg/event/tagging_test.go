@@ -434,7 +434,7 @@ func TestEvaluateAgainstResources_IacTypeFilter(t *testing.T) {
 		{"cdk project matches cloudformation", &eventpb.StringFilter{Include: []string{"cloudformation"}}, "cdk_python", true},
 		{"cisco stacks matches terraform", &eventpb.StringFilter{Include: []string{"terraform"}}, "cisco_stacks", true},
 		{"untyped project matches terraform", &eventpb.StringFilter{Include: []string{"terraform"}}, "", true},
-		{"terragrunt is not covered by terraform", &eventpb.StringFilter{Include: []string{"terraform"}}, "terragrunt", false},
+		{"terragrunt is covered by terraform", &eventpb.StringFilter{Include: []string{"terraform"}}, "terragrunt", true},
 	}
 
 	for _, tt := range tests {

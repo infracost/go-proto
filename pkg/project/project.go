@@ -102,23 +102,27 @@ func Resolve(t Type, dir string) Type {
 // display order. It is deliberately coarser than the full set above:
 // NormalizeForFilter folds the niche and derived types onto the family a user
 // would recognise, so policies are written against a short, stable list.
-var Filterable = []Type{Terraform, Terragrunt, CloudFormation, ARM, Kubernetes}
+var Filterable = []Type{Terraform, CloudFormation, ARM, Kubernetes}
 
 // NormalizeForFilter collapses a project type onto the Filterable set, so a
 // policy targeting "cloudformation" also covers the CDK variants that the
-// cloudformation plugin parses, and one targeting "terraform" covers the
-// Terraform-family types that are not worth surfacing separately.
+// cloudformation plugin parses, and one targeting "terraform" covers the whole
+// Terraform family.
 //
-// Terragrunt is kept distinct despite sharing Terraform's options schema: it is
-// a tool users target deliberately. Cisco Stacks is not, and is already
-// reported as Terraform elsewhere.
+// The Terraform family is Terragrunt and Cisco Stacks as well as Terraform
+// itself: all three are the same HCL tags on the same resources, so a policy
+// written for one applies unchanged to the others. Note this means a policy
+// cannot target Terragrunt without also covering Terraform.
 //
 // Anything unrecognised is returned unchanged: a new plugin's type must not
 // silently fall into an existing family before it is added above. Callers
 // filtering on the result will simply not match it, which is the safe default.
+//
+// This is not ParserFamily: each of these types has its own parser plugin, and
+// folding them there would load the wrong one.
 func NormalizeForFilter(t Type) Type {
 	switch t {
-	case Unknown, Terraform, CiscoStacks:
+	case Unknown, Terraform, Terragrunt, CiscoStacks:
 		return Terraform
 	case CloudFormation, CDKTypeScript, CDKJavaScript, CDKPython:
 		return CloudFormation

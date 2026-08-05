@@ -20,6 +20,7 @@ func TestResolve(t *testing.T) {
 		{"terragrunt is unchanged", Terragrunt, nil, Terragrunt},
 		{"cloudformation is unchanged", CloudFormation, nil, CloudFormation},
 		{"kubernetes is unchanged", Kubernetes, nil, Kubernetes},
+		{"arm is unchanged", ARM, nil, ARM},
 
 		// Cisco Stacks has its own parser plugin, so unlike filtering this must
 		// not fold it onto terraform.
@@ -69,6 +70,7 @@ func TestParserFamily(t *testing.T) {
 		{Terragrunt, Terragrunt},
 		{CloudFormation, CloudFormation},
 		{Kubernetes, Kubernetes},
+		{ARM, ARM},
 		{CiscoStacks, CiscoStacks},
 		{CDKTypeScript, CloudFormation},
 		{CDKJavaScript, CloudFormation},
@@ -111,6 +113,7 @@ func TestNormalizeForFilter(t *testing.T) {
 		{"terragrunt stays distinct", Terragrunt, Terragrunt},
 		{"cloudformation is unchanged", CloudFormation, CloudFormation},
 		{"kubernetes is unchanged", Kubernetes, Kubernetes},
+		{"arm is unchanged", ARM, ARM},
 
 		{"untyped project folds to terraform", Unknown, Terraform},
 		{"cisco stacks folds to terraform", CiscoStacks, Terraform},
@@ -135,7 +138,7 @@ func TestNormalizeForFilter(t *testing.T) {
 func TestNormalizeForFilter_LandsOnFilterableSet(t *testing.T) {
 	all := []Type{
 		Unknown, Terraform, Terragrunt, CloudFormation,
-		CDKTypeScript, CDKJavaScript, CDKPython, CiscoStacks, Kubernetes,
+		CDKTypeScript, CDKJavaScript, CDKPython, CiscoStacks, Kubernetes, ARM,
 	}
 
 	for _, projectType := range all {

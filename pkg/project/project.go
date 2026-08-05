@@ -40,6 +40,7 @@ const (
 	CDKPython      Type = "cdk_python"
 	CiscoStacks    Type = "cisco_stacks"
 	Kubernetes     Type = "kubernetes"
+	ARM            Type = "arm"
 )
 
 // IsCDK reports whether a project is one of the CDK languages.
@@ -101,7 +102,7 @@ func Resolve(t Type, dir string) Type {
 // display order. It is deliberately coarser than the full set above:
 // NormalizeForFilter folds the niche and derived types onto the family a user
 // would recognise, so policies are written against a short, stable list.
-var Filterable = []Type{Terraform, Terragrunt, CloudFormation, Kubernetes}
+var Filterable = []Type{Terraform, Terragrunt, CloudFormation, ARM, Kubernetes}
 
 // NormalizeForFilter collapses a project type onto the Filterable set, so a
 // policy targeting "cloudformation" also covers the CDK variants that the

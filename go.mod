@@ -4,7 +4,7 @@ go 1.25.2
 
 require (
 	github.com/hashicorp/hcl/v2 v2.24.0
-	github.com/infracost/proto v1.163.1-0.20260804063818-1685ac50472d
+	github.com/infracost/proto v1.164.1-0.20260805091950-0c579d859557
 	github.com/stretchr/testify v1.11.1
 	github.com/zclconf/go-cty v1.17.0
 )

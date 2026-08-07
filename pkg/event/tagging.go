@@ -8,6 +8,7 @@ import (
 
 	"github.com/agnivade/levenshtein"
 	"github.com/infracost/go-proto/pkg/address"
+	"github.com/infracost/go-proto/pkg/project"
 	"github.com/infracost/proto/gen/go/infracost/parser/event"
 	"github.com/infracost/proto/gen/go/infracost/provider"
 )
@@ -83,11 +84,18 @@ type TagPolicies []*event.TagPolicy
 
 func (t TagPolicies) EvaluateAgainstResources(resources []*provider.Resource, projectInfo *provider.ProjectInfo) []TaggingPolicyResult {
 
+	// Policies are filtered by the family a user can select, not the raw type,
+	// so a cloudformation policy still covers a CDK project. Filter values are
+	// validated against that set when the policy is saved, so only the
+	// project's own type needs collapsing here.
+	iacType := string(project.NormalizeForFilter(project.Type(projectInfo.GetType())))
+
 	// filter out policies for other repos/branches etc.
 	var filteredPolicies []*event.TagPolicy
 	for _, policy := range t {
 		if StringFilterFromProto(policy.GetProjectFilter()).Matches(projectInfo.Name) &&
-			StringFilterFromProto(policy.GetBranchFilter()).Matches(projectInfo.BranchName) {
+			StringFilterFromProto(policy.GetBranchFilter()).Matches(projectInfo.BranchName) &&
+			StringFilterFromProto(policy.GetIacTypeFilter()).Matches(iacType) {
 			filteredPolicies = append(filteredPolicies, policy)
 		}
 	}

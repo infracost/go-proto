@@ -119,6 +119,26 @@ func TestKubernetesRoundTrip(t *testing.T) {
 						},
 					},
 				},
+				Namespaces: []core.Namespace{
+					{
+						Resource: resource.Resource{
+							ID:           "prod",
+							SupportsTags: true,
+							// A Namespace carries no cost, so its labels are the
+							// whole point of surfacing it — they must survive the
+							// round trip for tag policies to see them.
+							Tags: resource.Tags{
+								{Key: value.New("team", 0, "", nil), Value: value.New("platform", 0, "", nil)},
+							},
+						},
+						Annotations: []resource.Tag{
+							{
+								Key:   value.New("scheduler.alpha.kubernetes.io/node-selector", 0, "", nil),
+								Value: value.New("env=prod", 0, "", nil),
+							},
+						},
+					},
+				},
 			},
 		},
 	}
@@ -129,6 +149,7 @@ func TestKubernetesRoundTrip(t *testing.T) {
 	origCron := original.Kubernetes.Batch.CronJobs[0]
 	origPVC := original.Kubernetes.Core.PersistentVolumeClaims[0]
 	origSvc := original.Kubernetes.Core.Services[0]
+	origNS := original.Kubernetes.Core.Namespaces[0]
 
 	proto, err := original.ToProto()
 	require.NoError(t, err)
@@ -200,6 +221,20 @@ func TestKubernetesRoundTrip(t *testing.T) {
 	require.Len(t, svc.Ports, len(origSvc.Ports))
 	assert.Equal(t, origSvc.Ports[0].Port.Value(), svc.Ports[0].Port.Value())
 	assert.Equal(t, origSvc.Ports[0].Protocol.Value(), svc.Ports[0].Protocol.Value())
+
+	// A Namespace has no cost-relevant fields of its own — the labels it carries
+	// as the base resource's Tags are what tag policies act on, so they and the
+	// tag-support flag are what must survive.
+	require.Len(t, result.Kubernetes.Core.Namespaces, 1)
+	ns := result.Kubernetes.Core.Namespaces[0]
+	assert.Equal(t, origNS.ID, ns.ID)
+	assert.True(t, ns.SupportsTags, "a namespace must stay tag-supporting so tag policies apply to it")
+	require.Len(t, ns.Tags, len(origNS.Tags))
+	assert.Equal(t, origNS.Tags[0].Key.Value(), ns.Tags[0].Key.Value())
+	assert.Equal(t, origNS.Tags[0].Value.Value(), ns.Tags[0].Value.Value())
+	require.Len(t, ns.Annotations, len(origNS.Annotations))
+	assert.Equal(t, origNS.Annotations[0].Key.Value(), ns.Annotations[0].Key.Value())
+	assert.Equal(t, origNS.Annotations[0].Value.Value(), ns.Annotations[0].Value.Value())
 
 	// Multi-level embedding: CronJob -> Job -> Workload all flatten together.
 	require.Len(t, result.Kubernetes.Batch.CronJobs, 1)

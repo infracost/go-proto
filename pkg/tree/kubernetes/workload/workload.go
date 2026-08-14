@@ -7,6 +7,7 @@
 package workload
 
 import (
+	"github.com/infracost/go-proto/pkg/tree/kubernetes/meta"
 	"github.com/infracost/go-proto/pkg/tree/resource"
 	"github.com/infracost/go-proto/pkg/tree/value"
 )
@@ -20,13 +21,20 @@ import (
 //
 // The kind, address ([namespace, kind, name]) and source range live on the
 // embedded resource.Resource (Definition.ResourceType / Definition.Address /
-// Definition.SourceRange). The workload's Kubernetes labels are stored as the
+// Definition.SourceRange), and the workload's own name and namespace on the
+// embedded meta.ObjectMeta. The workload's Kubernetes labels are stored as the
 // base resource's Tags (each carries its own source range), so the
 // label/tag-enforcement use case reuses the existing tag machinery. The sizing
 // read out of the manifest — or, for Helm, out of values.yaml — is first-class
 // and typed below.
+//
+// Note that Container below also has a Name. It is a different thing — the name
+// of one container within this workload's pod, not the name of the workload —
+// and it stays distinct in the serialized tree because containers are a nested
+// list rather than an embedded struct.
 type Workload struct {
 	resource.Resource `tree:"-"`
+	meta.ObjectMeta   `tree:"-"`
 
 	// Annotations are the workload's Kubernetes annotations, surfaced verbatim.
 	// The parser stays provider-agnostic: cloud-provider signals (IRSA role

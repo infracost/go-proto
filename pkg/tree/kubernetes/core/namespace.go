@@ -1,6 +1,7 @@
 package core
 
 import (
+	"github.com/infracost/go-proto/pkg/tree/kubernetes/meta"
 	"github.com/infracost/go-proto/pkg/tree/resource"
 )
 
@@ -19,9 +20,13 @@ import (
 // A Namespace is cluster-scoped, so it has no metadata.namespace of its own.
 // The parser addresses it as [name, kind, name] — scoped to itself — which
 // keeps every Kubernetes kind on the same three-segment address shape and
-// groups the namespace with the resources it contains.
+// groups the namespace with the resources it contains. The embedded
+// meta.ObjectMeta follows the address: its Namespace repeats its Name, so a
+// consumer scoping a query to a namespace finds the namespace object itself
+// alongside the resources in it, rather than having to special-case the kind.
 type Namespace struct {
 	resource.Resource `tree:"-"`
+	meta.ObjectMeta   `tree:"-"`
 
 	// Annotations are the Namespace's Kubernetes annotations, surfaced verbatim
 	// so downstream consumers can read the cloud-provider signals the other

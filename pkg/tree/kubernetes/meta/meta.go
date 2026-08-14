@@ -48,3 +48,21 @@ type ObjectMeta struct {
 	// matching against a real cluster — it is an assumption, not evidence.
 	Namespace value.String `tree:"namespace"`
 }
+
+// GetObjectMeta returns the metadata itself, so that every kind embedding
+// ObjectMeta promotes an accessor for it. Embedding promotes fields too, but
+// only a method survives type erasure: a consumer walking a tree holds each
+// resource as an any, and Go generics cannot constrain on a field. This is the
+// same reason resource.Resource carries GetBase.
+func (m *ObjectMeta) GetObjectMeta() *ObjectMeta {
+	return m
+}
+
+// Object is satisfied by every Kubernetes kind in the tree, through the
+// promoted GetObjectMeta above — at whatever embedding depth it sits (a CronJob
+// reaches it through Job through Workload). Consumers that match tree resources
+// against real cluster objects assert on this to reach the typed name and
+// namespace, as they assert on resource.Implementation to reach the base.
+type Object interface {
+	GetObjectMeta() *ObjectMeta
+}

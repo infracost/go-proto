@@ -9,10 +9,12 @@
 // created outside the cluster's node pools, so nothing in the node-pool IaC
 // accounts for them.
 //
-// The third, Namespace, provisions nothing. It is held so that label/tag
+// The other two provision nothing. Namespace is held so that label/tag
 // enforcement can be applied to it — namespaces are where teams record
 // ownership, so an unlabelled one is a policy gap that can only be reported if
-// the namespace reaches the tree.
+// the namespace reaches the tree. LimitRange is held because it supplies the
+// requests and limits a container declares none of, so a manifest read on its
+// own is an incomplete account of what a workload runs with.
 //
 // Each slice is tagged with the kind, which becomes the resource Type on the
 // wire — mirroring the apps and batch groups.
@@ -23,4 +25,5 @@ type Core struct {
 	PersistentVolumeClaims []PersistentVolumeClaim `tree:"persistentvolumeclaim"`
 	Services               []Service               `tree:"service"`
 	Namespaces             []Namespace             `tree:"namespace"`
+	LimitRanges            []LimitRange            `tree:"limitrange"`
 }

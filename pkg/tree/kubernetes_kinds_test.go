@@ -187,9 +187,9 @@ func TestKubernetesGovernanceKindsRoundTrip(t *testing.T) {
 	// nested TargetRef object.
 	require.Len(t, result.Kubernetes.Autoscaling.VerticalPodAutoscalers, 1)
 	vpa := result.Kubernetes.Autoscaling.VerticalPodAutoscalers[0]
-	assert.Equal(t, "api-vpa", vpa.ObjectMeta.Name.Value(), "the VPA's own name")
+	assert.Equal(t, "api-vpa", vpa.Name.Value(), "the VPA's own name, promoted from ObjectMeta")
 	assert.Equal(t, "api", vpa.TargetRef.Name.Value(), "the workload it targets")
-	assert.Equal(t, "shop", vpa.ObjectMeta.Namespace.Value())
+	assert.Equal(t, "shop", vpa.Namespace.Value())
 	assert.Equal(t, autoscaling.UpdateModeAuto, vpa.UpdateMode.Value())
 	require.Len(t, vpa.ContainerPolicies, 1)
 	assert.Equal(t, autoscaling.ContainerPolicyModeOff, vpa.ContainerPolicies[0].Mode.Value())
@@ -259,7 +259,7 @@ func TestKubernetesGovernanceKindsRoundTrip(t *testing.T) {
 	// which is a bare multiple rather than a quantity.
 	require.Len(t, result.Kubernetes.Core.LimitRanges, 1)
 	lr := result.Kubernetes.Core.LimitRanges[0]
-	assert.Equal(t, "shop", lr.ObjectMeta.Namespace.Value())
+	assert.Equal(t, "shop", lr.Namespace.Value())
 	require.Len(t, lr.Limits, 1)
 	item := lr.Limits[0]
 	assert.Equal(t, core.LimitRangeTypeContainer, item.Type.Value())

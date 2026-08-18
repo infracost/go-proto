@@ -1,6 +1,7 @@
 package core
 
 import (
+	"github.com/infracost/go-proto/pkg/tree/kubernetes/meta"
 	"github.com/infracost/go-proto/pkg/tree/resource"
 	"github.com/infracost/go-proto/pkg/tree/value"
 )
@@ -12,10 +13,12 @@ import (
 // NodePort / ExternalName Services are free and are not represented here.
 //
 // The kind, address ([namespace, kind, name]) and source range live on the
-// embedded resource.Resource; the Service's Kubernetes labels are stored as the
-// base resource's Tags.
+// embedded resource.Resource; the Service's name and namespace on the embedded
+// meta.ObjectMeta; and the Service's Kubernetes labels are stored as the base
+// resource's Tags.
 type Service struct {
 	resource.Resource `tree:"-"`
+	meta.ObjectMeta   `tree:"-"`
 
 	// Type is spec.type — expected to be "LoadBalancer" for every Service the
 	// parser surfaces.

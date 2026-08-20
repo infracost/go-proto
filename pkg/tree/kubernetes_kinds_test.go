@@ -51,6 +51,11 @@ func TestKubernetesGovernanceKindsRoundTrip(t *testing.T) {
 								MinAllowed:    autoscaling.ResourceAmounts{CPUMillicores: i64(100)},
 								MaxAllowed:    autoscaling.ResourceAmounts{MemoryBytes: i64(536870912)},
 							},
+							{
+								ContainerName:       str("api"),
+								ControlledResources: value.NewList([]value.String{str("memory")}, 0, "", nil),
+								ControlledValues:    str(autoscaling.ControlledValuesRequestsOnly),
+							},
 						},
 					},
 				},
@@ -61,6 +66,27 @@ func TestKubernetesGovernanceKindsRoundTrip(t *testing.T) {
 						ScaleTargetRef: autoscaling.TargetRef{Kind: str("Deployment"), Name: str("api")},
 						MinReplicas:    i64(2),
 						MaxReplicas:    i64(20),
+						Metrics: []autoscaling.Metric{
+							{
+								Type:              str(autoscaling.MetricSourceTypeResource),
+								Name:              str("cpu"),
+								TargetType:        str(autoscaling.MetricTargetTypeUtilization),
+								TargetUtilization: i64(50),
+							},
+							{
+								Type:              str(autoscaling.MetricSourceTypeContainerResource),
+								Name:              str("memory"),
+								ContainerName:     str("api"),
+								TargetType:        str(autoscaling.MetricTargetTypeUtilization),
+								TargetUtilization: i64(80),
+							},
+							{
+								Type:        str(autoscaling.MetricSourceTypeExternal),
+								Name:        str("sqs_queue_depth"),
+								TargetType:  str(autoscaling.MetricTargetTypeAverageValue),
+								TargetValue: str("30"),
+							},
+						},
 					},
 				},
 			},
@@ -98,6 +124,8 @@ func TestKubernetesGovernanceKindsRoundTrip(t *testing.T) {
 								},
 							},
 						},
+						DefaultBackendServiceName: str("storefront"),
+						DefaultBackendServicePort: str("80"),
 					},
 				},
 			},
@@ -191,16 +219,51 @@ func TestKubernetesGovernanceKindsRoundTrip(t *testing.T) {
 	assert.Equal(t, "api", vpa.TargetRef.Name.Value(), "the workload it targets")
 	assert.Equal(t, "shop", vpa.Namespace.Value())
 	assert.Equal(t, autoscaling.UpdateModeAuto, vpa.UpdateMode.Value())
-	require.Len(t, vpa.ContainerPolicies, 1)
+	require.Len(t, vpa.ContainerPolicies, 2)
 	assert.Equal(t, autoscaling.ContainerPolicyModeOff, vpa.ContainerPolicies[0].Mode.Value())
 	assert.Equal(t, int64(100), vpa.ContainerPolicies[0].MinAllowed.CPUMillicores.Value())
 	assert.Equal(t, int64(536870912), vpa.ContainerPolicies[0].MaxAllowed.MemoryBytes.Value())
+	assert.Nil(t, vpa.ContainerPolicies[0].ControlledResources,
+		"an omitted controlledResources must stay nil: nil defaults to both resources, an empty list would read as neither")
+
+	// The second policy is the partly-governed container: memory only, requests
+	// only. A CPU recommendation on it is actionable and a memory one is not, so
+	// the narrowing has to survive as the list it was written as — a policy that
+	// arrived back with both resources, or with none, reads as the opposite
+	// case.
+	memOnly := vpa.ContainerPolicies[1]
+	assert.Equal(t, "api", memOnly.ContainerName.Value())
+	require.NotNil(t, memOnly.ControlledResources)
+	assert.Equal(t, []string{"memory"}, listValues(memOnly.ControlledResources))
+	assert.Equal(t, autoscaling.ControlledValuesRequestsOnly, memOnly.ControlledValues.Value())
 
 	require.Len(t, result.Kubernetes.Autoscaling.HorizontalPodAutoscalers, 1)
 	hpa := result.Kubernetes.Autoscaling.HorizontalPodAutoscalers[0]
 	assert.Equal(t, "api", hpa.ScaleTargetRef.Name.Value())
 	assert.Equal(t, int64(2), hpa.MinReplicas.Value())
 	assert.Equal(t, int64(20), hpa.MaxReplicas.Value())
+
+	// Metrics: the utilization targets are the setpoints a rightsizing pass has
+	// to read observed usage against, so the percentages must survive as
+	// numbers, and the container-scoped one must stay bound to its container.
+	// The external metric carries no utilization at all, which is how a
+	// consumer tells "held at 50% of its request" from "driven by a queue".
+	require.Len(t, hpa.Metrics, 3)
+	assert.Equal(t, autoscaling.MetricSourceTypeResource, hpa.Metrics[0].Type.Value())
+	assert.Equal(t, "cpu", hpa.Metrics[0].Name.Value())
+	assert.Equal(t, int64(50), hpa.Metrics[0].TargetUtilization.Value())
+	assert.Empty(t, hpa.Metrics[0].ContainerName.Value(), "a pod-total metric names no container")
+
+	assert.Equal(t, autoscaling.MetricSourceTypeContainerResource, hpa.Metrics[1].Type.Value())
+	assert.Equal(t, "memory", hpa.Metrics[1].Name.Value())
+	assert.Equal(t, "api", hpa.Metrics[1].ContainerName.Value())
+	assert.Equal(t, int64(80), hpa.Metrics[1].TargetUtilization.Value())
+
+	assert.Equal(t, autoscaling.MetricSourceTypeExternal, hpa.Metrics[2].Type.Value())
+	assert.Equal(t, "sqs_queue_depth", hpa.Metrics[2].Name.Value())
+	assert.Equal(t, autoscaling.MetricTargetTypeAverageValue, hpa.Metrics[2].TargetType.Value())
+	assert.Equal(t, "30", hpa.Metrics[2].TargetValue.Value(), "an arbitrary-unit quantity stays a string")
+	assert.Zero(t, hpa.Metrics[2].TargetUtilization.Value(), "no utilization target on an external metric")
 
 	// PodDisruptionBudget: minAvailable stays a string so "50%" survives as a
 	// percentage rather than being read as an absolute count.
@@ -220,6 +283,9 @@ func TestKubernetesGovernanceKindsRoundTrip(t *testing.T) {
 	require.Len(t, ing.Rules[0].Paths, 1)
 	assert.Equal(t, "/api", ing.Rules[0].Paths[0].Path.Value())
 	assert.Equal(t, "http", ing.Rules[0].Paths[0].ServicePort.Value(), "a named port must stay a string")
+	assert.Equal(t, "storefront", ing.DefaultBackendServiceName.Value(),
+		"the default backend is a peer of the rules, and the only Service join on a rule-less Ingress")
+	assert.Equal(t, "80", ing.DefaultBackendServicePort.Value())
 
 	// NodePool: the pointer-backed string lists are the least-exercised type
 	// here, and a nil-versus-empty slip in either direction would be silent.

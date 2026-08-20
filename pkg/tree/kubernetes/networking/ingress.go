@@ -49,9 +49,24 @@ type Ingress struct {
 	Annotations []resource.Tag `tree:"annotations"`
 
 	// Rules are spec.rules. They do not affect what is provisioned — one ALB
-	// serves all of them — but they are the join to the Services behind it, and
-	// the host names are how a reader recognises what the load balancer is for.
+	// serves all of them — but with the default backend below they are the join
+	// to the Services behind it, and the host names are how a reader recognises
+	// what the load balancer is for.
 	Rules []IngressRule `tree:"rules"`
+
+	// DefaultBackendServiceName and DefaultBackendServicePort are
+	// spec.defaultBackend.service.name and .port — where a request goes when no
+	// rule matches it.
+	//
+	// This is a peer of Rules rather than a part of one, and an Ingress may
+	// state it alone: a single default backend and no rules at all is both
+	// valid and common. Reading only Rules therefore loses the Service join
+	// entirely for that shape, which is the join the rules are carried for.
+	//
+	// Like a path's backend this may instead be a resource backend, leaving both
+	// empty, and the port may be named rather than numeric.
+	DefaultBackendServiceName value.String `tree:"default_backend_service_name"`
+	DefaultBackendServicePort value.String `tree:"default_backend_service_port"`
 }
 
 // IngressRule is one entry of an Ingress's spec.rules: a host and the paths

@@ -1,6 +1,7 @@
 package core
 
 import (
+	"github.com/infracost/go-proto/pkg/tree/kubernetes/meta"
 	"github.com/infracost/go-proto/pkg/tree/resource"
 	"github.com/infracost/go-proto/pkg/tree/value"
 )
@@ -35,10 +36,12 @@ type StorageRequest struct {
 // IaC already covers.
 //
 // The kind, address ([namespace, kind, name]) and source range live on the
-// embedded resource.Resource; the claim's Kubernetes labels are stored as the
-// base resource's Tags (reusing the tag machinery, as workloads do).
+// embedded resource.Resource; the claim's name and namespace on the embedded
+// meta.ObjectMeta; and the claim's Kubernetes labels are stored as the base
+// resource's Tags (reusing the tag machinery, as workloads do).
 type PersistentVolumeClaim struct {
 	resource.Resource `tree:"-"`
+	meta.ObjectMeta   `tree:"-"`
 	StorageRequest    `tree:"-"`
 
 	// Annotations are the claim's Kubernetes annotations, surfaced verbatim so

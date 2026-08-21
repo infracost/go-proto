@@ -8,6 +8,7 @@ const (
 	AccessTierCool
 	AccessTierCold
 	AccessTierPremium
+	AccessTierSmart
 )
 
 type AccountKind uint32
@@ -39,4 +40,6 @@ const (
 	AccountTierUnknown AccountTier = iota
 	AccountTierStandard
 	AccountTierPremium
+	AccountTierStandardV2
+	AccountTierPremiumV2
 )

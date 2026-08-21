@@ -7,6 +7,7 @@ const (
 	RegistrySKUBasic
 	RegistrySKUStandard
 	RegistrySKUPremium
+	RegistrySKUClassic
 )
 
 type KubernetesSKUTier uint32

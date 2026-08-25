@@ -26,7 +26,10 @@ import (
 // embedded resource.Resource; the PDB's own name and namespace on the embedded
 // meta.ObjectMeta; and its Kubernetes labels are stored as the base resource's
 // Tags. Note that those labels are the PDB's own — Selector below is a
-// different thing, the labels it matches pods against.
+// different thing, the labels it matches pods against. The set it matches
+// against is a workload's PodLabels (spec.template.metadata.labels), not the
+// workload's own labels; those two are conventionally related and not required
+// to be, so a consumer resolving this join has to read the right one.
 type PodDisruptionBudget struct {
 	resource.Resource `tree:"-"`
 	meta.ObjectMeta   `tree:"-"`
@@ -44,17 +47,15 @@ type PodDisruptionBudget struct {
 	MinAvailable   value.String `tree:"min_available"`
 	MaxUnavailable value.String `tree:"max_unavailable"`
 
-	// Selector is spec.selector.matchLabels — the labels a pod must carry for
-	// this budget to cover it. Held as tags so it reuses the same machinery as
-	// the label sets elsewhere in the tree, and so a consumer can compare it
-	// against a workload's labels directly.
+	// Selector is spec.selector — which pods this budget covers, stated as a
+	// rule about their labels rather than as a list of names.
 	//
-	// Only matchLabels is modelled. spec.selector.matchExpressions is the more
-	// general form (In, NotIn, Exists, DoesNotExist over a key) and cannot be
-	// expressed as key/value pairs; a PDB using it will have an empty or partial
-	// Selector here, so an empty Selector means "not expressible" rather than
-	// "matches nothing".
-	Selector []resource.Tag `tree:"selector"`
+	// Both halves are carried, so what is here is what the manifest wrote. An
+	// empty Selector therefore means the budget states none, which in Kubernetes
+	// covers every pod in the namespace — it does not mean "we could not read
+	// it". Compare against a workload's PodLabels, not against its own labels;
+	// see the note above.
+	Selector meta.LabelSelector `tree:"selector"`
 
 	// Annotations are the PDB's Kubernetes annotations, surfaced verbatim.
 	Annotations []resource.Tag `tree:"annotations"`

@@ -28,6 +28,11 @@ import (
 // read out of the manifest — or, for Helm, out of values.yaml — is first-class
 // and typed below.
 //
+// Those Tags are the workload object's own labels. The labels its *pods* carry
+// are a second set, PodLabels below, and the two are only conventionally the
+// same. Everything that selects pods rather than objects — a
+// PodDisruptionBudget, a Service, a NetworkPolicy — matches against PodLabels.
+//
 // Note that Container below also has a Name. It is a different thing — the name
 // of one container within this workload's pod, not the name of the workload —
 // and it stays distinct in the serialized tree because containers are a nested
@@ -41,6 +46,29 @@ type Workload struct {
 	// ARNs, GKE/Azure workload-identity annotations, etc.) live here, and it is
 	// up to downstream consumers to interpret them and decide a provider.
 	Annotations []resource.Tag `tree:"annotations"`
+
+	// Selector is spec.selector — the rule by which this workload claims its
+	// pods. The workload's own labels (the base resource's Tags) are how other
+	// objects find *it*; this is how it finds them.
+	//
+	// Kubernetes requires it on the apps kinds and not on a Job, so an empty
+	// selector on a Deployment is a manifest we could not read rather than one
+	// to interpret.
+	Selector meta.LabelSelector `tree:"selector"`
+
+	// PodLabels are spec.template.metadata.labels — the labels the pods this
+	// workload creates actually carry, and so the set every object that selects
+	// pods is matched against: a PodDisruptionBudget deciding whether an
+	// eviction can be refused, a Service deciding what it routes to, a
+	// NetworkPolicy deciding what may reach it.
+	//
+	// Distinct from the workload's own labels, which live on the base resource's
+	// Tags. Convention makes the two overlap and nothing enforces it — a chart
+	// is free to label the Deployment one way and its pod template another — so
+	// a consumer resolving "which budgets protect this workload" has to read
+	// these rather than the Tags. Reading the wrong set is wrong exactly when
+	// the two disagree, which is the case nobody notices.
+	PodLabels []resource.Tag `tree:"pod_labels"`
 
 	// Containers holds the per-container resource requests and limits.
 	Containers []Container `tree:"containers"`

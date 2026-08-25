@@ -1,7 +1,8 @@
-// Package meta holds the Kubernetes object metadata shared by every kind in the
-// tree. It mirrors the metadata.name / metadata.namespace pair that every
-// Kubernetes object carries, as typed values rather than as segments of the
-// resource address.
+// Package meta holds the pieces of the Kubernetes meta/v1 API group that kinds
+// across the tree share: the metadata.name / metadata.namespace pair every
+// object carries, and the LabelSelector by which one object states which pods
+// another's it applies to. Both are modelled as typed values rather than as
+// segments of a resource address or as flattened key/value pairs.
 //
 // The address ([namespace, kind, name]) still carries the same identity, but it
 // is a display and uniqueness construct: the name segment is joined with a hash

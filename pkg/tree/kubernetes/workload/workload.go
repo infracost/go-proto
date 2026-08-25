@@ -74,6 +74,25 @@ type Workload struct {
 	Containers []Container `tree:"containers"`
 }
 
+// GetPodLabels returns the labels this workload's pods carry, so that every kind
+// embedding Workload promotes an accessor for them. Embedding promotes fields
+// too, but only a method survives type erasure: a consumer walking a tree holds
+// each resource as an any, and Go generics cannot constrain on a field. Same
+// reason meta.ObjectMeta carries GetObjectMeta.
+func (w *Workload) GetPodLabels() []resource.Tag {
+	return w.PodLabels
+}
+
+// PodOwner is satisfied by every workload kind, through the promoted accessor
+// above — at whatever embedding depth it sits (a CronJob reaches it through Job
+// through Workload) — and by nothing else in the tree. A consumer resolving what
+// selects a workload's pods asserts on this; the kinds that own no pods (a
+// PersistentVolumeClaim, a Service, a LimitRange) correctly fail the assertion
+// rather than answering with an empty set.
+type PodOwner interface {
+	GetPodLabels() []resource.Tag
+}
+
 // Container is the cost-relevant sizing for a single container in a workload's
 // pod template.
 //

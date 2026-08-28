@@ -96,8 +96,19 @@ func TestKubernetesGovernanceKindsRoundTrip(t *testing.T) {
 						Resource:     resource.Resource{ID: "api-pdb.9c8d7e6f"},
 						ObjectMeta:   meta.ObjectMeta{Name: str("api-pdb"), Namespace: str("shop")},
 						MinAvailable: str("50%"),
-						Selector: []resource.Tag{
-							{Key: str("app"), Value: str("api")},
+						// Both halves of the selector, because the point of the
+						// type is that they are not interchangeable: the
+						// expressions below say three things no key/value pair
+						// can, and the old flat shape dropped all three.
+						Selector: meta.LabelSelector{
+							MatchLabels: []resource.Tag{
+								{Key: str("app"), Value: str("api")},
+							},
+							MatchExpressions: []meta.LabelSelectorRequirement{
+								{Key: str("tier"), Operator: str("In"), Values: value.NewList([]value.String{str("web"), str("edge")}, 0, "", nil)},
+								{Key: str("batch"), Operator: str("NotIn"), Values: value.NewList([]value.String{str("true")}, 0, "", nil)},
+								{Key: str("managed"), Operator: str("Exists")},
+							},
 						},
 					},
 				},
@@ -270,9 +281,22 @@ func TestKubernetesGovernanceKindsRoundTrip(t *testing.T) {
 	require.Len(t, result.Kubernetes.Policy.PodDisruptionBudgets, 1)
 	pdb := result.Kubernetes.Policy.PodDisruptionBudgets[0]
 	assert.Equal(t, "50%", pdb.MinAvailable.Value())
-	require.Len(t, pdb.Selector, 1)
-	assert.Equal(t, "app", pdb.Selector[0].Key.Value())
-	assert.Equal(t, "api", pdb.Selector[0].Value.Value())
+	require.Len(t, pdb.Selector.MatchLabels, 1)
+	assert.Equal(t, "app", pdb.Selector.MatchLabels[0].Key.Value())
+	assert.Equal(t, "api", pdb.Selector.MatchLabels[0].Value.Value())
+	// The expressions are the half the flat shape could not hold. Each of these
+	// three states something a key/value pair cannot, so a round trip that
+	// silently dropped them would leave the selector wider than the manifest
+	// wrote it.
+	require.Len(t, pdb.Selector.MatchExpressions, 3)
+	assert.Equal(t, "tier", pdb.Selector.MatchExpressions[0].Key.Value())
+	assert.Equal(t, "In", pdb.Selector.MatchExpressions[0].Operator.Value())
+	assert.Equal(t, []string{"web", "edge"}, listValues(pdb.Selector.MatchExpressions[0].Values))
+	assert.Equal(t, "NotIn", pdb.Selector.MatchExpressions[1].Operator.Value())
+	assert.Equal(t, []string{"true"}, listValues(pdb.Selector.MatchExpressions[1].Values))
+	assert.Equal(t, "Exists", pdb.Selector.MatchExpressions[2].Operator.Value())
+	assert.Nil(t, pdb.Selector.MatchExpressions[2].Values,
+		"Exists takes no values, so the list is absent rather than empty — an empty list under In matches nothing")
 
 	// Ingress: rules nest paths, so this is a struct two levels inside a slice.
 	require.Len(t, result.Kubernetes.Networking.Ingresses, 1)

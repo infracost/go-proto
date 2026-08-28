@@ -7,6 +7,7 @@ import (
 	"github.com/infracost/go-proto/pkg/tree/kubernetes/apps"
 	"github.com/infracost/go-proto/pkg/tree/kubernetes/batch"
 	"github.com/infracost/go-proto/pkg/tree/kubernetes/core"
+	"github.com/infracost/go-proto/pkg/tree/kubernetes/meta"
 	"github.com/infracost/go-proto/pkg/tree/kubernetes/workload"
 	"github.com/infracost/go-proto/pkg/tree/resource"
 	"github.com/infracost/go-proto/pkg/tree/value"
@@ -38,6 +39,19 @@ func TestKubernetesRoundTrip(t *testing.T) {
 									Key:   value.New("eks.amazonaws.com/role-arn", 0, "", nil),
 									Value: value.New("arn:aws:iam::123456789012:role/api", 0, "", nil),
 								},
+							},
+							Selector: meta.LabelSelector{
+								MatchLabels: []resource.Tag{
+									{Key: value.New("app", 0, "", nil), Value: value.New("api", 0, "", nil)},
+								},
+							},
+							// Deliberately disagreeing with the object's own Tags
+							// above, which say app=api. Nothing requires the two
+							// to match, and a consumer that reads the wrong one is
+							// only wrong when they differ — so they differ here.
+							PodLabels: []resource.Tag{
+								{Key: value.New("app", 0, "", nil), Value: value.New("api", 0, "", nil)},
+								{Key: value.New("tier", 0, "", nil), Value: value.New("web", 0, "", nil)},
 							},
 							Containers: []workload.Container{
 								{
@@ -184,6 +198,17 @@ func TestKubernetesRoundTrip(t *testing.T) {
 	require.Len(t, dep.Containers, len(origDep.Containers))
 	assert.Equal(t, origDep.Containers[0].CPURequestMillicores.Value(), dep.Containers[0].CPURequestMillicores.Value())
 	assert.Equal(t, origDep.Containers[0].MemoryRequestBytes.Value(), dep.Containers[0].MemoryRequestBytes.Value())
+	// The pods this workload claims, and the labels those pods carry — the set
+	// a PodDisruptionBudget or a Service is matched against. Asserted apart from
+	// Tags above because the fixture makes them differ: a conflation would read
+	// as a passing test on any workload whose two label sets happen to agree.
+	require.Len(t, dep.Selector.MatchLabels, 1)
+	assert.Equal(t, "app", dep.Selector.MatchLabels[0].Key.Value())
+	assert.Equal(t, "api", dep.Selector.MatchLabels[0].Value.Value())
+	require.Len(t, dep.PodLabels, len(origDep.PodLabels))
+	assert.Equal(t, "tier", dep.PodLabels[1].Key.Value())
+	assert.Equal(t, "web", dep.PodLabels[1].Value.Value())
+	assert.Len(t, dep.Tags, 1, "the workload's own labels must not pick up the pod template's")
 
 	require.Len(t, result.Kubernetes.Apps.DaemonSets, 1)
 	daemon := result.Kubernetes.Apps.DaemonSets[0]

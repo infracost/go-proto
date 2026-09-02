@@ -235,3 +235,71 @@ func TestPostProcess_ResetsRelationships(t *testing.T) {
 	assert.Nil(t, ec2.Instances[0].Relationships.LaunchTemplate)
 	assert.Nil(t, ec2.Instances[0].Relationships.InstanceState)
 }
+
+func TestPostProcess_LinkAutoscalingScheduleByName(t *testing.T) {
+	ec2 := &EC2{
+		AutoscalingGroups: []AutoscalingGroup{
+			{
+				Resource: resource.Resource{ID: "asg-abc"},
+				Name:     value.New("my-asg", 0, "", nil),
+			},
+		},
+		AutoscalingSchedules: []AutoscalingSchedule{
+			{
+				Resource:             resource.Resource{ID: "sched-1"},
+				AutoscalingGroupName: value.New("my-asg", 0, "", nil),
+			},
+			{
+				Resource:             resource.Resource{ID: "sched-2"},
+				AutoscalingGroupName: value.New("my-asg", 0, "", nil),
+			},
+		},
+	}
+
+	ec2.PostProcess()
+
+	require.Len(t, ec2.AutoscalingGroups[0].Relationships.AutoscalingSchedules, 2)
+	assert.Equal(t, &ec2.AutoscalingSchedules[0], ec2.AutoscalingGroups[0].Relationships.AutoscalingSchedules[0])
+	assert.Equal(t, &ec2.AutoscalingSchedules[1], ec2.AutoscalingGroups[0].Relationships.AutoscalingSchedules[1])
+}
+
+func TestPostProcess_LinkAutoscalingScheduleByID(t *testing.T) {
+	ec2 := &EC2{
+		AutoscalingGroups: []AutoscalingGroup{
+			{Resource: resource.Resource{ID: "asg-abc"}},
+		},
+		AutoscalingSchedules: []AutoscalingSchedule{
+			{
+				Resource:             resource.Resource{ID: "sched-1"},
+				AutoscalingGroupName: value.New("asg-abc", 0, "", nil),
+			},
+		},
+	}
+
+	ec2.PostProcess()
+
+	require.Len(t, ec2.AutoscalingGroups[0].Relationships.AutoscalingSchedules, 1)
+	assert.Equal(t, &ec2.AutoscalingSchedules[0], ec2.AutoscalingGroups[0].Relationships.AutoscalingSchedules[0])
+}
+
+func TestPostProcess_NoAutoscalingScheduleMatch(t *testing.T) {
+	ec2 := &EC2{
+		AutoscalingGroups: []AutoscalingGroup{
+			{
+				Resource: resource.Resource{ID: "asg-abc"},
+				Name:     value.New("my-asg", 0, "", nil),
+			},
+		},
+		AutoscalingSchedules: []AutoscalingSchedule{
+			{
+				Resource:             resource.Resource{ID: "sched-1"},
+				AutoscalingGroupName: value.New("other-asg", 0, "", nil),
+			},
+			{Resource: resource.Resource{ID: "sched-2"}},
+		},
+	}
+
+	ec2.PostProcess()
+
+	assert.Empty(t, ec2.AutoscalingGroups[0].Relationships.AutoscalingSchedules)
+}

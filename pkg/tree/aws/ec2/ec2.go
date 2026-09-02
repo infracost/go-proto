@@ -2,6 +2,7 @@ package ec2
 
 type EC2 struct {
 	AutoscalingGroups                []AutoscalingGroup                `tree:"autoscaling_groups"`
+	AutoscalingSchedules             []AutoscalingSchedule             `tree:"autoscaling_schedules"`
 	ClassicLoadBalancers             []ClassicLoadBalancer             `tree:"classic_load_balancers"`
 	ClientVPNEndpoints               []ClientVPNEndpoint               `tree:"client_vpn_endpoints"`
 	ClientVPNNetworkAssociations     []ClientVPNNetworkAssociation     `tree:"client_vpn_network_associations"`
@@ -167,6 +168,21 @@ func (ec2 *EC2) PostProcess() {
 			// save changes
 			ec2.Instances[i] = instance
 			break
+		}
+	}
+
+	// link autoscaling schedules to autoscaling groups
+	for i := range ec2.AutoscalingSchedules {
+		schedule := &ec2.AutoscalingSchedules[i]
+		if schedule.AutoscalingGroupName.IsEmpty() {
+			continue
+		}
+		for j := range ec2.AutoscalingGroups {
+			asg := &ec2.AutoscalingGroups[j]
+			if schedule.AutoscalingGroupName.Value() == asg.Name.Value() || schedule.AutoscalingGroupName.Equal(asg.ID) {
+				asg.Relationships.AutoscalingSchedules = append(asg.Relationships.AutoscalingSchedules, schedule)
+				break
+			}
 		}
 	}
 

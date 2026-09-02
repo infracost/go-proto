@@ -22,6 +22,12 @@ func TestPostProcess_IsIdempotent(t *testing.T) {
 		LaunchTemplates: []LaunchTemplate{
 			{Resource: resource.Resource{ID: "lt-1"}, Name: value.New("lt-name", 0, "", nil)},
 		},
+		AutoscalingSchedules: []AutoscalingSchedule{
+			{
+				Resource:             resource.Resource{ID: "asg-sched-1"},
+				AutoscalingGroupName: value.New("asg-1", 0, "", nil),
+			},
+		},
 		AutoscalingGroups: []AutoscalingGroup{
 			{
 				Resource:                      resource.Resource{ID: "asg-1"},
@@ -101,6 +107,7 @@ func TestPostProcess_IsIdempotent(t *testing.T) {
 		asgLT              *LaunchTemplate
 		asgMixedLT         *LaunchTemplate
 		asgLC              *LaunchConfiguration
+		asgSchedules       []*AutoscalingSchedule
 		vpcEndpoints       []*VPCEndpoint
 		vpcEndpointVPC     *VPC
 		vpcEndpointSubnets []*Subnet
@@ -122,6 +129,7 @@ func TestPostProcess_IsIdempotent(t *testing.T) {
 		asgLT:              ec2.AutoscalingGroups[0].Relationships.LaunchTemplate,
 		asgMixedLT:         ec2.AutoscalingGroups[0].Relationships.MixedInstanceLaunchTemplate,
 		asgLC:              ec2.AutoscalingGroups[0].Relationships.LaunchConfiguration,
+		asgSchedules:       append([]*AutoscalingSchedule(nil), ec2.AutoscalingGroups[0].Relationships.AutoscalingSchedules...),
 		vpcEndpoints:       append([]*VPCEndpoint(nil), ec2.VPCs[0].Relationships.VPCEndpoints...),
 		vpcEndpointVPC:     ec2.VPCEndpoints[0].Relationships.VPC,
 		vpcEndpointSubnets: append([]*Subnet(nil), ec2.VPCEndpoints[0].Relationships.Subnets...),
@@ -146,6 +154,7 @@ func TestPostProcess_IsIdempotent(t *testing.T) {
 	assert.Equal(t, snapshot.asgLT, ec2.AutoscalingGroups[0].Relationships.LaunchTemplate)
 	assert.Equal(t, snapshot.asgMixedLT, ec2.AutoscalingGroups[0].Relationships.MixedInstanceLaunchTemplate)
 	assert.Equal(t, snapshot.asgLC, ec2.AutoscalingGroups[0].Relationships.LaunchConfiguration)
+	assert.Equal(t, snapshot.asgSchedules, ec2.AutoscalingGroups[0].Relationships.AutoscalingSchedules)
 	assert.Equal(t, snapshot.vpcEndpoints, ec2.VPCs[0].Relationships.VPCEndpoints)
 	assert.Equal(t, snapshot.vpcEndpointVPC, ec2.VPCEndpoints[0].Relationships.VPC)
 	assert.Equal(t, snapshot.vpcEndpointSubnets, ec2.VPCEndpoints[0].Relationships.Subnets)

@@ -15,6 +15,7 @@ type AutoscalingGroup struct {
 	MixedInstancePolicy               MixedInstancePolicy `tree:"mixed_instance_policy"`
 	DesiredCapacity                   value.Int           `tree:"desired_capacity"`
 	MinSize                           value.Int           `tree:"min_size"`
+	MaxSize                           value.Int           `tree:"max_size"`
 
 	Relationships AutoscalingGroupRelationships `tree:"-"`
 }
@@ -23,6 +24,7 @@ type AutoscalingGroupRelationships struct {
 	LaunchTemplate              *LaunchTemplate
 	MixedInstanceLaunchTemplate *LaunchTemplate
 	LaunchConfiguration         *LaunchConfiguration
+	AutoscalingSchedules        []*AutoscalingSchedule
 }
 
 type MixedInstancePolicy struct {

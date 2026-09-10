@@ -7,15 +7,15 @@ import (
 
 type Job struct {
 	resource.Resource `tree:"-"`
-	MaxCapacity       value.Double              `tree:"max_capacity"`
-	NumberOfWorkers   value.Int                 `tree:"number_of_workers"`
-	WorkerType        value.Value[WorkerType]   `tree:"worker_type"`
+	MaxCapacity       value.Double            `tree:"max_capacity"`
+	NumberOfWorkers   value.Int               `tree:"number_of_workers"`
+	WorkerType        value.Value[WorkerType] `tree:"worker_type"`
 }
 
 type WorkerType uint32
 
 const (
-	WorkerTypeUnknown  WorkerType = iota
+	WorkerTypeUnknown WorkerType = iota
 	WorkerTypeStandard
 	WorkerTypeG1X
 	WorkerTypeG2X
@@ -23,4 +23,10 @@ const (
 	WorkerTypeG4X
 	WorkerTypeG8X
 	WorkerTypeZ2X
+	WorkerTypeG12X
+	WorkerTypeG16X
+	WorkerTypeR1X
+	WorkerTypeR2X
+	WorkerTypeR4X
+	WorkerTypeR8X
 )

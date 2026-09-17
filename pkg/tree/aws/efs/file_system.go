@@ -10,5 +10,6 @@ type FileSystem struct {
 	AvailabilityZoneName        value.String `tree:"availability_zone_name"`
 	HasLifecyclePolicy          value.Bool   `tree:"has_lifecycle_policy"`
 	ProvisionedThroughputInMBps value.Double `tree:"provisioned_throughput_in_mbps"`
+	ThroughputMode              value.String `tree:"throughput_mode"`
 	Encrypted                   value.Bool   `tree:"encrypted"`
 }

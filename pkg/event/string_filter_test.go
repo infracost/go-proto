@@ -279,3 +279,99 @@ func TestStringFilterFromProto(t *testing.T) {
 		assert.True(t, f.Matches("anything"))
 	})
 }
+
+func TestStringFilter_MatchesText(t *testing.T) {
+	const body = "Bumps the cluster size.\n\nApproved under CET-1234, see the ticket.\n"
+
+	tests := []struct {
+		name   string
+		filter *StringFilter
+		text   string
+		want   bool
+	}{
+		{
+			name:   "nil filter matches",
+			filter: StringFilterFromProto(nil),
+			text:   body,
+			want:   true,
+		},
+		{
+			name:   "empty filter matches",
+			filter: StringFilterFromProto(&eventpb.StringFilter{}),
+			text:   body,
+			want:   true,
+		},
+		{
+			name:   "exclude entry found mid-line does not match",
+			filter: StringFilterFromProto(&eventpb.StringFilter{Exclude: []string{"CET-"}}),
+			text:   body,
+			want:   false,
+		},
+		{
+			name:   "exclude entry absent matches",
+			filter: StringFilterFromProto(&eventpb.StringFilter{Exclude: []string{"CET-"}}),
+			text:   "Bumps the cluster size.",
+			want:   true,
+		},
+		{
+			name:   "exclude is case-insensitive",
+			filter: StringFilterFromProto(&eventpb.StringFilter{Exclude: []string{"CET-"}}),
+			text:   "approved under cet-1234",
+			want:   false,
+		},
+		{
+			name:   "wildcards work within a line",
+			filter: StringFilterFromProto(&eventpb.StringFilter{Exclude: []string{"CET-*-approved"}}),
+			text:   "ticket CET-1234-approved by finance",
+			want:   false,
+		},
+		{
+			name:   "include entry found matches",
+			filter: StringFilterFromProto(&eventpb.StringFilter{Include: []string{"CET-"}}),
+			text:   body,
+			want:   true,
+		},
+		{
+			name:   "include entry absent does not match",
+			filter: StringFilterFromProto(&eventpb.StringFilter{Include: []string{"CET-"}}),
+			text:   "Bumps the cluster size.",
+			want:   false,
+		},
+		{
+			name:   "exclude wins over include",
+			filter: StringFilterFromProto(&eventpb.StringFilter{Include: []string{"cluster"}, Exclude: []string{"CET-"}}),
+			text:   body,
+			want:   false,
+		},
+		{
+			name:   "empty text cannot satisfy an include",
+			filter: StringFilterFromProto(&eventpb.StringFilter{Include: []string{"CET-"}}),
+			text:   "",
+			want:   false,
+		},
+		{
+			name:   "empty text cannot trip an exclude",
+			filter: StringFilterFromProto(&eventpb.StringFilter{Exclude: []string{"CET-"}}),
+			text:   "",
+			want:   true,
+		},
+		{
+			name:   "a match on one line is enough",
+			filter: StringFilterFromProto(&eventpb.StringFilter{Exclude: []string{"CET-"}}),
+			text:   "line one\nline two\nCET-9\nline four",
+			want:   false,
+		},
+		{
+			name:   "entries are trimmed",
+			filter: StringFilterFromProto(&eventpb.StringFilter{Exclude: []string{"  CET-  "}}),
+			text:   body,
+			want:   false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, tt.filter.MatchesText(tt.text))
+		})
+	}
+}

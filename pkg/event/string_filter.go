@@ -1,6 +1,10 @@
 package event
 
-import "github.com/infracost/proto/gen/go/infracost/parser/event"
+import (
+	"strings"
+
+	"github.com/infracost/proto/gen/go/infracost/parser/event"
+)
 
 type StringFilter struct {
 	*event.StringFilter
@@ -55,6 +59,55 @@ func (f *StringFilter) Matches(value string) bool {
 	}
 
 	return true
+}
+
+// MatchesText applies the filter to a block of text, line by line. An entry
+// matches a line that contains it, so "CET-" matches "Approved under CET-1234",
+// and wildcards still work within a line. Matching is case-insensitive.
+func (f *StringFilter) MatchesText(text string) bool {
+	if f == nil || f.StringFilter == nil {
+		return true
+	}
+
+	if len(f.GetExclude()) == 0 && len(f.GetInclude()) == 0 {
+		return true
+	}
+
+	var lines []string
+	for _, line := range strings.Split(text, "\n") {
+		if trimmed := strings.TrimSpace(line); trimmed != "" {
+			lines = append(lines, strings.ToLower(trimmed))
+		}
+	}
+
+	for _, exclude := range f.GetExclude() {
+		if anyLineContains(lines, exclude) {
+			return false
+		}
+	}
+
+	if len(f.GetInclude()) > 0 {
+		for _, include := range f.GetInclude() {
+			if anyLineContains(lines, include) {
+				return true
+			}
+		}
+		return false
+	}
+
+	return true
+}
+
+// anyLineContains reports whether entry appears anywhere in any line. Lines are
+// already lowercased.
+func anyLineContains(lines []string, entry string) bool {
+	pattern := "*" + strings.ToLower(strings.TrimSpace(entry)) + "*"
+	for _, line := range lines {
+		if matchWildcard(line, pattern) {
+			return true
+		}
+	}
+	return false
 }
 
 // matchWildcard checks if a value matches a pattern with wildcards

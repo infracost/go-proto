@@ -99,9 +99,14 @@ func (f *StringFilter) MatchesText(text string) bool {
 }
 
 // anyLineContains reports whether entry appears anywhere in any line. Lines are
-// already lowercased.
+// already lowercased. An empty entry matches nothing, as it does in Matches.
 func anyLineContains(lines []string, entry string) bool {
-	pattern := "*" + strings.ToLower(strings.TrimSpace(entry)) + "*"
+	entry = strings.ToLower(strings.TrimSpace(entry))
+	if entry == "" {
+		return false
+	}
+
+	pattern := "*" + entry + "*"
 	for _, line := range lines {
 		if matchWildcard(line, pattern) {
 			return true

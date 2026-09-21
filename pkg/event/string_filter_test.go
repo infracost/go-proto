@@ -367,6 +367,24 @@ func TestStringFilter_MatchesText(t *testing.T) {
 			text:   body,
 			want:   false,
 		},
+		{
+			name:   "an empty exclude entry excludes nothing",
+			filter: StringFilterFromProto(&eventpb.StringFilter{Exclude: []string{""}}),
+			text:   body,
+			want:   true,
+		},
+		{
+			name:   "an empty include entry matches nothing",
+			filter: StringFilterFromProto(&eventpb.StringFilter{Include: []string{""}}),
+			text:   body,
+			want:   false,
+		},
+		{
+			name:   "a blank exclude entry is ignored beside a real one",
+			filter: StringFilterFromProto(&eventpb.StringFilter{Exclude: []string{"   ", "CET-"}}),
+			text:   body,
+			want:   false,
+		},
 	}
 
 	for _, tt := range tests {

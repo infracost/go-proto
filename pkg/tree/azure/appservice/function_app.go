@@ -7,11 +7,16 @@ import (
 
 type FunctionApp struct {
 	resource.Resource  `tree:"-"`
-	SKU                value.String `tree:"sku"`
+	SKU                value.String                `tree:"sku"`
 	Tier               value.Value[AppServiceTier] `tree:"tier"`
-	OSType             value.String `tree:"os_type"`
-	MinTLSVersion      value.String `tree:"min_tls_version"`
-	HTTPSOnly          value.Bool   `tree:"https_only"`
-	AppServicePlanID   value.String `tree:"app_service_plan_id"`
-	StorageAccountName value.String `tree:"storage_account_name"`
+	OSType             value.String                `tree:"os_type"`
+	MinTLSVersion      value.String                `tree:"min_tls_version"`
+	HTTPSOnly          value.Bool                  `tree:"https_only"`
+	AppServicePlanID   value.String                `tree:"app_service_plan_id"`
+	StorageAccountName value.String                `tree:"storage_account_name"`
+	// RuntimeName is the language stack, lower case (e.g. "java"). Empty when
+	// the IaC does not say.
+	RuntimeName value.String `tree:"runtime_name"`
+	// RuntimeVersion is the language version for RuntimeName (e.g. "17").
+	RuntimeVersion value.String `tree:"runtime_version"`
 }

@@ -40,8 +40,8 @@ const (
 //
 // The kind, address ([namespace, kind, name]) and source range live on the
 // embedded resource.Resource; the pool's own name and namespace on the embedded
-// meta.ObjectMeta; and its Kubernetes labels are stored as the base resource's
-// Tags. A NodePool is in fact cluster-scoped, so it has no namespace of its own
+// meta.ObjectMeta, along with its Kubernetes labels; and the labels and
+// annotations together are the base resource's Tags. A NodePool is in fact cluster-scoped, so it has no namespace of its own
 // — see the Namespace note on core.Namespace for the same situation.
 type NodePool struct {
 	resource.Resource `tree:"-"`

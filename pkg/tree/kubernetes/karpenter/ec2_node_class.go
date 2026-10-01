@@ -22,8 +22,8 @@ import (
 //
 // The kind, address ([namespace, kind, name]) and source range live on the
 // embedded resource.Resource; the class's own name on the embedded
-// meta.ObjectMeta; and its Kubernetes labels are stored as the base resource's
-// Tags.
+// meta.ObjectMeta; and its Kubernetes labels on ObjectMeta's Labels and, with
+// its annotations, in the base resource's Tags.
 type EC2NodeClass struct {
 	resource.Resource `tree:"-"`
 	meta.ObjectMeta   `tree:"-"`

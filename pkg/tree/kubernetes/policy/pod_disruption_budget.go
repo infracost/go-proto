@@ -24,8 +24,8 @@ import (
 //
 // The kind, address ([namespace, kind, name]) and source range live on the
 // embedded resource.Resource; the PDB's own name and namespace on the embedded
-// meta.ObjectMeta; and its Kubernetes labels are stored as the base resource's
-// Tags. Note that those labels are the PDB's own — Selector below is a
+// meta.ObjectMeta, along with its Kubernetes labels; and the labels and
+// annotations together are the base resource's Tags. Note that those labels are the PDB's own — Selector below is a
 // different thing, the labels it matches pods against. The set it matches
 // against is a workload's PodLabels (spec.template.metadata.labels), not the
 // workload's own labels; those two are conventionally related and not required

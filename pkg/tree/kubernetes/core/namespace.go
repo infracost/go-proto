@@ -14,8 +14,9 @@ import (
 // tree.
 //
 // The kind, address and source range live on the embedded resource.Resource;
-// the Namespace's Kubernetes labels are stored as the base resource's Tags,
-// reusing the tag machinery as the other kinds do.
+// its Kubernetes labels on the embedded meta.ObjectMeta; and the labels and
+// annotations together are the base resource's Tags, reusing the tag
+// machinery as the other kinds do.
 //
 // A Namespace is cluster-scoped, so it has no metadata.namespace of its own.
 // The parser addresses it as [name, kind, name] — scoped to itself — which

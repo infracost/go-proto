@@ -10,9 +10,4 @@ type App struct {
 	MinTLSVersion     value.String `tree:"min_tls_version"`
 	HTTPSOnly         value.Bool   `tree:"https_only"`
 	AppServicePlanID  value.String `tree:"app_service_plan_id"`
-	// RuntimeName is the language stack, lower case (e.g. "java"). Empty when
-	// the IaC does not say.
-	RuntimeName value.String `tree:"runtime_name"`
-	// RuntimeVersion is the language version for RuntimeName (e.g. "17").
-	RuntimeVersion value.String `tree:"runtime_version"`
 }

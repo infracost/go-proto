@@ -29,8 +29,21 @@ func TestKubernetesRoundTrip(t *testing.T) {
 							Resource: resource.Resource{
 								ID:     "api",
 								Region: "us-east-1",
-								// Kubernetes labels are stored as the base resource's Tags.
+								// The base resource's Tags are the labels and the
+								// annotations together, which is what tagging
+								// policies evaluate against.
 								Tags: resource.Tags{
+									{Key: value.New("app", 0, "", nil), Value: value.New("api", 0, "", nil)},
+									{Key: value.New("team", 0, "", nil), Value: value.New("payments", 0, "", nil)},
+								},
+							},
+							// The labels alone. Deliberately a subset of Tags above:
+							// team is an annotation, so a consumer that matches on
+							// labels but reads Tags would see a label the cluster
+							// does not.
+							ObjectMeta: meta.ObjectMeta{
+								Name: value.New("api", 0, "", nil),
+								Labels: []resource.Tag{
 									{Key: value.New("app", 0, "", nil), Value: value.New("api", 0, "", nil)},
 								},
 							},
@@ -39,13 +52,14 @@ func TestKubernetesRoundTrip(t *testing.T) {
 									Key:   value.New("eks.amazonaws.com/role-arn", 0, "", nil),
 									Value: value.New("arn:aws:iam::123456789012:role/api", 0, "", nil),
 								},
+								{Key: value.New("team", 0, "", nil), Value: value.New("payments", 0, "", nil)},
 							},
 							Selector: meta.LabelSelector{
 								MatchLabels: []resource.Tag{
 									{Key: value.New("app", 0, "", nil), Value: value.New("api", 0, "", nil)},
 								},
 							},
-							// Deliberately disagreeing with the object's own Tags
+							// Deliberately disagreeing with the object's own Labels
 							// above, which say app=api. Nothing requires the two
 							// to match, and a consumer that reads the wrong one is
 							// only wrong when they differ — so they differ here.
@@ -208,7 +222,14 @@ func TestKubernetesRoundTrip(t *testing.T) {
 	require.Len(t, dep.PodLabels, len(origDep.PodLabels))
 	assert.Equal(t, "tier", dep.PodLabels[1].Key.Value())
 	assert.Equal(t, "web", dep.PodLabels[1].Value.Value())
-	assert.Len(t, dep.Tags, 1, "the workload's own labels must not pick up the pod template's")
+	require.Len(t, dep.Labels, 1, "the workload's own labels must not pick up the pod template's")
+	// Labels and Tags are different sets, and both have to survive the trip:
+	// Tags carries the annotation as well, Labels carries only the label.
+	assert.Equal(t, "api", dep.Name.Value())
+	assert.Equal(t, "app", dep.Labels[0].Key.Value())
+	assert.Equal(t, "api", dep.Labels[0].Value.Value())
+	_, ok := dep.Tags.Get("team")
+	assert.True(t, ok, "Tags carries the annotation as well as the label")
 
 	require.Len(t, result.Kubernetes.Apps.DaemonSets, 1)
 	daemon := result.Kubernetes.Apps.DaemonSets[0]

@@ -16,6 +16,7 @@
 package meta
 
 import (
+	"github.com/infracost/go-proto/pkg/tree/resource"
 	"github.com/infracost/go-proto/pkg/tree/value"
 )
 
@@ -48,6 +49,14 @@ type ObjectMeta struct {
 	// A synthetic namespace must not be used to exclude a candidate when
 	// matching against a real cluster — it is an assumption, not evidence.
 	Namespace value.String `tree:"namespace"`
+
+	// Labels is metadata.labels verbatim — the labels the object carries in the
+	// cluster, and so the set anything matching on labels compares against: a
+	// lookup of this object by its labels, or a selector on another object.
+	//
+	// The base resource's Tags hold these and the annotations together, for
+	// tagging policies; a consumer that means "the labels" reads this field.
+	Labels []resource.Tag `tree:"labels"`
 }
 
 // GetObjectMeta returns the metadata itself, so that every kind embedding

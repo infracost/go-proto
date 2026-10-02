@@ -37,8 +37,9 @@ type StorageRequest struct {
 //
 // The kind, address ([namespace, kind, name]) and source range live on the
 // embedded resource.Resource; the claim's name and namespace on the embedded
-// meta.ObjectMeta; and the claim's Kubernetes labels are stored as the base
-// resource's Tags (reusing the tag machinery, as workloads do).
+// meta.ObjectMeta, along with its Kubernetes labels; and the labels and
+// annotations together are the base resource's Tags (reusing the tag
+// machinery, as workloads do).
 type PersistentVolumeClaim struct {
 	resource.Resource `tree:"-"`
 	meta.ObjectMeta   `tree:"-"`

@@ -22,14 +22,15 @@ import (
 // The kind, address ([namespace, kind, name]) and source range live on the
 // embedded resource.Resource (Definition.ResourceType / Definition.Address /
 // Definition.SourceRange), and the workload's own name and namespace on the
-// embedded meta.ObjectMeta. The workload's Kubernetes labels are stored as the
-// base resource's Tags (each carries its own source range), so the
-// label/tag-enforcement use case reuses the existing tag machinery. The sizing
+// embedded meta.ObjectMeta, along with its Kubernetes labels (each carrying its
+// own source range). The labels and the annotations together are also the base
+// resource's Tags, so the tag-enforcement use case reuses the existing tag
+// machinery whichever of the two an organisation keeps its tags in. The sizing
 // read out of the manifest — or, for Helm, out of values.yaml — is first-class
 // and typed below.
 //
-// Those Tags are the workload object's own labels. The labels its *pods* carry
-// are a second set, PodLabels below, and the two are only conventionally the
+// Those Labels are the workload object's own. The labels its *pods* carry are a
+// second set, PodLabels below, and the two are only conventionally the
 // same. Everything that selects pods rather than objects — a
 // PodDisruptionBudget, a Service, a NetworkPolicy — matches against PodLabels.
 //
@@ -48,7 +49,7 @@ type Workload struct {
 	Annotations []resource.Tag `tree:"annotations"`
 
 	// Selector is spec.selector — the rule by which this workload claims its
-	// pods. The workload's own labels (the base resource's Tags) are how other
+	// pods. The workload's own labels (ObjectMeta's Labels) are how other
 	// objects find *it*; this is how it finds them.
 	//
 	// Kubernetes requires it on the apps kinds and not on a Job, so an empty
@@ -62,11 +63,11 @@ type Workload struct {
 	// eviction can be refused, a Service deciding what it routes to, a
 	// NetworkPolicy deciding what may reach it.
 	//
-	// Distinct from the workload's own labels, which live on the base resource's
-	// Tags. Convention makes the two overlap and nothing enforces it — a chart
+	// Distinct from the workload's own labels, which live on ObjectMeta's
+	// Labels. Convention makes the two overlap and nothing enforces it — a chart
 	// is free to label the Deployment one way and its pod template another — so
 	// a consumer resolving "which budgets protect this workload" has to read
-	// these rather than the Tags. Reading the wrong set is wrong exactly when
+	// these rather than the Labels. Reading the wrong set is wrong exactly when
 	// the two disagree, which is the case nobody notices.
 	PodLabels []resource.Tag `tree:"pod_labels"`
 

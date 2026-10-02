@@ -49,8 +49,8 @@ const (
 //
 // The kind, address ([namespace, kind, name]) and source range live on the
 // embedded resource.Resource; the LimitRange's own name and namespace on the
-// embedded meta.ObjectMeta; and its Kubernetes labels are stored as the base
-// resource's Tags.
+// embedded meta.ObjectMeta, along with its Kubernetes labels; and the labels
+// and annotations together are the base resource's Tags.
 type LimitRange struct {
 	resource.Resource `tree:"-"`
 	meta.ObjectMeta   `tree:"-"`

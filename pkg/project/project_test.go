@@ -21,6 +21,7 @@ func TestResolve(t *testing.T) {
 		{"cloudformation is unchanged", CloudFormation, nil, CloudFormation},
 		{"kubernetes is unchanged", Kubernetes, nil, Kubernetes},
 		{"arm is unchanged", ARM, nil, ARM},
+		{"appcode is unchanged", AppCode, nil, AppCode},
 
 		// Cisco Stacks has its own parser plugin, so unlike filtering this must
 		// not fold it onto terraform.
@@ -70,6 +71,7 @@ func TestParserFamily(t *testing.T) {
 		{CloudFormation, CloudFormation},
 		{Kubernetes, Kubernetes},
 		{ARM, ARM},
+		{AppCode, AppCode},
 		// NormalizeForFilter folds these onto terraform, but each has its own
 		// parser plugin, so folding them here would load the wrong one.
 		{Terragrunt, Terragrunt},
@@ -115,6 +117,8 @@ func TestNormalizeForFilter(t *testing.T) {
 		{"cloudformation is unchanged", CloudFormation, CloudFormation},
 		{"kubernetes is unchanged", Kubernetes, Kubernetes},
 		{"arm is unchanged", ARM, ARM},
+		// Not an IaC family, so it is not folded onto one and is not filterable.
+		{"appcode is unchanged", AppCode, AppCode},
 
 		// The Terraform family is the same HCL tags on the same resources, so a
 		// policy written for one covers all of them.
@@ -143,6 +147,8 @@ func TestNormalizeForFilter_LandsOnFilterableSet(t *testing.T) {
 	all := []Type{
 		Unknown, Terraform, Terragrunt, CloudFormation,
 		CDKTypeScript, CDKJavaScript, CDKPython, CiscoStacks, Kubernetes, ARM,
+		// AppCode is left out on purpose: it is not an IaC family, so it is
+		// deliberately not Filterable.
 	}
 
 	for _, projectType := range all {

@@ -1,4 +1,4 @@
-// Package project holds the canonical definition of an IaC project type: the
+// Package project holds the canonical definition of a project type: the
 // value a parser plugin reports via GetParserConfig's config_file_project_type,
 // which the config file records and ProjectInfo.type carries over the wire.
 //
@@ -41,6 +41,10 @@ const (
 	CiscoStacks    Type = "cisco_stacks"
 	Kubernetes     Type = "kubernetes"
 	ARM            Type = "arm"
+	// AppCode is application source code scanned for AI model usage, rather
+	// than IaC. It is deliberately not Filterable: governance policies target
+	// IaC families.
+	AppCode Type = "appcode"
 )
 
 // IsCDK reports whether a project is one of the CDK languages.

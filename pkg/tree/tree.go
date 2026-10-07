@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/infracost/go-proto/pkg/tree/ai"
 	"github.com/infracost/go-proto/pkg/tree/aws"
 	"github.com/infracost/go-proto/pkg/tree/azure"
 	"github.com/infracost/go-proto/pkg/tree/google"
@@ -18,6 +19,7 @@ type Resource interface {
 }
 
 type Tree struct {
+	AI                   ai.AI                 `tree:"ai"`
 	AWS                  aws.AWS               `tree:"aws"`
 	Azure                azure.Azure           `tree:"azure"`
 	Google               google.Google         `tree:"google"`

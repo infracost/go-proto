@@ -22,6 +22,9 @@ type Client struct {
 	// "litellm".
 	Gateway value.String `tree:"gateway"`
 
-	// Endpoint is the base URL the client is configured with, when set.
+	// Endpoint is the base URL the client is configured with, when set. The
+	// parser must strip any userinfo and query string before setting it: base
+	// URLs can carry credentials (https://user:key@host/, ?api-key=...), and
+	// this value is shown in the dashboard and in PR comments.
 	Endpoint value.String `tree:"endpoint"`
 }

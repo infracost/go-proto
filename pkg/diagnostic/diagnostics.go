@@ -158,7 +158,7 @@ func (d *Diagnostics) Transient() *Diagnostics {
 	}
 	var out *Diagnostics
 	for _, d := range d.list {
-		if isTransient(d.Type) {
+		if IsTransient(d.Type) {
 			out = out.Add(d)
 		}
 	}

@@ -7,6 +7,7 @@ import (
 
 type Queue struct {
 	resource.Resource    `tree:"-"`
+	Name                 value.String `tree:"name"`
 	FifoQueue            value.Bool   `tree:"fifo_queue"`
 	SQSManagedSseEnabled value.Bool   `tree:"sqs_managed_sse_enabled"`
 	KmsMasterKeyID       value.String `tree:"kms_master_key_id"`

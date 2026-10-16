@@ -28,6 +28,17 @@ type EC2 struct {
 	VPCs                             []VPC                             `tree:"vpcs"`
 	VPCEndpoints                     []VPCEndpoint                     `tree:"vpc_endpoints"`
 	VPNConnections                   []VPNConnection                   `tree:"vpn_connections"`
+	VPCIPAMs                         []VPCIPAM                         `tree:"vpc_ipams"`
+	TransitGatewayConnects           []TransitGatewayConnect           `tree:"transit_gateway_connects"`
+	FlowLogs                         []FlowLog                         `tree:"flow_logs"`
+	RouteServerEndpoints             []RouteServerEndpoint             `tree:"route_server_endpoints"`
+	VPCEncryptionControls            []VPCEncryptionControl            `tree:"vpc_encryption_controls"`
+	VPNConcentrators                 []VPNConcentrator                 `tree:"vpn_concentrators"`
+	CapacityReservations             []CapacityReservation             `tree:"capacity_reservations"`
+	Fleets                           []Fleet                           `tree:"fleets"`
+	EBSFastSnapshotRestores          []EBSFastSnapshotRestore          `tree:"ebs_fast_snapshot_restores"`
+	AMIs                             []AMI                             `tree:"amis"`
+	EBSSnapshotImports               []EBSSnapshotImport               `tree:"ebs_snapshot_imports"`
 }
 
 func (ec2 *EC2) PostProcess() {
@@ -66,6 +77,11 @@ func (ec2 *EC2) PostProcess() {
 		for j := range ec2.LoadBalancers[i].SubnetMappings {
 			ec2.LoadBalancers[i].SubnetMappings[j].Relationships = SubnetMappingRelationships{}
 		}
+	}
+
+	// link launch templates to fleets
+	for i := range ec2.Fleets {
+		ec2.Fleets[i].linkLaunchTemplate(ec2.LaunchTemplates)
 	}
 
 	// link instance states to instances

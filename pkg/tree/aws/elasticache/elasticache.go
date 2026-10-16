@@ -4,6 +4,7 @@ type ElastiCache struct {
 	Clusters          []Cluster          `tree:"clusters"`
 	ReplicationGroups []ReplicationGroup `tree:"replication_groups"`
 	ParameterGroups   []ParameterGroup   `tree:"parameter_groups"`
+	ServerlessCaches  []ServerlessCache  `tree:"serverless_caches"`
 }
 
 func (e *ElastiCache) PostProcess() {

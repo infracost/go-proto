@@ -5,6 +5,11 @@ type Route53 struct {
 	Records           []Record           `tree:"records"`
 	Zones             []Zone             `tree:"zones"`
 	ResolverEndpoints []ResolverEndpoint `tree:"resolver_endpoints"`
+
+	ResolverFirewallRuleGroupAssociations []ResolverFirewallRuleGroupAssociation `tree:"resolver_firewall_rule_group_associations"`
+	ResolverFirewallDomainLists           []ResolverFirewallDomainList           `tree:"resolver_firewall_domain_lists"`
+	Profiles                              []Profile                              `tree:"profiles"`
+	TrafficPolicyInstances                []TrafficPolicyInstance                `tree:"traffic_policy_instances"`
 }
 
 func (r *Route53) PostProcess() {

@@ -11,6 +11,13 @@ type S3 struct {
 	BucketVersioningConfigurations   []BucketVersioningConfiguration   `tree:"bucket_versioning_configurations"`
 	BucketPolicies                   []BucketPolicy                    `tree:"bucket_policies"`
 	AccessPoints                     []AccessPoint                     `tree:"access_points"`
+	DirectoryBuckets                 []DirectoryBucket                 `tree:"directory_buckets"`
+	TableBuckets                     []TableBucket                     `tree:"table_buckets"`
+	VectorBuckets                    []VectorBucket                    `tree:"vector_buckets"`
+	StorageLensConfigurations        []StorageLensConfiguration        `tree:"storage_lens_configurations"`
+	BucketMetadataConfigurations     []BucketMetadataConfiguration     `tree:"bucket_metadata_configurations"`
+	ObjectLambdaAccessPoints         []ObjectLambdaAccessPoint         `tree:"object_lambda_access_points"`
+	AccessGrantsInstances            []AccessGrantsInstance            `tree:"access_grants_instances"`
 }
 
 func (s *S3) PostProcess() {

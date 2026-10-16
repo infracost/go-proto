@@ -5,24 +5,39 @@ import (
 
 	"github.com/infracost/go-proto/pkg/tree/aws/acm"
 	"github.com/infracost/go-proto/pkg/tree/aws/acmpca"
+	"github.com/infracost/go-proto/pkg/tree/aws/amplify"
 	"github.com/infracost/go-proto/pkg/tree/aws/apigateway"
 	"github.com/infracost/go-proto/pkg/tree/aws/apigatewayv2"
 	"github.com/infracost/go-proto/pkg/tree/aws/appautoscaling"
+	"github.com/infracost/go-proto/pkg/tree/aws/appflow"
+	"github.com/infracost/go-proto/pkg/tree/aws/apprunner"
+	"github.com/infracost/go-proto/pkg/tree/aws/appstream"
 	"github.com/infracost/go-proto/pkg/tree/aws/appsync"
+	"github.com/infracost/go-proto/pkg/tree/aws/athena"
 	"github.com/infracost/go-proto/pkg/tree/aws/backup"
 	"github.com/infracost/go-proto/pkg/tree/aws/batch"
+	"github.com/infracost/go-proto/pkg/tree/aws/bedrock"
 	"github.com/infracost/go-proto/pkg/tree/aws/cloudformation"
 	"github.com/infracost/go-proto/pkg/tree/aws/cloudfront"
 	"github.com/infracost/go-proto/pkg/tree/aws/cloudhsmv2"
+	"github.com/infracost/go-proto/pkg/tree/aws/cloudsearch"
 	"github.com/infracost/go-proto/pkg/tree/aws/cloudtrail"
 	"github.com/infracost/go-proto/pkg/tree/aws/cloudwatch"
+	"github.com/infracost/go-proto/pkg/tree/aws/codeartifact"
 	"github.com/infracost/go-proto/pkg/tree/aws/codebuild"
+	"github.com/infracost/go-proto/pkg/tree/aws/codecommit"
+	"github.com/infracost/go-proto/pkg/tree/aws/codepipeline"
+	"github.com/infracost/go-proto/pkg/tree/aws/cognito"
 	"github.com/infracost/go-proto/pkg/tree/aws/config"
+	"github.com/infracost/go-proto/pkg/tree/aws/connect"
+	"github.com/infracost/go-proto/pkg/tree/aws/datasync"
 	"github.com/infracost/go-proto/pkg/tree/aws/datatransfer"
+	"github.com/infracost/go-proto/pkg/tree/aws/detective"
 	"github.com/infracost/go-proto/pkg/tree/aws/directconnect"
 	"github.com/infracost/go-proto/pkg/tree/aws/directoryservice"
 	"github.com/infracost/go-proto/pkg/tree/aws/dms"
 	"github.com/infracost/go-proto/pkg/tree/aws/docdb"
+	"github.com/infracost/go-proto/pkg/tree/aws/dsql"
 	"github.com/infracost/go-proto/pkg/tree/aws/dynamodb"
 	"github.com/infracost/go-proto/pkg/tree/aws/ec2"
 	"github.com/infracost/go-proto/pkg/tree/aws/ecr"
@@ -33,95 +48,184 @@ import (
 	"github.com/infracost/go-proto/pkg/tree/aws/elasticbeanstalk"
 	"github.com/infracost/go-proto/pkg/tree/aws/elasticsearch"
 	"github.com/infracost/go-proto/pkg/tree/aws/emr"
+	"github.com/infracost/go-proto/pkg/tree/aws/fis"
 	"github.com/infracost/go-proto/pkg/tree/aws/fsx"
+	"github.com/infracost/go-proto/pkg/tree/aws/gamelift"
+	"github.com/infracost/go-proto/pkg/tree/aws/glacier"
 	"github.com/infracost/go-proto/pkg/tree/aws/globalaccelerator"
 	"github.com/infracost/go-proto/pkg/tree/aws/glue"
+	"github.com/infracost/go-proto/pkg/tree/aws/grafana"
+	"github.com/infracost/go-proto/pkg/tree/aws/guardduty"
+	"github.com/infracost/go-proto/pkg/tree/aws/inspector2"
+	"github.com/infracost/go-proto/pkg/tree/aws/iot"
+	"github.com/infracost/go-proto/pkg/tree/aws/ivs"
+	"github.com/infracost/go-proto/pkg/tree/aws/kendra"
+	"github.com/infracost/go-proto/pkg/tree/aws/keyspaces"
 	"github.com/infracost/go-proto/pkg/tree/aws/kinesis"
 	"github.com/infracost/go-proto/pkg/tree/aws/kinesisanalytics"
 	"github.com/infracost/go-proto/pkg/tree/aws/kinesisanalyticsv2"
+	"github.com/infracost/go-proto/pkg/tree/aws/kinesisvideo"
 	"github.com/infracost/go-proto/pkg/tree/aws/kms"
 	"github.com/infracost/go-proto/pkg/tree/aws/lambda"
 	"github.com/infracost/go-proto/pkg/tree/aws/lightsail"
+	"github.com/infracost/go-proto/pkg/tree/aws/m2"
+	"github.com/infracost/go-proto/pkg/tree/aws/macie2"
+	"github.com/infracost/go-proto/pkg/tree/aws/medialive"
+	"github.com/infracost/go-proto/pkg/tree/aws/memorydb"
 	"github.com/infracost/go-proto/pkg/tree/aws/mq"
 	"github.com/infracost/go-proto/pkg/tree/aws/msk"
 	"github.com/infracost/go-proto/pkg/tree/aws/mwaa"
 	"github.com/infracost/go-proto/pkg/tree/aws/neptune"
 	"github.com/infracost/go-proto/pkg/tree/aws/networkfirewall"
+	"github.com/infracost/go-proto/pkg/tree/aws/networkmanager"
+	"github.com/infracost/go-proto/pkg/tree/aws/odb"
+	"github.com/infracost/go-proto/pkg/tree/aws/opensearchserverless"
+	"github.com/infracost/go-proto/pkg/tree/aws/osis"
+	"github.com/infracost/go-proto/pkg/tree/aws/paymentcryptography"
+	"github.com/infracost/go-proto/pkg/tree/aws/pinpointsmsvoicev2"
 	"github.com/infracost/go-proto/pkg/tree/aws/pipes"
+	"github.com/infracost/go-proto/pkg/tree/aws/prometheus"
+	"github.com/infracost/go-proto/pkg/tree/aws/qbusiness"
+	"github.com/infracost/go-proto/pkg/tree/aws/quicksight"
 	"github.com/infracost/go-proto/pkg/tree/aws/rds"
 	"github.com/infracost/go-proto/pkg/tree/aws/redshift"
+	"github.com/infracost/go-proto/pkg/tree/aws/redshiftserverless"
 	"github.com/infracost/go-proto/pkg/tree/aws/route53"
+	"github.com/infracost/go-proto/pkg/tree/aws/route53recoverycontrolconfig"
 	"github.com/infracost/go-proto/pkg/tree/aws/s3"
 	"github.com/infracost/go-proto/pkg/tree/aws/sagemaker"
 	"github.com/infracost/go-proto/pkg/tree/aws/scheduler"
 	"github.com/infracost/go-proto/pkg/tree/aws/secretsmanager"
+	"github.com/infracost/go-proto/pkg/tree/aws/securityhub"
+	"github.com/infracost/go-proto/pkg/tree/aws/securitylake"
+	"github.com/infracost/go-proto/pkg/tree/aws/sesv2"
+	"github.com/infracost/go-proto/pkg/tree/aws/shield"
 	"github.com/infracost/go-proto/pkg/tree/aws/sns"
 	"github.com/infracost/go-proto/pkg/tree/aws/sqs"
 	"github.com/infracost/go-proto/pkg/tree/aws/ssm"
 	"github.com/infracost/go-proto/pkg/tree/aws/stepfunctions"
+	"github.com/infracost/go-proto/pkg/tree/aws/storagegateway"
+	"github.com/infracost/go-proto/pkg/tree/aws/swf"
+	"github.com/infracost/go-proto/pkg/tree/aws/timestream"
 	"github.com/infracost/go-proto/pkg/tree/aws/transfer"
+	"github.com/infracost/go-proto/pkg/tree/aws/verifiedaccess"
+	"github.com/infracost/go-proto/pkg/tree/aws/vpclattice"
 	"github.com/infracost/go-proto/pkg/tree/aws/waf"
+	"github.com/infracost/go-proto/pkg/tree/aws/workspaces"
+	"github.com/infracost/go-proto/pkg/tree/aws/xray"
 )
 
 type AWS struct {
-	EC2                     ec2.EC2                               `tree:"ec2"`
-	CertificateManager      acm.CertificateManager                `tree:"acm"`
-	PCACertificateAuthority acmpca.PCACertificateAuthority        `tree:"acmpca"`
-	APIGateway              apigateway.APIGateway                 `tree:"apigateway"`
-	APIGatewayV2            apigatewayv2.APIGatewayV2             `tree:"apigatewayv2"`
-	AppAutoScaling          appautoscaling.AppAutoScaling         `tree:"appautoscaling"`
-	AppSync                 appsync.AppSync                       `tree:"appsync"`
-	Backup                  backup.Backup                         `tree:"backup"`
-	Batch                   batch.Batch                           `tree:"batch"`
-	CloudFormation          cloudformation.CloudFormation         `tree:"cloudformation"`
-	CloudFront              cloudfront.CloudFront                 `tree:"cloudfront"`
-	CloudHSMV2              cloudhsmv2.CloudHSMV2                 `tree:"cloudhsmv2"`
-	Cloudtrail              cloudtrail.CloudTrail                 `tree:"cloudtrail"`
-	CloudWatch              cloudwatch.CloudWatch                 `tree:"cloudwatch"`
-	CodeBuild               codebuild.CodeBuild                   `tree:"codebuild"`
-	Config                  config.Config                         `tree:"config"`
-	DataTransfer            datatransfer.DataTransfer             `tree:"datatransfer"`
-	DirectConnect           directconnect.DirectConnect           `tree:"directconnect"`
-	DirectoryService        directoryservice.DirectoryService     `tree:"directoryservice"`
-	DMS                     dms.DMS                               `tree:"dms"`
-	DocDB                   docdb.DocDB                           `tree:"docdb"`
-	DynamoDB                dynamodb.DynamoDB                     `tree:"dynamodb"`
-	ECR                     ecr.ECR                               `tree:"ecr"`
-	ECS                     ecs.ECS                               `tree:"ecs"`
-	EFS                     efs.EFS                               `tree:"efs"`
-	EKS                     eks.EKS                               `tree:"eks"`
-	ElastiCache             elasticache.ElastiCache               `tree:"elasticache"`
-	ElasticBeanstalk        elasticbeanstalk.ElasticBeanstalk     `tree:"elasticbeanstalk"`
-	Elasticsearch           elasticsearch.Elasticsearch           `tree:"elasticsearch"`
-	EMR                     emr.EMR                               `tree:"emr"`
-	FSx                     fsx.FSx                               `tree:"fsx"`
-	GlobalAccelerator       globalaccelerator.GlobalAccelerator   `tree:"globalaccelerator"`
-	Glue                    glue.Glue                             `tree:"glue"`
-	Kinesis                 kinesis.Kinesis                       `tree:"kinesis"`
-	KinesisAnalytics        kinesisanalytics.KinesisAnalytics     `tree:"kinesisanalytics"`
-	KinesisAnalyticsV2      kinesisanalyticsv2.KinesisAnalyticsV2 `tree:"kinesisanalyticsv2"`
-	KMS                     kms.KMS                               `tree:"kms"`
-	Lambda                  lambda.Lambda                         `tree:"lambda"`
-	Lightsail               lightsail.Lightsail                   `tree:"lightsail"`
-	MQ                      mq.MQ                                 `tree:"mq"`
-	MSK                     msk.MSK                               `tree:"msk"`
-	MWAA                    mwaa.MWAA                             `tree:"mwaa"`
-	Neptune                 neptune.Neptune                       `tree:"neptune"`
-	NetworkFirewall         networkfirewall.NetworkFirewall       `tree:"networkfirewall"`
-	Pipes                   pipes.Pipes                           `tree:"pipes"`
-	RDS                     rds.RDS                               `tree:"rds"`
-	Redshift                redshift.Redshift                     `tree:"redshift"`
-	Route53                 route53.Route53                       `tree:"route53"`
-	S3                      s3.S3                                 `tree:"s3"`
-	SageMaker               sagemaker.SageMaker                   `tree:"sagemaker"`
-	Scheduler               scheduler.Scheduler                   `tree:"scheduler"`
-	SecretsManager          secretsmanager.SecretsManager         `tree:"secretsmanager"`
-	SNS                     sns.SNS                               `tree:"sns"`
-	SQS                     sqs.SQS                               `tree:"sqs"`
-	SSM                     ssm.SSM                               `tree:"ssm"`
-	StepFunctions           stepfunctions.StepFunctions           `tree:"stepfunctions"`
-	Transfer                transfer.Transfer                     `tree:"transfer"`
-	WAF                     waf.WAF                               `tree:"waf"`
+	EC2                          ec2.EC2                                                   `tree:"ec2"`
+	CertificateManager           acm.CertificateManager                                    `tree:"acm"`
+	PCACertificateAuthority      acmpca.PCACertificateAuthority                            `tree:"acmpca"`
+	APIGateway                   apigateway.APIGateway                                     `tree:"apigateway"`
+	APIGatewayV2                 apigatewayv2.APIGatewayV2                                 `tree:"apigatewayv2"`
+	AppAutoScaling               appautoscaling.AppAutoScaling                             `tree:"appautoscaling"`
+	AppSync                      appsync.AppSync                                           `tree:"appsync"`
+	Backup                       backup.Backup                                             `tree:"backup"`
+	Batch                        batch.Batch                                               `tree:"batch"`
+	CloudFormation               cloudformation.CloudFormation                             `tree:"cloudformation"`
+	CloudFront                   cloudfront.CloudFront                                     `tree:"cloudfront"`
+	CloudHSMV2                   cloudhsmv2.CloudHSMV2                                     `tree:"cloudhsmv2"`
+	Cloudtrail                   cloudtrail.CloudTrail                                     `tree:"cloudtrail"`
+	CloudWatch                   cloudwatch.CloudWatch                                     `tree:"cloudwatch"`
+	CodeBuild                    codebuild.CodeBuild                                       `tree:"codebuild"`
+	Config                       config.Config                                             `tree:"config"`
+	DataTransfer                 datatransfer.DataTransfer                                 `tree:"datatransfer"`
+	DirectConnect                directconnect.DirectConnect                               `tree:"directconnect"`
+	DirectoryService             directoryservice.DirectoryService                         `tree:"directoryservice"`
+	DMS                          dms.DMS                                                   `tree:"dms"`
+	DocDB                        docdb.DocDB                                               `tree:"docdb"`
+	DynamoDB                     dynamodb.DynamoDB                                         `tree:"dynamodb"`
+	ECR                          ecr.ECR                                                   `tree:"ecr"`
+	ECS                          ecs.ECS                                                   `tree:"ecs"`
+	EFS                          efs.EFS                                                   `tree:"efs"`
+	EKS                          eks.EKS                                                   `tree:"eks"`
+	ElastiCache                  elasticache.ElastiCache                                   `tree:"elasticache"`
+	ElasticBeanstalk             elasticbeanstalk.ElasticBeanstalk                         `tree:"elasticbeanstalk"`
+	Elasticsearch                elasticsearch.Elasticsearch                               `tree:"elasticsearch"`
+	EMR                          emr.EMR                                                   `tree:"emr"`
+	FSx                          fsx.FSx                                                   `tree:"fsx"`
+	GlobalAccelerator            globalaccelerator.GlobalAccelerator                       `tree:"globalaccelerator"`
+	Glue                         glue.Glue                                                 `tree:"glue"`
+	Kinesis                      kinesis.Kinesis                                           `tree:"kinesis"`
+	KinesisAnalytics             kinesisanalytics.KinesisAnalytics                         `tree:"kinesisanalytics"`
+	KinesisAnalyticsV2           kinesisanalyticsv2.KinesisAnalyticsV2                     `tree:"kinesisanalyticsv2"`
+	KMS                          kms.KMS                                                   `tree:"kms"`
+	Lambda                       lambda.Lambda                                             `tree:"lambda"`
+	Lightsail                    lightsail.Lightsail                                       `tree:"lightsail"`
+	MQ                           mq.MQ                                                     `tree:"mq"`
+	MSK                          msk.MSK                                                   `tree:"msk"`
+	MWAA                         mwaa.MWAA                                                 `tree:"mwaa"`
+	Neptune                      neptune.Neptune                                           `tree:"neptune"`
+	NetworkFirewall              networkfirewall.NetworkFirewall                           `tree:"networkfirewall"`
+	Pipes                        pipes.Pipes                                               `tree:"pipes"`
+	RDS                          rds.RDS                                                   `tree:"rds"`
+	Redshift                     redshift.Redshift                                         `tree:"redshift"`
+	Route53                      route53.Route53                                           `tree:"route53"`
+	S3                           s3.S3                                                     `tree:"s3"`
+	SageMaker                    sagemaker.SageMaker                                       `tree:"sagemaker"`
+	Scheduler                    scheduler.Scheduler                                       `tree:"scheduler"`
+	SecretsManager               secretsmanager.SecretsManager                             `tree:"secretsmanager"`
+	SNS                          sns.SNS                                                   `tree:"sns"`
+	SQS                          sqs.SQS                                                   `tree:"sqs"`
+	SSM                          ssm.SSM                                                   `tree:"ssm"`
+	StepFunctions                stepfunctions.StepFunctions                               `tree:"stepfunctions"`
+	Transfer                     transfer.Transfer                                         `tree:"transfer"`
+	WAF                          waf.WAF                                                   `tree:"waf"`
+	Amplify                      amplify.Amplify                                           `tree:"amplify"`
+	AppFlow                      appflow.AppFlow                                           `tree:"appflow"`
+	AppRunner                    apprunner.AppRunner                                       `tree:"apprunner"`
+	AppStream                    appstream.AppStream                                       `tree:"appstream"`
+	Athena                       athena.Athena                                             `tree:"athena"`
+	Bedrock                      bedrock.Bedrock                                           `tree:"bedrock"`
+	CloudSearch                  cloudsearch.CloudSearch                                   `tree:"cloudsearch"`
+	CodeArtifact                 codeartifact.CodeArtifact                                 `tree:"codeartifact"`
+	CodeCommit                   codecommit.CodeCommit                                     `tree:"codecommit"`
+	CodePipeline                 codepipeline.CodePipeline                                 `tree:"codepipeline"`
+	Cognito                      cognito.Cognito                                           `tree:"cognito"`
+	Connect                      connect.Connect                                           `tree:"connect"`
+	DataSync                     datasync.DataSync                                         `tree:"datasync"`
+	Detective                    detective.Detective                                       `tree:"detective"`
+	DSQL                         dsql.DSQL                                                 `tree:"dsql"`
+	FIS                          fis.FIS                                                   `tree:"fis"`
+	GameLift                     gamelift.GameLift                                         `tree:"gamelift"`
+	Glacier                      glacier.Glacier                                           `tree:"glacier"`
+	Grafana                      grafana.Grafana                                           `tree:"grafana"`
+	GuardDuty                    guardduty.GuardDuty                                       `tree:"guardduty"`
+	Inspector2                   inspector2.Inspector2                                     `tree:"inspector2"`
+	IoT                          iot.IoT                                                   `tree:"iot"`
+	IVS                          ivs.IVS                                                   `tree:"ivs"`
+	Kendra                       kendra.Kendra                                             `tree:"kendra"`
+	Keyspaces                    keyspaces.Keyspaces                                       `tree:"keyspaces"`
+	KinesisVideo                 kinesisvideo.KinesisVideo                                 `tree:"kinesisvideo"`
+	M2                           m2.M2                                                     `tree:"m2"`
+	Macie2                       macie2.Macie2                                             `tree:"macie2"`
+	MediaLive                    medialive.MediaLive                                       `tree:"medialive"`
+	MemoryDB                     memorydb.MemoryDB                                         `tree:"memorydb"`
+	NetworkManager               networkmanager.NetworkManager                             `tree:"networkmanager"`
+	ODB                          odb.ODB                                                   `tree:"odb"`
+	OpenSearchServerless         opensearchserverless.OpenSearchServerless                 `tree:"opensearchserverless"`
+	OSIS                         osis.OSIS                                                 `tree:"osis"`
+	PaymentCryptography          paymentcryptography.PaymentCryptography                   `tree:"paymentcryptography"`
+	PinpointSMSVoiceV2           pinpointsmsvoicev2.PinpointSMSVoiceV2                     `tree:"pinpointsmsvoicev2"`
+	Prometheus                   prometheus.Prometheus                                     `tree:"prometheus"`
+	QBusiness                    qbusiness.QBusiness                                       `tree:"qbusiness"`
+	QuickSight                   quicksight.QuickSight                                     `tree:"quicksight"`
+	RedshiftServerless           redshiftserverless.RedshiftServerless                     `tree:"redshiftserverless"`
+	Route53RecoveryControlConfig route53recoverycontrolconfig.Route53RecoveryControlConfig `tree:"route53recoverycontrolconfig"`
+	SecurityHub                  securityhub.SecurityHub                                   `tree:"securityhub"`
+	SecurityLake                 securitylake.SecurityLake                                 `tree:"securitylake"`
+	SESV2                        sesv2.SESV2                                               `tree:"sesv2"`
+	Shield                       shield.Shield                                             `tree:"shield"`
+	StorageGateway               storagegateway.StorageGateway                             `tree:"storagegateway"`
+	SWF                          swf.SWF                                                   `tree:"swf"`
+	Timestream                   timestream.Timestream                                     `tree:"timestream"`
+	VerifiedAccess               verifiedaccess.VerifiedAccess                             `tree:"verifiedaccess"`
+	VPCLattice                   vpclattice.VPCLattice                                     `tree:"vpclattice"`
+	WorkSpaces                   workspaces.WorkSpaces                                     `tree:"workspaces"`
+	XRay                         xray.XRay                                                 `tree:"xray"`
 }
 
 func (aws *AWS) PostProcess() {

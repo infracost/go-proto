@@ -8,4 +8,5 @@ import (
 type NotebookInstance struct {
 	resource.Resource `tree:"-"`
 	InstanceType      value.String `tree:"instance_type"`
+	VolumeSize        value.Int    `tree:"volume_size"`
 }

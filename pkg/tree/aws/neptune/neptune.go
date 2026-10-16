@@ -4,6 +4,7 @@ type Neptune struct {
 	Clusters         []Cluster         `tree:"clusters"`
 	ClusterInstances []ClusterInstance `tree:"cluster_instances"`
 	ClusterSnapshots []ClusterSnapshot `tree:"cluster_snapshots"`
+	Graphs           []Graph           `tree:"graphs"`
 }
 
 func (n *Neptune) PostProcess() {

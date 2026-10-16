@@ -7,10 +7,10 @@ import (
 )
 
 type Cluster struct {
-	resource.Resource      `tree:"-"`
-	NumberOfBrokerNodes    value.Int    `tree:"number_of_broker_nodes"`
-	BrokerNodeInstanceType value.String `tree:"broker_node_instance_type"`
-	BrokerNodeEBSVolumeSizeGB value.Int `tree:"broker_node_ebs_volume_size"`
+	resource.Resource         `tree:"-"`
+	NumberOfBrokerNodes       value.Int    `tree:"number_of_broker_nodes"`
+	BrokerNodeInstanceType    value.String `tree:"broker_node_instance_type"`
+	BrokerNodeEBSVolumeSizeGB value.Int    `tree:"broker_node_ebs_volume_size"`
 
 	Relationships ClusterRelationships `tree:"-"`
 }

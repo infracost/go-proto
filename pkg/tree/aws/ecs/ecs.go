@@ -9,6 +9,7 @@ type ECS struct {
 	ClusterCapacityProviders []ClusterCapacityProviders `tree:"cluster_capacity_providers"`
 	TaskSets                 []TaskSet                  `tree:"task_sets"`
 	CapacityProviders        []CapacityProvider         `tree:"capacity_providers"`
+	ExpressGatewayServices   []ExpressGatewayService    `tree:"express_gateway_services"`
 }
 
 func (e *ECS) PostProcess() {

@@ -17,6 +17,7 @@ type Domain struct {
 	ClusterWarmEnabled            value.Bool                     `tree:"cluster_warm_enabled"`
 	ClusterWarmType               value.String                   `tree:"cluster_warm_type"`
 	ClusterWarmCount              value.Int                      `tree:"cluster_warm_count"`
+	ColdStorageEnabled            value.Bool                     `tree:"cold_storage_enabled"`
 	EBSEnabled                    value.Bool                     `tree:"ebs_enabled"`
 	EBSVolumeType                 value.Value[ec2.EBSVolumeType] `tree:"ebs_volume_type"`
 	EBSVolumeSizeGB               value.Int                      `tree:"ebs_volume_size"`

@@ -7,6 +7,7 @@ import (
 
 type Directory struct {
 	resource.Resource `tree:"-"`
+	Name              value.String                  `tree:"name"`
 	Type              value.Value[DirectoryType]    `tree:"type"`
 	Size              value.Value[DirectorySize]    `tree:"size"`
 	Edition           value.Value[DirectoryEdition] `tree:"edition"`

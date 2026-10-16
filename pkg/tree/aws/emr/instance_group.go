@@ -12,4 +12,5 @@ type InstanceGroup struct {
 	InstanceCount     value.Int    `tree:"instance_count"`
 	Name              value.String `tree:"name"`
 	EBSConfigs        []EBSConfig  `tree:"ebs_config"`
+	Spot              value.Bool   `tree:"spot"`
 }

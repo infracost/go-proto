@@ -1,12 +1,15 @@
 package google
 
 import (
+	"github.com/infracost/go-proto/pkg/tree/google/alloydb"
 	"github.com/infracost/go-proto/pkg/tree/google/artifactregistry"
 	"github.com/infracost/go-proto/pkg/tree/google/bigquery"
 	"github.com/infracost/go-proto/pkg/tree/google/cloudfunctions"
 	"github.com/infracost/go-proto/pkg/tree/google/cloudrun"
+	"github.com/infracost/go-proto/pkg/tree/google/composer"
 	"github.com/infracost/go-proto/pkg/tree/google/compute"
 	"github.com/infracost/go-proto/pkg/tree/google/container"
+	"github.com/infracost/go-proto/pkg/tree/google/datastream"
 	"github.com/infracost/go-proto/pkg/tree/google/dns"
 	"github.com/infracost/go-proto/pkg/tree/google/kms"
 	"github.com/infracost/go-proto/pkg/tree/google/logging"
@@ -21,12 +24,15 @@ import (
 )
 
 type Google struct {
+	AlloyDB           alloydb.AlloyDB                     `tree:"alloydb"`
 	ArtifactRegistry  artifactregistry.ArtifactRegistry   `tree:"artifactregistry"`
 	BigQuery          bigquery.BigQuery                   `tree:"bigquery"`
 	CloudFunctions    cloudfunctions.CloudFunctions       `tree:"cloudfunctions"`
 	CloudRun          cloudrun.CloudRun                   `tree:"cloudrun"`
+	Composer          composer.Composer                   `tree:"composer"`
 	Compute           compute.Compute                     `tree:"compute"`
 	Container         container.Container                 `tree:"container"`
+	Datastream        datastream.Datastream               `tree:"datastream"`
 	DNS               dns.DNS                             `tree:"dns"`
 	KMS               kms.KMS                             `tree:"kms"`
 	Logging           logging.Logging                     `tree:"logging"`

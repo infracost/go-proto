@@ -12,4 +12,8 @@ type PostgreSQLFlexibleServer struct {
 	GeoRedundantBackupEnabled value.Bool   `tree:"geo_redundant_backup_enabled"`
 	BackupRetentionDays       value.Int    `tree:"backup_retention_days"`
 	AutogrowEnabled           value.Bool   `tree:"auto_grow_enabled"`
+	HighAvailability          value.Bool   `tree:"high_availability"`
+	StorageType               value.String `tree:"storage_type"`
+	StorageIOPS               value.Int    `tree:"storage_iops"`
+	StorageMBps               value.Int    `tree:"storage_throughput"`
 }

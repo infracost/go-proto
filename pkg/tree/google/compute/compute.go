@@ -6,34 +6,35 @@ import (
 )
 
 type Compute struct {
-	Addresses                []Address              `tree:"addresses"`
-	Disks                    []Disk                 `tree:"disks"`
-	RegionDisks              []RegionDisk           `tree:"region_disks"`
-	ForwardingRules          []ForwardingRule       `tree:"forwarding_rules"`
-	Snapshots                []Snapshot             `tree:"snapshots"`
-	Images                   []Image                `tree:"images"`
-	Instances                []Instance             `tree:"instances"`
-	ExternalVPNGateways      []ExternalVPNGateway   `tree:"external_vpn_gateways"`
-	MachineImages            []MachineImage         `tree:"machine_images"`
-	InstanceGroupManagers    []InstanceGroupManager `tree:"instance_group_managers"`
-	PerInstanceConfigs       []PerInstanceConfig    `tree:"per_instance_configs"`
-	InstanceTemplates        []InstanceTemplate     `tree:"instance_templates"`
-	RouterNATs               []RouterNAT            `tree:"router_nats"`
-	TargetGRPCProxies        []TargetGRPCProxy      `tree:"target_grpc_proxies"`
-	TargetHTTPProxies        []TargetGRPCProxy      `tree:"target_http_proxies"`
-	TargetHTTPSProxies       []TargetGRPCProxy      `tree:"target_https_proxies"`
-	TargetSSLProxies         []TargetGRPCProxy      `tree:"target_ssl_proxies"`
-	TargetTCPProxies         []TargetGRPCProxy      `tree:"target_tcp_proxies"`
-	RegionTargetHTTPProxies  []TargetGRPCProxy      `tree:"region_target_http_proxies"`
-	RegionTargetHTTPSProxies []TargetGRPCProxy      `tree:"region_target_https_proxies"`
-	HAVPNGateways            []HAVPNGateway         `tree:"ha_vpn_gateways"`
-	VPNTunnels               []VPNTunnel            `tree:"vpn_tunnels"`
-	VPNGateways              []VPNGateway           `tree:"vpn_gateways"`
-	NodeTemplates            []NodeTemplate         `tree:"node_templates"`
-	DataprocClusters         []DataprocCluster      `tree:"dataproc_clusters"`
-	DataflowJobs             []DataflowJob          `tree:"dataflow_jobs"`
-	RegionInstanceTemplates  []RegionInstanceTemplate `tree:"region_instance_templates"`
-	ResourcePolicies         []ResourcePolicy       `tree:"resource_policies"`
+	Addresses                []Address                 `tree:"addresses"`
+	Disks                    []Disk                    `tree:"disks"`
+	RegionDisks              []RegionDisk              `tree:"region_disks"`
+	ForwardingRules          []ForwardingRule          `tree:"forwarding_rules"`
+	Snapshots                []Snapshot                `tree:"snapshots"`
+	Images                   []Image                   `tree:"images"`
+	Instances                []Instance                `tree:"instances"`
+	ExternalVPNGateways      []ExternalVPNGateway      `tree:"external_vpn_gateways"`
+	MachineImages            []MachineImage            `tree:"machine_images"`
+	InstanceGroupManagers    []InstanceGroupManager    `tree:"instance_group_managers"`
+	PerInstanceConfigs       []PerInstanceConfig       `tree:"per_instance_configs"`
+	InstanceTemplates        []InstanceTemplate        `tree:"instance_templates"`
+	RouterNATs               []RouterNAT               `tree:"router_nats"`
+	TargetGRPCProxies        []TargetGRPCProxy         `tree:"target_grpc_proxies"`
+	TargetHTTPProxies        []TargetGRPCProxy         `tree:"target_http_proxies"`
+	TargetHTTPSProxies       []TargetGRPCProxy         `tree:"target_https_proxies"`
+	TargetSSLProxies         []TargetGRPCProxy         `tree:"target_ssl_proxies"`
+	TargetTCPProxies         []TargetGRPCProxy         `tree:"target_tcp_proxies"`
+	RegionTargetHTTPProxies  []TargetGRPCProxy         `tree:"region_target_http_proxies"`
+	RegionTargetHTTPSProxies []TargetGRPCProxy         `tree:"region_target_https_proxies"`
+	HAVPNGateways            []HAVPNGateway            `tree:"ha_vpn_gateways"`
+	VPNTunnels               []VPNTunnel               `tree:"vpn_tunnels"`
+	VPNGateways              []VPNGateway              `tree:"vpn_gateways"`
+	NodeTemplates            []NodeTemplate            `tree:"node_templates"`
+	DataprocClusters         []DataprocCluster         `tree:"dataproc_clusters"`
+	DataflowJobs             []DataflowJob             `tree:"dataflow_jobs"`
+	DataflowFlexTemplateJobs []DataflowFlexTemplateJob `tree:"dataflow_flex_template_jobs"`
+	RegionInstanceTemplates  []RegionInstanceTemplate  `tree:"region_instance_templates"`
+	ResourcePolicies         []ResourcePolicy          `tree:"resource_policies"`
 }
 
 func (c *Compute) PostProcess() {

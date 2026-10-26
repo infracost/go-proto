@@ -6,6 +6,7 @@ import (
 	"github.com/infracost/go-proto/pkg/tree/aws"
 	"github.com/infracost/go-proto/pkg/tree/aws/ec2"
 	"github.com/infracost/go-proto/pkg/tree/aws/eks"
+	"github.com/infracost/go-proto/pkg/tree/aws/elasticbeanstalk"
 	"github.com/infracost/go-proto/pkg/tree/resource"
 	"github.com/infracost/go-proto/pkg/tree/value"
 	prototree "github.com/infracost/proto/gen/go/infracost/tree"
@@ -231,6 +232,50 @@ func TestMixedResourcesRoundTrip(t *testing.T) {
 	require.Len(t, result.UnsupportedResources, 1)
 	assert.Equal(t, "unsupported-1", result.UnsupportedResources[0].ID)
 	assert.Equal(t, "us-west-2", result.UnsupportedResources[0].Region)
+}
+
+func TestRoundTrip_ElasticBeanstalkScheduledActions(t *testing.T) {
+	original := &Tree{
+		AWS: aws.AWS{
+			ElasticBeanstalk: elasticbeanstalk.ElasticBeanstalk{
+				Environments: []elasticbeanstalk.Environment{{
+					Resource:      resource.Resource{ID: "env-1"},
+					InstanceCount: value.New[int64](2, 0, "", nil),
+					ScheduledActions: []ec2.AutoscalingSchedule{
+						{
+							ScheduledActionName: value.New("ScaleOut", 0, "", nil),
+							MinSize:             value.New[int64](3, 0, "", nil),
+							MaxSize:             value.New[int64](3, 0, "", nil),
+							DesiredCapacity:     value.New[int64](-1, 0, "", nil),
+							Recurrence:          value.New("0 4 * * 1-5", 0, "", nil),
+						},
+						{
+							ScheduledActionName: value.New("ScaleIn", 0, "", nil),
+							MinSize:             value.New[int64](0, 0, "", nil),
+							Recurrence:          value.New("0 19 * * 1-5", 0, "", nil),
+						},
+					},
+				}},
+			},
+		},
+	}
+
+	proto, err := original.ToProto()
+	require.NoError(t, err)
+
+	result, err := FromProto(proto)
+	require.NoError(t, err)
+
+	require.Len(t, result.AWS.ElasticBeanstalk.Environments, 1)
+	actions := result.AWS.ElasticBeanstalk.Environments[0].ScheduledActions
+	require.Len(t, actions, 2)
+	assert.Equal(t, "ScaleOut", actions[0].ScheduledActionName.Value())
+	assert.Equal(t, int64(3), actions[0].MinSize.Value())
+	assert.Equal(t, int64(3), actions[0].MaxSize.Value())
+	assert.Equal(t, int64(-1), actions[0].DesiredCapacity.Value())
+	assert.Equal(t, "0 4 * * 1-5", actions[0].Recurrence.Value())
+	assert.Equal(t, "ScaleIn", actions[1].ScheduledActionName.Value())
+	assert.Equal(t, int64(0), actions[1].MinSize.Value())
 }
 
 func TestNestedSubResourceRoundTrip(t *testing.T) {

@@ -23,6 +23,12 @@ type Environment struct {
 	SyntheticClassicLoadBalancer *ec2.ClassicLoadBalancer `tree:"synthetic_classic_load_balancer"`
 	SyntheticDBInstance          *rds.Instance            `tree:"synthetic_db_instance"`
 	SyntheticCloudwatchLogGroup  *cloudwatch.LogGroup     `tree:"synthetic_cloudwatch_log_group"`
+
+	// ScheduledActions are the environment's aws:autoscaling:scheduledaction
+	// option groups, one per action name. They change the instance count over
+	// time, the same way aws_autoscaling_schedule does for a plain ASG. EB has
+	// no time zone option, so TimeZone is always empty (UTC).
+	ScheduledActions []ec2.AutoscalingSchedule `tree:"scheduled_actions"`
 }
 
 type LoadBalancerType uint32

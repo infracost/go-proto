@@ -5,6 +5,7 @@ import (
 
 	parserpb "github.com/infracost/proto/gen/go/infracost/parser"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func Test_Address_Parse(t *testing.T) {
@@ -49,6 +50,31 @@ func Test_Address_Parse(t *testing.T) {
 				},
 			},
 		},
+		{
+			// Several quoted indexes in a row, as appcode's addresses have.
+			raw: `model_call["app/main.py"]["Service.run"]["messages.create"][0]`,
+			expected: &Address{
+				proto: &parserpb.Address{
+					Segments: []*parserpb.Segment{
+						{Value: "model_call", IndexString: stringPtr("app/main.py")},
+						{IndexString: stringPtr("Service.run")},
+						{IndexString: stringPtr("messages.create")},
+						{IndexInt: int64Ptr(0)},
+					},
+				},
+			},
+		},
+		{
+			raw: `model_config["env"]["MODEL"]`,
+			expected: &Address{
+				proto: &parserpb.Address{
+					Segments: []*parserpb.Segment{
+						{Value: "model_config", IndexString: stringPtr("env")},
+						{IndexString: stringPtr("MODEL")},
+					},
+				},
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -64,6 +90,25 @@ func Test_Address_Parse(t *testing.T) {
 		})
 	}
 
+}
+
+// An address with several quoted indexes parses back to itself.
+func TestAddress_Parse_RoundTrip(t *testing.T) {
+	for _, raw := range []string{
+		`model_call["app/main.py"]["Service.run"]["messages.create"][0]`,
+		`client["app/main.py"]["<module>"]["anthropic.Anthropic"][0]`,
+		`model_config["const"]["app/settings.py"]["<module>"]["MODEL"]`,
+		`module.x["a"].aws_s3_bucket.this["b"]["c"]`,
+		// Empty quoted indexes, first and later.
+		`a[""]`,
+		`a["x"][""]`,
+	} {
+		t.Run(raw, func(t *testing.T) {
+			parsed, err := Parse(raw)
+			require.NoError(t, err)
+			assert.Equal(t, raw, parsed.String())
+		})
+	}
 }
 
 func int64Ptr(i int64) *int64 {

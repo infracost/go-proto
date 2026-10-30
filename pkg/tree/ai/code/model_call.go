@@ -48,11 +48,13 @@ type ModelCall struct {
 	// ModelClass is the class the model is built with, when the code passes
 	// the model as an instance of a framework's model class rather than as a
 	// string, e.g. "OllamaModel" for PydanticAI's
-	// Agent(OllamaModel("mistral:7b")). ModelID is then the bare ID the
-	// class takes, never "<provider>:<model>" or "<provider>/<model>", so a
-	// consumer that strips a provider prefix from string model IDs must not
-	// strip it here: "mistral:7b" is an Ollama tag, not the mistral provider.
-	// Empty when the model is passed as a string.
+	// Agent(OllamaModel("mistral:7b")). ModelID is then the ID the class
+	// takes, as the class's provider names it. It may contain ":" or "/"
+	// ("mistral:7b" for OllamaModel, "anthropic/claude-3.5-sonnet" for
+	// OpenRouterModel), but those are part of the provider's name, not a
+	// framework's provider prefix, so a consumer that strips a provider
+	// prefix from string model IDs must not strip it here. Empty when the
+	// model is passed as a string.
 	ModelClass value.String `tree:"model_class"`
 
 	// MaxTokens is the output token limit, resolved to an integer.

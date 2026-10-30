@@ -45,6 +45,16 @@ type ModelCall struct {
 	// e.g. "settings.model". It is what to read when ModelID is unresolved.
 	ModelExpression value.String `tree:"model_expression"`
 
+	// ModelClass is the class the model is built with, when the code passes
+	// the model as an instance of a framework's model class rather than as a
+	// string, e.g. "OllamaModel" for PydanticAI's
+	// Agent(OllamaModel("mistral:7b")). ModelID is then the bare ID the
+	// class takes, never "<provider>:<model>" or "<provider>/<model>", so a
+	// consumer that strips a provider prefix from string model IDs must not
+	// strip it here: "mistral:7b" is an Ollama tag, not the mistral provider.
+	// Empty when the model is passed as a string.
+	ModelClass value.String `tree:"model_class"`
+
 	// MaxTokens is the output token limit, resolved to an integer.
 	MaxTokens value.Int `tree:"max_tokens"`
 

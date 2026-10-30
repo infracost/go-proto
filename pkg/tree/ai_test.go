@@ -88,6 +88,16 @@ func TestAIRoundTrip(t *testing.T) {
 						Thinking:    value.New(true, 0, "", nil),
 						ClientID:    value.New("client-2", 0, "", nil),
 					},
+					{
+						// A PydanticAI model class: a bare ID, which a
+						// colon doesn't split into a provider and a model.
+						Resource:    resource.Resource{ID: "call-4"},
+						SDK:         value.New("pydantic-ai", 0, "", nil),
+						Operation:   value.New("Agent", 0, "", nil),
+						ModelID:     value.New("mistral:7b", 0, "", nil),
+						ModelSource: value.New("literal", 0, "", nil),
+						ModelClass:  value.New("OllamaModel", 0, "", nil),
+					},
 				},
 			},
 		},
@@ -116,7 +126,7 @@ func TestAIRoundTrip(t *testing.T) {
 	assert.Equal(t, "claude-sonnet-4-5", configs[0].Value.Value())
 
 	calls := result.AI.Code.ModelCalls
-	require.Len(t, calls, 3)
+	require.Len(t, calls, 4)
 
 	resolved := calls[0]
 	assert.Equal(t, "claude-sonnet-4-5", resolved.ModelID.Value())
@@ -156,6 +166,12 @@ func TestAIRoundTrip(t *testing.T) {
 	assert.True(t, proxied.Batch.Value())
 	assert.True(t, proxied.Thinking.Value())
 	assert.Same(t, &result.AI.Code.Clients[1], proxied.Relationships.Client)
+	assert.Empty(t, proxied.ModelClass.Value(), "a string model has no class")
 
-	assert.Len(t, result.ToResources(false), 6)
+	classed := calls[3]
+	assert.Equal(t, "mistral:7b", classed.ModelID.Value())
+	assert.Equal(t, "OllamaModel", classed.ModelClass.Value())
+	assert.Nil(t, classed.Relationships.Client)
+
+	assert.Len(t, result.ToResources(false), 7)
 }

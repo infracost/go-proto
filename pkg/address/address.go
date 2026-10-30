@@ -191,10 +191,16 @@ func Parse(raw string) (*Address, error) {
 	var quoted string
 	var bracketed string
 	var inBrackets bool
+	// wasQuoted is whether the current index was quoted: an empty quoted
+	// index, [""], has no text to tell it by.
+	var wasQuoted bool
 	var current string
 	for _, c := range raw {
 		if c == '"' {
 			inQuote = !inQuote
+			if inBrackets {
+				wasQuoted = true
+			}
 			continue
 		}
 		if inQuote {
@@ -222,7 +228,8 @@ func Parse(raw string) (*Address, error) {
 			}
 
 			inBrackets = false
-			if quoted != "" {
+			if wasQuoted {
+				wasQuoted = false
 				if len(segments) > 0 {
 					last := segments[len(segments)-1]
 					if last.IndexString == nil && last.IndexInt == nil {
@@ -232,8 +239,12 @@ func Parse(raw string) (*Address, error) {
 						continue
 					}
 				}
+				// A further quoted index, as the second and later ones in
+				// x["a"]["b"]: its own segment, holding a copy of the quoted
+				// text.
+				clone := quoted
 				segments = append(segments, &parserpb.Segment{
-					IndexString: &bracketed,
+					IndexString: &clone,
 				})
 				quoted = ""
 			} else {

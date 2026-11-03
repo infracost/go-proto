@@ -157,7 +157,7 @@ func TestIsCritical(t *testing.T) {
 		parserpb.DiagnosticType_DIAGNOSTIC_TYPE_SECURITY_ERROR,
 	}
 	for _, dt := range criticalTypes {
-		assert.True(t, isCritical(dt), "expected %v to be critical", dt)
+		assert.True(t, IsCritical(dt), "expected %v to be critical", dt)
 	}
 }
 
@@ -167,7 +167,7 @@ func TestIsWarning(t *testing.T) {
 		parserpb.DiagnosticType_DIAGNOSTIC_TYPE_FILESYSTEM_ERROR,
 	}
 	for _, dt := range warningTypes {
-		assert.True(t, isWarning(dt), "expected %v to be warning", dt)
+		assert.True(t, IsWarning(dt), "expected %v to be warning", dt)
 	}
 }
 
@@ -177,6 +177,6 @@ func TestIsTransient(t *testing.T) {
 		parserpb.DiagnosticType_DIAGNOSTIC_TYPE_INVALID_SOURCE_MAP,
 	}
 	for _, dt := range transientTypes {
-		assert.True(t, isTransient(dt), "expected %v to be transient", dt)
+		assert.True(t, IsTransient(dt), "expected %v to be transient", dt)
 	}
 }

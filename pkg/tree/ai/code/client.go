@@ -18,8 +18,10 @@ type Client struct {
 	// Channel is the route the client's requests take to the model.
 	Channel value.Value[Channel] `tree:"channel"`
 
-	// Gateway names the gateway or proxy when Channel is ChannelProxy, e.g.
-	// "litellm".
+	// Gateway names the middleman when Channel is ChannelProxy, e.g.
+	// "bedrock", "vertex", "azure-openai" or "openrouter". Who runs the
+	// model, who bills for it and how its models are named are facts about
+	// the gateway.
 	Gateway value.String `tree:"gateway"`
 
 	// Endpoint is the base URL the client is configured with, when set. The
@@ -27,4 +29,16 @@ type Client struct {
 	// URLs can carry credentials (https://user:key@host/, ?api-key=...), and
 	// this value is shown in the dashboard and in PR comments.
 	Endpoint value.String `tree:"endpoint"`
+
+	// EndpointSource is how Endpoint was resolved: "literal", "const",
+	// "env:<NAME>", "built" (formed from the client's options, as an SDK
+	// forms its URL from a region or a resource name) or "unresolved". It
+	// keeps an env var's name when its value can't be resolved and Endpoint
+	// is empty.
+	EndpointSource value.String `tree:"endpoint_source"`
+
+	// Workspace is the workspace the client is scoped to, for clients that
+	// take one, such as Claude Platform on AWS or Claude on Google Cloud. A
+	// value resolved from an env var carries flag.EnvVar.
+	Workspace value.String `tree:"workspace"`
 }

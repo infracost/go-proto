@@ -23,15 +23,28 @@ func TestAIRoundTrip(t *testing.T) {
 					{
 						Resource: resource.Resource{ID: "client-1", Region: "us-east-1"},
 						SDK:      value.New("boto3", 0, "", nil),
-						Channel:  value.New(code.ChannelBedrock, 0, "", nil),
+						Channel:  value.New(code.ChannelProxy, 0, "", nil),
+						Gateway:  value.New("bedrock", 0, "", nil),
 						Endpoint: value.New("https://bedrock-runtime.us-east-1.amazonaws.com", 0, "", nil),
+						// Formed from the client's region.
+						EndpointSource: value.New("built", 0, "", nil),
 					},
 					{
-						Resource: resource.Resource{ID: "client-2"},
-						SDK:      value.New("openai", 0, "", nil),
-						Channel:  value.New(code.ChannelProxy, 0, "", nil),
-						Gateway:  value.New("litellm", 0, "", nil),
-						Endpoint: value.New("http://litellm.internal:4000", 0, "", nil),
+						Resource:       resource.Resource{ID: "client-2"},
+						SDK:            value.New("openai", 0, "", nil),
+						Channel:        value.New(code.ChannelProxy, 0, "", nil),
+						Gateway:        value.New("litellm", 0, "", nil),
+						Endpoint:       value.New("http://litellm.internal:4000", 0, "", nil),
+						EndpointSource: value.New("env:LITELLM_BASE_URL", 0, "", nil),
+					},
+					{
+						// Claude Platform on AWS: scoped to a workspace read
+						// from an env var.
+						Resource:  resource.Resource{ID: "client-3", Region: "us-west-2"},
+						SDK:       value.New("anthropic", 0, "", nil),
+						Channel:   value.New(code.ChannelProxy, 0, "", nil),
+						Gateway:   value.New("anthropic-aws", 0, "", nil),
+						Workspace: value.New("wrkspc_01", flag.EnvVar, "", nil),
 					},
 				},
 				ModelConfigs: []code.ModelConfig{
@@ -111,14 +124,20 @@ func TestAIRoundTrip(t *testing.T) {
 	result.PostProcess()
 
 	clients := result.AI.Code.Clients
-	require.Len(t, clients, 2)
+	require.Len(t, clients, 3)
 	assert.Equal(t, "us-east-1", clients[0].Region)
 	assert.Equal(t, "boto3", clients[0].SDK.Value())
-	assert.Equal(t, code.ChannelBedrock, clients[0].Channel.Value())
-	assert.Empty(t, clients[0].Gateway.Value())
+	assert.Equal(t, code.ChannelProxy, clients[0].Channel.Value())
+	assert.Equal(t, "bedrock", clients[0].Gateway.Value())
+	assert.Equal(t, "built", clients[0].EndpointSource.Value())
+	assert.Empty(t, clients[0].Workspace.Value())
 	assert.Equal(t, code.ChannelProxy, clients[1].Channel.Value())
 	assert.Equal(t, "litellm", clients[1].Gateway.Value())
 	assert.Equal(t, "http://litellm.internal:4000", clients[1].Endpoint.Value())
+	assert.Equal(t, "env:LITELLM_BASE_URL", clients[1].EndpointSource.Value())
+	assert.Equal(t, "anthropic-aws", clients[2].Gateway.Value())
+	assert.Equal(t, "wrkspc_01", clients[2].Workspace.Value())
+	assert.True(t, clients[2].Workspace.Flags()&flag.EnvVar != 0)
 
 	configs := result.AI.Code.ModelConfigs
 	require.Len(t, configs, 1)
@@ -173,5 +192,5 @@ func TestAIRoundTrip(t *testing.T) {
 	assert.Equal(t, "OllamaModel", classed.ModelClass.Value())
 	assert.Nil(t, classed.Relationships.Client)
 
-	assert.Len(t, result.ToResources(false), 7)
+	assert.Len(t, result.ToResources(false), 8)
 }

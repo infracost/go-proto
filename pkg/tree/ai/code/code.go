@@ -1,9 +1,9 @@
 // Package code holds LLM usage found in application source code.
 //
 // A ModelCall is one call site. It references the Client it is made through,
-// which says where the request goes (direct to the vendor, through a cloud
-// provider, or through a proxy), and the ModelConfig its model ID was read
-// from when that ID was set away from the call.
+// which says where the request goes (direct to the vendor, or through a
+// middleman such as a cloud platform or a gateway), and the ModelConfig its
+// model ID was read from when that ID was set away from the call.
 //
 // Settings read from source code have three states, not two. A call either
 // sets a value, does not set it, or sets it in a way the parser cannot read,

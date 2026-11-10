@@ -12,6 +12,8 @@ func ToProto(raw string) provider.Provider {
 		return provider.Provider_PROVIDER_AZURERM
 	case "kubernetes":
 		return provider.Provider_PROVIDER_KUBERNETES
+	case "ai":
+		return provider.Provider_PROVIDER_AI
 	default:
 		return provider.Provider_PROVIDER_UNSPECIFIED
 	}
@@ -27,6 +29,8 @@ func FromProto(raw provider.Provider) string {
 		return "azurerm"
 	case provider.Provider_PROVIDER_KUBERNETES:
 		return "kubernetes"
+	case provider.Provider_PROVIDER_AI:
+		return "ai"
 	default:
 		return ""
 	}

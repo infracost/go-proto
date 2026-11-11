@@ -9,6 +9,7 @@ import (
 	"github.com/infracost/go-proto/pkg/tree/resource"
 	"github.com/infracost/go-proto/pkg/tree/value"
 	"github.com/infracost/proto/gen/go/infracost/parser"
+	prototree "github.com/infracost/proto/gen/go/infracost/tree"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -24,6 +25,8 @@ func TestAIRoundTrip(t *testing.T) {
 						Resource: resource.Resource{ID: "client-1", Region: "us-east-1"},
 						SDK:      value.New("boto3", 0, "", nil),
 						Channel:  value.New(code.ChannelProxy, 0, "", nil),
+						Provider: value.New("bedrock", 0, "", nil),
+						// Still set for readers that predate Provider.
 						Gateway:  value.New("bedrock", 0, "", nil),
 						Endpoint: value.New("https://bedrock-runtime.us-east-1.amazonaws.com", 0, "", nil),
 						// Formed from the client's region.
@@ -33,7 +36,7 @@ func TestAIRoundTrip(t *testing.T) {
 						Resource:       resource.Resource{ID: "client-2"},
 						SDK:            value.New("openai", 0, "", nil),
 						Channel:        value.New(code.ChannelProxy, 0, "", nil),
-						Gateway:        value.New("litellm", 0, "", nil),
+						Provider:       value.New("litellm", 0, "", nil),
 						Endpoint:       value.New("http://litellm.internal:4000", 0, "", nil),
 						EndpointSource: value.New("env:LITELLM_BASE_URL", 0, "", nil),
 					},
@@ -43,8 +46,32 @@ func TestAIRoundTrip(t *testing.T) {
 						Resource:  resource.Resource{ID: "client-3", Region: "us-west-2"},
 						SDK:       value.New("anthropic", 0, "", nil),
 						Channel:   value.New(code.ChannelProxy, 0, "", nil),
-						Gateway:   value.New("anthropic-aws", 0, "", nil),
+						Provider:  value.New("anthropic-aws", 0, "", nil),
 						Workspace: value.New("wrkspc_01", flag.EnvVar, "", nil),
+					},
+					{
+						// OpenAI's SDK pointed at Groq's API: direct, but
+						// Groq runs the model.
+						Resource: resource.Resource{ID: "client-4"},
+						SDK:      value.New("openai", 0, "", nil),
+						Channel:  value.New(code.ChannelDirect, 0, "", nil),
+						Provider: value.New("groq", 0, "", nil),
+						Endpoint: value.New("https://api.groq.com/openai/v1", 0, "", nil),
+					},
+					{
+						// A local Ollama server.
+						Resource: resource.Resource{ID: "client-5"},
+						SDK:      value.New("ollama", 0, "", nil),
+						Channel:  value.New(code.ChannelDirect, 0, "", nil),
+						Provider: value.New("self-hosted", 0, "", nil),
+					},
+					{
+						// From a parser that predates Provider: a proxy named
+						// only in Gateway.
+						Resource: resource.Resource{ID: "client-6"},
+						SDK:      value.New("openai", 0, "", nil),
+						Channel:  value.New(code.ChannelProxy, 0, "", nil),
+						Gateway:  value.New("openrouter", 0, "", nil),
 					},
 				},
 				ModelConfigs: []code.ModelConfig{
@@ -116,28 +143,43 @@ func TestAIRoundTrip(t *testing.T) {
 		},
 	}
 
+	// A writer runs PostProcess before encoding, as the parsers do.
+	original.PostProcess()
 	proto, err := original.ToProto()
 	require.NoError(t, err)
+
+	// On the wire, a proxy carries gateway as well as provider, whichever one
+	// the writer set, for readers that predate Provider. A direct client
+	// carries no gateway.
+	assert.Equal(t, "litellm", wireString(t, proto, "client-2", "gateway"), "a proxy set only in Provider still writes gateway")
+	assert.Equal(t, "litellm", wireString(t, proto, "client-2", "provider"))
+	assert.Equal(t, "openrouter", wireString(t, proto, "client-6", "provider"), "a proxy set only in Gateway writes provider too")
+	assert.Empty(t, wireString(t, proto, "client-4", "gateway"), "a direct client has no gateway")
 
 	result, err := FromProto(proto)
 	require.NoError(t, err)
 	result.PostProcess()
 
 	clients := result.AI.Code.Clients
-	require.Len(t, clients, 3)
+	require.Len(t, clients, 6)
 	assert.Equal(t, "us-east-1", clients[0].Region)
 	assert.Equal(t, "boto3", clients[0].SDK.Value())
 	assert.Equal(t, code.ChannelProxy, clients[0].Channel.Value())
-	assert.Equal(t, "bedrock", clients[0].Gateway.Value())
+	assert.Equal(t, "bedrock", clients[0].Provider.Value())
+	assert.Equal(t, "bedrock", clients[0].Gateway.Value()) //nolint:staticcheck // Gateway still round-trips for older readers.
 	assert.Equal(t, "built", clients[0].EndpointSource.Value())
 	assert.Empty(t, clients[0].Workspace.Value())
 	assert.Equal(t, code.ChannelProxy, clients[1].Channel.Value())
-	assert.Equal(t, "litellm", clients[1].Gateway.Value())
+	assert.Equal(t, "litellm", clients[1].Provider.Value())
 	assert.Equal(t, "http://litellm.internal:4000", clients[1].Endpoint.Value())
 	assert.Equal(t, "env:LITELLM_BASE_URL", clients[1].EndpointSource.Value())
-	assert.Equal(t, "anthropic-aws", clients[2].Gateway.Value())
+	assert.Equal(t, "anthropic-aws", clients[2].Provider.Value())
 	assert.Equal(t, "wrkspc_01", clients[2].Workspace.Value())
 	assert.True(t, clients[2].Workspace.Flags()&flag.EnvVar != 0)
+	assert.Equal(t, code.ChannelDirect, clients[3].Channel.Value())
+	assert.Equal(t, "groq", clients[3].Provider.Value())
+	assert.Equal(t, "self-hosted", clients[4].Provider.Value())
+	assert.Equal(t, "openrouter", clients[5].Provider.Value(), "an older tree's Gateway fills Provider")
 
 	configs := result.AI.Code.ModelConfigs
 	require.Len(t, configs, 1)
@@ -192,5 +234,22 @@ func TestAIRoundTrip(t *testing.T) {
 	assert.Equal(t, "OllamaModel", classed.ModelClass.Value())
 	assert.Nil(t, classed.Relationships.Client)
 
-	assert.Len(t, result.ToResources(false), 8)
+	assert.Len(t, result.ToResources(false), 11)
+}
+
+// wireString returns the string value of the entry key in the encoded
+// attributes of the resource id, or "" when it has none.
+func wireString(t *testing.T, tree *prototree.Tree, id, key string) string {
+	t.Helper()
+	for _, provider := range tree.GetProviders() {
+		for _, service := range provider.GetServices() {
+			for _, res := range service.GetResources() {
+				if res.GetId() == id {
+					return res.GetAttributes().GetEntries()[key].GetStringValue()
+				}
+			}
+		}
+	}
+	t.Fatalf("resource %s not found in the encoded tree", id)
+	return ""
 }

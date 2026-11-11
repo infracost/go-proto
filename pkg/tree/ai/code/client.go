@@ -18,10 +18,28 @@ type Client struct {
 	// Channel is the route the client's requests take to the model.
 	Channel value.Value[Channel] `tree:"channel"`
 
-	// Gateway names the middleman when Channel is ChannelProxy, e.g.
-	// "bedrock", "vertex", "azure-openai" or "openrouter". Who runs the
-	// model, who bills for it and how its models are named are facts about
-	// the gateway.
+	// Provider names who the client sends its requests to. Read it with
+	// Channel:
+	//
+	//   - ChannelDirect: who runs the model, since "direct" says only that
+	//     there's no middleman. It is the model's vendor, such as "openai",
+	//     "anthropic" or "moonshotai"; another host serving it, such as "groq"
+	//     or "together"; or "self-hosted" for an inference server the code's
+	//     owner runs, such as Ollama or vLLM.
+	//   - ChannelProxy: the middleman, such as "bedrock", "vertex",
+	//     "azure-openai" or "openrouter". Who runs the model, who bills for it
+	//     and how its models are named are facts about the middleman.
+	//
+	// Empty when it isn't known. It names who the client calls, not who made
+	// the model: one client can call several vendors' models, and a call's
+	// model says whose it is.
+	Provider value.String `tree:"provider"`
+
+	// Gateway names the middleman when Channel is ChannelProxy, the same
+	// value as Provider. Parsers still set it for readers that predate
+	// Provider.
+	//
+	// Deprecated: use Provider, which is set for every channel.
 	Gateway value.String `tree:"gateway"`
 
 	// Endpoint is the base URL the client is configured with, when set. The

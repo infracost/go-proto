@@ -24,6 +24,14 @@ type Client struct {
 	// the gateway.
 	Gateway value.String `tree:"gateway"`
 
+	// Provider names who runs the model when Channel is ChannelDirect, since
+	// "direct" says only that there's no middleman. It is the model's vendor,
+	// such as "openai", "anthropic" or "moonshotai"; another host serving it,
+	// such as "groq" or "together"; or "self-hosted" for an inference server
+	// the code's owner runs, such as Ollama or vLLM. Empty when it isn't
+	// known, and for a proxy, which Gateway names.
+	Provider value.String `tree:"provider"`
+
 	// Endpoint is the base URL the client is configured with, when set. The
 	// parser must strip any userinfo and query string before setting it: base
 	// URLs can carry credentials (https://user:key@host/, ?api-key=...), and

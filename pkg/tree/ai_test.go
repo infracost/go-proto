@@ -46,6 +46,22 @@ func TestAIRoundTrip(t *testing.T) {
 						Gateway:   value.New("anthropic-aws", 0, "", nil),
 						Workspace: value.New("wrkspc_01", flag.EnvVar, "", nil),
 					},
+					{
+						// OpenAI's SDK pointed at Groq's API: direct, but
+						// Groq runs the model.
+						Resource: resource.Resource{ID: "client-4"},
+						SDK:      value.New("openai", 0, "", nil),
+						Channel:  value.New(code.ChannelDirect, 0, "", nil),
+						Provider: value.New("groq", 0, "", nil),
+						Endpoint: value.New("https://api.groq.com/openai/v1", 0, "", nil),
+					},
+					{
+						// A local Ollama server.
+						Resource: resource.Resource{ID: "client-5"},
+						SDK:      value.New("ollama", 0, "", nil),
+						Channel:  value.New(code.ChannelDirect, 0, "", nil),
+						Provider: value.New("self-hosted", 0, "", nil),
+					},
 				},
 				ModelConfigs: []code.ModelConfig{
 					{
@@ -124,7 +140,7 @@ func TestAIRoundTrip(t *testing.T) {
 	result.PostProcess()
 
 	clients := result.AI.Code.Clients
-	require.Len(t, clients, 3)
+	require.Len(t, clients, 5)
 	assert.Equal(t, "us-east-1", clients[0].Region)
 	assert.Equal(t, "boto3", clients[0].SDK.Value())
 	assert.Equal(t, code.ChannelProxy, clients[0].Channel.Value())
@@ -138,6 +154,9 @@ func TestAIRoundTrip(t *testing.T) {
 	assert.Equal(t, "anthropic-aws", clients[2].Gateway.Value())
 	assert.Equal(t, "wrkspc_01", clients[2].Workspace.Value())
 	assert.True(t, clients[2].Workspace.Flags()&flag.EnvVar != 0)
+	assert.Equal(t, code.ChannelDirect, clients[3].Channel.Value())
+	assert.Equal(t, "groq", clients[3].Provider.Value())
+	assert.Equal(t, "self-hosted", clients[4].Provider.Value())
 
 	configs := result.AI.Code.ModelConfigs
 	require.Len(t, configs, 1)
@@ -192,5 +211,5 @@ func TestAIRoundTrip(t *testing.T) {
 	assert.Equal(t, "OllamaModel", classed.ModelClass.Value())
 	assert.Nil(t, classed.Relationships.Client)
 
-	assert.Len(t, result.ToResources(false), 8)
+	assert.Len(t, result.ToResources(false), 10)
 }

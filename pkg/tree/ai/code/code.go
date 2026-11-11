@@ -28,6 +28,26 @@ type Code struct {
 }
 
 func (c *Code) PostProcess() {
+	// A proxy's Provider and Gateway are the same value. Fill whichever one is
+	// missing from the other, so writers and readers can move from Gateway to
+	// Provider in any order: a tree from a parser that predates Provider
+	// decodes with Provider set (FromProto runs PostProcess), and a parser
+	// that sets only Provider and runs PostProcess before encoding, as
+	// parsers do, writes Gateway too for readers that predate it. A direct
+	// client's Gateway stays empty, and two different values are left alone.
+	for i := range c.Clients {
+		client := &c.Clients[i]
+		if client.Channel.Value() != ChannelProxy {
+			continue
+		}
+		switch {
+		case client.Provider.IsEmpty() && !client.Gateway.IsEmpty():
+			client.Provider = client.Gateway
+		case client.Gateway.IsEmpty() && !client.Provider.IsEmpty():
+			client.Gateway = client.Provider
+		}
+	}
+
 	// Reset relationships this method writes to so PostProcess is idempotent.
 	for i := range c.ModelCalls {
 		c.ModelCalls[i].Relationships = ModelCallRelationships{}

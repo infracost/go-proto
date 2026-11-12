@@ -53,8 +53,8 @@ type ModelCall struct {
 	// ("mistral:7b" for OllamaModel, "anthropic/claude-3.5-sonnet" for
 	// OpenRouterModel), but those are part of the provider's name, not a
 	// framework's provider prefix, so a consumer that strips a provider
-	// prefix from string model IDs must not strip it here. Empty when the
-	// model is passed as a string.
+	// prefix from string model IDs must not strip it here; NormalizedModelID
+	// applies this. Empty when the model is passed as a string.
 	ModelClass value.String `tree:"model_class"`
 
 	// MaxTokens is the output token limit, resolved to an integer.

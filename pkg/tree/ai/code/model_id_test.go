@@ -24,6 +24,21 @@ func TestNormalizeModelID_Prefixes(t *testing.T) {
 		{"litellm", "openrouter/meta-llama/llama-3-70b", "meta-llama/llama-3-70b", "openrouter"},
 		{"litellm", "fireworks_ai/accounts/fireworks/models/llama-v3-70b", "accounts/fireworks/models/llama-v3-70b", "fireworks_ai"},
 		{"litellm", "ollama/llama3", "llama3", "ollama"},
+		{"litellm", "ollama_chat/llama3", "llama3", "ollama_chat"},
+		{"litellm", "hosted_vllm/meta-llama/Llama-3-8b", "meta-llama/Llama-3-8b", "hosted_vllm"},
+		{"litellm", "sagemaker/my-endpoint", "my-endpoint", "sagemaker"},
+		{"litellm", "replicate/meta/llama-3-70b", "meta/llama-3-70b", "replicate"},
+		{"litellm", "watsonx/ibm/granite-13b-chat-v2", "ibm/granite-13b-chat-v2", "watsonx"},
+		{"litellm", "nvidia_nim/meta/llama3-70b-instruct", "meta/llama3-70b-instruct", "nvidia_nim"},
+		{"langchain", "ibm:ibm/granite-3-8b-instruct", "ibm/granite-3-8b-instruct", "ibm"},
+		{"langchain", "nvidia:meta/llama3-70b-instruct", "meta/llama3-70b-instruct", "nvidia"},
+		// LiteLLM's Bedrock route picks its API with a second segment.
+		{"litellm", "bedrock/converse/us.anthropic.claude-3-5-sonnet-20240620-v1:0", "us.anthropic.claude-3-5-sonnet-20240620-v1:0", "bedrock"},
+		{"litellm", "bedrock/invoke/anthropic.claude-3-5-sonnet-20240620-v1:0", "anthropic.claude-3-5-sonnet-20240620-v1:0", "bedrock"},
+		// Only Bedrock's route has those, and only as a segment of their own.
+		{"litellm", "bedrock/converse", "converse", "bedrock"},
+		{"litellm", "openai/converse/gpt-4o", "converse/gpt-4o", "openai"},
+		{"pydantic-ai", "bedrock:converse:anthropic.claude", "converse:anthropic.claude", "bedrock"},
 		{"instructor", "openai/gpt-4o-mini", "gpt-4o-mini", "openai"},
 		{"litellm", "bedrock/arn:aws:bedrock:us-east-1:123456789012:application-inference-profile/abc", "arn:aws:bedrock:us-east-1:123456789012:application-inference-profile/abc", "bedrock"},
 		// A separator the SDK doesn't use is part of the ID.

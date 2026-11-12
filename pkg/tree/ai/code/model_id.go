@@ -51,10 +51,15 @@ var knownRoutes = map[string]bool{
 	"google_genai":             true,
 	"google_vertexai":          true,
 	"groq":                     true,
+	"hosted_vllm":              true,
 	"huggingface":              true,
+	"ibm":                      true,
 	"mistral":                  true,
 	"mistralai":                true,
+	"nvidia":                   true,
+	"nvidia_nim":               true,
 	"ollama":                   true,
+	"ollama_chat":              true,
 	"openai":                   true,
 	"openai-chat":              true,
 	"openai-codex":             true,
@@ -62,11 +67,14 @@ var knownRoutes = map[string]bool{
 	"openrouter":               true,
 	"perplexity":               true,
 	"pydantic-gateway":         true,
+	"replicate":                true,
+	"sagemaker":                true,
 	"together":                 true,
 	"together_ai":              true,
 	"vertex_ai":                true,
 	"vertex_ai_beta":           true,
 	"vertexai":                 true,
+	"watsonx":                  true,
 	"writer":                   true,
 	"xai":                      true,
 }
@@ -88,7 +96,21 @@ func NormalizeModelID(sdk, id string) (normalized, route string) {
 	if !ok || rest == "" || !knownRoutes[route] {
 		return id, ""
 	}
+	// A route's own sub-route, such as LiteLLM's bedrock/converse/<model>,
+	// is part of the route, not the model ID.
+	for _, sub := range subRoutes[sdk+" "+route] {
+		if model, ok := strings.CutPrefix(rest, sub+string(sep)); ok && model != "" {
+			return model, route
+		}
+	}
 	return rest, route
+}
+
+// subRoutes are the second segments an SDK's route can have before the model
+// ID, keyed by "<sdk> <route>": LiteLLM's Bedrock route picks its API with
+// bedrock/converse/<model> or bedrock/invoke/<model>.
+var subRoutes = map[string][]string{
+	"litellm bedrock": {"converse", "invoke"},
 }
 
 // NormalizedModelID returns the call's model ID with any provider prefix its

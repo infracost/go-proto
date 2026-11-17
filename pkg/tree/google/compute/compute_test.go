@@ -255,3 +255,37 @@ func TestPostProcess_DiskStillMarkedAsAttached(t *testing.T) {
 
 	assert.True(t, c.Disks[0].IsAttached.Value())
 }
+
+func TestPostProcess_EveryInstanceDiskMarkedAsAttached(t *testing.T) {
+	c := &Compute{
+		Instances: []Instance{
+			{
+				Resource:     resource.Resource{ID: "inst-1"},
+				AttachedDisk: value.New("data-1", 0, "", nil),
+				AttachedDisks: *value.NewList([]value.Value[string]{
+					value.New("data-1", 0, "", nil),
+					value.New("boot-1", 0, "", nil),
+					value.New("rboot-1", 0, "", nil),
+					value.New("", 0, "", nil),
+				}, 0, "attached_disks", nil),
+			},
+		},
+		Disks: []Disk{
+			{Resource: resource.Resource{ID: "data-1"}},
+			{Resource: resource.Resource{ID: "boot-1"}},
+			{Resource: resource.Resource{ID: "orphan"}},
+		},
+		RegionDisks: []RegionDisk{
+			{Resource: resource.Resource{ID: "rboot-1"}},
+			{Resource: resource.Resource{ID: "rorphan"}},
+		},
+	}
+
+	c.PostProcess()
+
+	assert.True(t, c.Disks[0].IsAttached.Value())
+	assert.True(t, c.Disks[1].IsAttached.Value())
+	assert.False(t, c.Disks[2].IsAttached.Value())
+	assert.True(t, c.RegionDisks[0].IsAttached.Value())
+	assert.False(t, c.RegionDisks[1].IsAttached.Value())
+}

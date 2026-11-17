@@ -101,23 +101,38 @@ func (c *Compute) PostProcess() {
 
 	// Mark disks as attached when referenced by instances
 	for _, inst := range c.Instances {
-		if !inst.AttachedDisk.IsEmpty() {
+		for _, ref := range inst.diskRefs() {
 			for j := range c.Disks {
-				if inst.AttachedDisk.Value() == c.Disks[j].ID ||
-					inst.AttachedDisk.Value() == c.Disks[j].Name.Value() ||
-					inst.AttachedDisk.Value() == c.Disks[j].SelfLink.Value() {
+				if ref == c.Disks[j].ID ||
+					ref == c.Disks[j].Name.Value() ||
+					ref == c.Disks[j].SelfLink.Value() {
 					c.Disks[j].IsAttached = value.New(true, flag.Synthetic, "", nil)
 				}
 			}
 			for j := range c.RegionDisks {
-				if inst.AttachedDisk.Value() == c.RegionDisks[j].ID ||
-					inst.AttachedDisk.Value() == c.RegionDisks[j].Name.Value() ||
-					inst.AttachedDisk.Value() == c.RegionDisks[j].SelfLink.Value() {
+				if ref == c.RegionDisks[j].ID ||
+					ref == c.RegionDisks[j].Name.Value() ||
+					ref == c.RegionDisks[j].SelfLink.Value() {
 					c.RegionDisks[j].IsAttached = value.New(true, flag.Synthetic, "", nil)
 				}
 			}
 		}
 	}
+}
+
+// diskRefs returns every non-empty reference to a separately created disk.
+func (i Instance) diskRefs() []string {
+	items := i.AttachedDisks.Items()
+	refs := make([]string, 0, len(items)+1)
+	if !i.AttachedDisk.IsEmpty() {
+		refs = append(refs, i.AttachedDisk.Value())
+	}
+	for _, d := range items {
+		if !d.IsEmpty() {
+			refs = append(refs, d.Value())
+		}
+	}
+	return refs
 }
 
 func (c *Compute) findDiskStorage(disk *Disk) value.Double {

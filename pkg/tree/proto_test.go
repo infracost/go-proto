@@ -6,6 +6,8 @@ import (
 	"github.com/infracost/go-proto/pkg/tree/aws"
 	"github.com/infracost/go-proto/pkg/tree/aws/ec2"
 	"github.com/infracost/go-proto/pkg/tree/aws/eks"
+	"github.com/infracost/go-proto/pkg/tree/google"
+	gcompute "github.com/infracost/go-proto/pkg/tree/google/compute"
 	"github.com/infracost/go-proto/pkg/tree/resource"
 	"github.com/infracost/go-proto/pkg/tree/value"
 	prototree "github.com/infracost/proto/gen/go/infracost/tree"
@@ -347,4 +349,31 @@ func TestEmptyTree(t *testing.T) {
 	result, err := FromProto(proto)
 	require.NoError(t, err)
 	assert.Empty(t, result.AWS.EC2.Instances)
+}
+
+func TestRoundTrip_GoogleInstanceAttachedDisks(t *testing.T) {
+	original := &Tree{
+		Google: google.Google{
+			Compute: gcompute.Compute{
+				Instances: []gcompute.Instance{{
+					AttachedDisks: *value.NewList([]value.Value[string]{
+						value.New("data-1", 0, "attached_disks", nil),
+						value.New("boot-1", 0, "attached_disks", nil),
+					}, 0, "attached_disks", nil),
+				}},
+			},
+		},
+	}
+
+	proto, err := original.ToProto()
+	require.NoError(t, err)
+
+	result, err := FromProto(proto)
+	require.NoError(t, err)
+
+	require.Len(t, result.Google.Compute.Instances, 1)
+	items := result.Google.Compute.Instances[0].AttachedDisks.Items()
+	require.Len(t, items, 2)
+	assert.Equal(t, "data-1", items[0].Value())
+	assert.Equal(t, "boot-1", items[1].Value())
 }

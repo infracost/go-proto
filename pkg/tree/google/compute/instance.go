@@ -17,6 +17,9 @@ type Instance struct {
 	GuestAccelerators  []GuestAccelerator             `tree:"guest_accelerators"`
 	NATIP              value.String                   `tree:"nat_ip"`
 	AttachedDisk       value.String                   `tree:"attached_disk"`
+	// AttachedDisks holds the source of every separately created disk the instance uses:
+	// all extra disks and the boot disk's source. AttachedDisk keeps only the first extra disk.
+	AttachedDisks      value.List[string]             `tree:"attached_disks"`
 }
 
 type PurchaseOption uint32
